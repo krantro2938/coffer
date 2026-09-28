@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_app/links")({ component: LinksPage })
 
 function LinksPage() {
   const { data, isLoading } = useDrive()
-  const names = useMemo(() => new Map(data?.items.map((i) => [i.id, i]) ?? []), [data])
+  const names = useMemo(() => new Map([...(data?.items ?? []), ...(data?.bundles ?? [])].map((i) => [i.id, i])), [data])
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">

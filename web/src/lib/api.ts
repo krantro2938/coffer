@@ -1,4 +1,4 @@
-import type { KdfParams } from "./crypto"
+import type { ItemKind, KdfParams } from "./crypto"
 
 export class ApiError extends Error {
   constructor(
@@ -71,7 +71,7 @@ export type FolderRow = { id: string; parentId: string | null; encName: string; 
 export type ItemRow = {
   id: string
   folderId: string | null
-  kind: "file" | "text"
+  kind: ItemKind
   encMeta: string
   wrappedKey: string
   size: number
@@ -85,6 +85,7 @@ export type ShareRow = {
   itemId: string
   hasPassword: boolean
   encSecret: string | null
+  short: boolean
   maxViews: number | null
   views: number
   expiresAt: number | null
@@ -98,11 +99,12 @@ export type DriveData = {
   usage: { used: number; quota: number }
 }
 
-export type ShareInfo = { id: string; hasPassword: boolean; pwSalt?: string; pwKdf?: KdfParams }
+/** `secret` is only present for short links, where the id alone opens the share. */
+export type ShareInfo = { id: string; hasPassword: boolean; pwSalt?: string; pwKdf?: KdfParams; secret?: string }
 
 export type ShareOpen = {
   itemId: string
-  kind: "file" | "text"
+  kind: ItemKind
   encMeta: string
   wrappedKey: string
   size: number

@@ -156,7 +156,17 @@ export function DropComposer() {
                   Encrypted and ready to share
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  The key is in the part after <span className="font-mono">#</span> — it never reaches our server.
+                  {phase.share.short ? (
+                    opts.usePassword ? (
+                      "Short link — the password is the key; share it separately."
+                    ) : (
+                      "Short link — anyone with the code can open it."
+                    )
+                  ) : (
+                    <>
+                      The key is in the part after <span className="font-mono">#</span> — it never reaches our server.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -227,12 +237,12 @@ export function DropComposer() {
                 </button>
               )
             ) : (
-              <div className="mx-2 mt-1">
+              <div className="mx-2 mt-1 overflow-hidden rounded-2xl border border-input bg-background/60 transition-[box-shadow,border-color] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
                 <Textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Paste a password, an API key, a private note…"
-                  className="max-h-80 min-h-40 resize-none rounded-2xl bg-background/60 font-mono text-sm"
+                  className="max-h-80 min-h-40 resize-none rounded-none border-0 bg-transparent font-mono text-sm [overflow-wrap:anywhere] [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin] focus-visible:ring-0 dark:bg-transparent"
                   disabled={busy}
                   spellCheck={false}
                 />

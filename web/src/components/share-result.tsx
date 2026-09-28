@@ -21,7 +21,7 @@ export function ShareResult({
 }) {
   const { copy, copied } = useCopy()
   const [qr, setQr] = useState(false)
-  const code = `${share.id} ${formatSecret(share.secret)}`
+  const code = share.short ? share.id : `${share.id} ${formatSecret(share.secret)}`
   const svg = useMemo(
     () => (qr ? renderSVG(share.url, { border: 1, pixelSize: 6, whiteColor: "#ffffff", blackColor: "#13201a" }) : ""),
     [qr, share.url],
@@ -33,7 +33,7 @@ export function ShareResult({
       <div className="grid gap-1.5">
         <span className="eyebrow">Share link</span>
         <div className="flex items-center gap-2 rounded-xl border bg-card p-1.5 pl-3.5">
-          <code className="min-w-0 flex-1 truncate font-mono text-[0.8125rem]">{share.url}</code>
+          <code className="min-w-0 flex-1 truncate font-mono text-[0.8125rem]" title={share.url}>{share.url}</code>
           <Button size="sm" onClick={() => copy(share.url, "Link copied")} className="shrink-0">
             {copied === share.url ? <CheckIcon /> : <CopyIcon />}
             Copy
@@ -49,8 +49,8 @@ export function ShareResult({
           className="group flex items-center justify-between gap-3 rounded-xl border border-dashed bg-muted/40 px-3.5 py-3 text-left transition-colors hover:bg-muted"
         >
           <span className="font-mono text-[0.9375rem] tracking-wide">
-            <span className="font-semibold text-primary">{share.id}</span>{" "}
-            <span className="text-muted-foreground">{formatSecret(share.secret)}</span>
+            <span className="font-semibold text-primary">{share.id}</span>
+            {!share.short && <span className="text-muted-foreground"> {formatSecret(share.secret)}</span>}
           </span>
           {copied === code ? (
             <CheckIcon className="size-4 text-primary" />

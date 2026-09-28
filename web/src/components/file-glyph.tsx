@@ -10,12 +10,13 @@ import {
   FolderIcon,
   StickyNoteIcon,
 } from "lucide-react"
+import type { ItemKind } from "@/lib/crypto"
 import { cn } from "@/lib/utils"
 
 type Tone = "mint" | "lavender" | "coral" | "muted"
 
-function classify(kind: "file" | "text" | "folder", type = ""): { Icon: typeof FileIcon; tone: Tone } {
-  if (kind === "folder") return { Icon: FolderIcon, tone: "mint" }
+function classify(kind: ItemKind | "folder", type = ""): { Icon: typeof FileIcon; tone: Tone } {
+  if (kind === "folder" || kind === "bundle") return { Icon: FolderIcon, tone: "mint" }
   if (kind === "text") return { Icon: StickyNoteIcon, tone: "lavender" }
   if (type.startsWith("image/")) return { Icon: FileImageIcon, tone: "coral" }
   if (type.startsWith("video/")) return { Icon: FileVideoIcon, tone: "lavender" }
@@ -39,7 +40,7 @@ export function FileGlyph({
   type,
   className,
 }: {
-  kind: "file" | "text" | "folder"
+  kind: ItemKind | "folder"
   type?: string
   className?: string
 }) {

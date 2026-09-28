@@ -11,8 +11,19 @@ DOMAIN=drop.example.com TRUST_PROXY=true HSTS=true docker compose --profile tls 
 ```
 
 Browsers only expose WebCrypto on HTTPS or `localhost`, so serve it over TLS anywhere else.
-All settings are environment variables in `docker-compose.yml`. Data lives in the `coffer-data` volume
-(`coffer.db`, `blobs/`, and `server.key` — back up all three together).
+All settings are environment variables in `docker-compose.yml`.
+
+## Storage
+
+No external database: metadata lives in an embedded **SQLite** file and file contents in plain files, both in
+the `coffer-data` volume:
+
+- `coffer.db` — accounts (peppered auth hashes, wrapped master keys), folders and items (encrypted names/metadata,
+  wrapped keys), share links (hashed access tokens), sessions.
+- `blobs/` — one ciphertext file per upload.
+- `server.key` — the server's random pepper. Back up all three together.
+
+SQLite in WAL mode comfortably handles a personal or small-team instance; everything in it is ciphertext or hashes.
 
 ## How it's secured
 
@@ -21,6 +32,9 @@ All settings are environment variables in `docker-compose.yml`. Data lives in th
 - Share links look like `/s/k7m3xq2#h4c9w2pz8rtf6mxn`. The fragment is an 80-bit secret the server never
   sees. Optional passwords are mixed in via Argon2id. The server keeps only a hash of a derived access token.
 - Links can expire, burn after N views, and be revoked. Wrong passwords never consume a view.
+- Folders are shared as an encrypted snapshot manifest; recipients can grab single files or a streamed `.zip`.
+- Optional "short link only" mode (`/s/k7m3xq2`, no key in the URL): the server keeps the link key, so it is
+  not end-to-end encrypted unless a password is also set.
 - Accounts: the password is stretched with Argon2id on the device. It unwraps a random master key; the
   server gets a peppered hash of a derived auth key. A recovery key is issued at sign-up.
 - Hardening: strict CSP with hashed inline scripts, HttpOnly SameSite=Strict cookies, CSRF header checks,

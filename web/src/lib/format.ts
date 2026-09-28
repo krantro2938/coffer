@@ -27,16 +27,16 @@ export function shortDate(unixSeconds: number): string {
 }
 
 export const EXPIRY_OPTIONS = [
-  { label: "1 hour", value: 3600 },
-  { label: "1 day", value: 86400 },
-  { label: "7 days", value: 7 * 86400 },
-  { label: "30 days", value: 30 * 86400 },
-  { label: "Never", value: 0 },
+  { label: "1 hour", hint: "For a quick hand-off", value: 3600 },
+  { label: "1 day", hint: "A sensible default", value: 86400 },
+  { label: "7 days", hint: "Enough time for a busy week", value: 7 * 86400 },
+  { label: "30 days", hint: "Longer-lived sharing", value: 30 * 86400 },
+  { label: "Never", hint: "Until you revoke it", value: 0 },
 ] as const
 
 export const VIEW_OPTIONS = [
-  { label: "Burn after reading", value: 1 },
-  { label: "5 views", value: 5 },
-  { label: "25 views", value: 25 },
-  { label: "Unlimited", value: 0 },
+  { label: "Burn after reading", hint: "Destroyed after the first open", value: 1 },
+  { label: "5 views", hint: "A small group", value: 5 },
+  { label: "25 views", hint: "A team or a class", value: 25 },
+  { label: "Unlimited", hint: "Only time limits it", value: 0 },
 ] as const

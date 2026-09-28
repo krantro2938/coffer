@@ -33,6 +33,7 @@ import {
   type ItemMeta,
 } from "@/lib/crypto"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { downloadZip, fileBlobOpts, type BundleFile, type Manifest } from "@/lib/bundle"
 import { downloadToBlob, saveDecrypted, triggerDownload } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
 
@@ -46,6 +47,7 @@ type Opened = {
   fileKey: Uint8Array<ArrayBuffer>
   text?: string
   previewUrl?: string
+  manifest?: Manifest
 }
 
 type State =
@@ -65,9 +67,13 @@ function SharePage() {
 
   useEffect(() => {
     const frag = decodeURIComponent(location.hash.slice(1))
-    setSecret(frag)
     api<ShareInfo>(`/api/s/${encodeURIComponent(id)}`)
-      .then((info) => setState(frag ? { s: "ready", info } : { s: "missing", info }))
+      .then((info) => {
+        // Short links carry no key: the server hands it out with the id.
+        const key = frag || info.secret || ""
+        setSecret(key)
+        setState(key ? { s: "ready", info } : { s: "missing", info })
+      })
       .catch((e) => setState({ s: "gone", message: (e as Error).message }))
   }, [id])
 
@@ -99,7 +105,7 @@ function SharePage() {
 
       const data: Opened = { open, meta, fileKey }
       const small = open.size <= PREVIEW_LIMIT
-      if (open.kind === "text" || (small && /^(image|video|audio)\//.test(meta.type))) {
+      if (open.kind === "bundle" || open.kind === "text" || (small && /^(image|video|audio)\//.test(meta.type))) {
         setWorking("Decrypting")
         const blob = await downloadToBlob({
           url: `/api/s/${id}/blob`,
@@ -111,7 +117,8 @@ function SharePage() {
           type: meta.type,
           onProgress: setProgress,
         })
-        if (open.kind === "text") data.text = await blob.text()
+        if (open.kind === "bundle") data.manifest = JSON.parse(await blob.text()) as Manifest
+        else if (open.kind === "text") data.text = await blob.text()
         else data.previewUrl = URL.createObjectURL(blob)
       }
       setState({ s: "opened", data })
@@ -131,7 +138,7 @@ function SharePage() {
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 size-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,var(--lavender-soft),transparent)] opacity-70" />
         </div>
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-lg min-w-0">
           {state.s === "loading" && (
             <Shell>
               <div className="grid place-items-center py-16">
@@ -241,7 +248,12 @@ function SharePage() {
             </Shell>
           )}
 
-          {state.s === "opened" && <OpenedView id={id} data={state.data} />}
+          {state.s === "opened" &&
+            (state.data.manifest ? (
+              <FolderView id={id} data={state.data} manifest={state.data.manifest} />
+            ) : (
+              <OpenedView id={id} data={state.data} />
+            ))}
         </div>
       </main>
     </div>
@@ -249,7 +261,7 @@ function SharePage() {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-[1.75rem] border bg-card shadow-soft">{children}</div>
+  return <div className="min-w-0 overflow-hidden rounded-[1.75rem] border bg-card shadow-soft">{children}</div>
 }
 
 function OpenedView({ id, data }: { id: string; data: Opened }) {
@@ -294,7 +306,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
           <div className="flex items-center gap-3">
             <FileGlyph kind={open.kind} type={meta.type} className="size-12" />
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{open.kind === "text" ? "Private note" : meta.name}</p>
+              <p className="truncate font-medium" title={meta.name}>{open.kind === "text" ? "Private note" : meta.name}</p>
               <p className="text-sm text-muted-foreground">
                 {formatBytes(meta.size)}
                 {open.expiresAt ? ` · link expires ${relativeTime(open.expiresAt)}` : ""}
@@ -307,7 +319,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
 
           {text !== undefined && (
             <div className="relative">
-              <pre className="max-h-[50vh] overflow-auto rounded-2xl border bg-muted/40 p-4 pr-12 font-mono text-sm break-words whitespace-pre-wrap">
+              <pre className="max-h-[50vh] overflow-y-auto rounded-2xl border bg-muted/40 p-4 pr-12 font-mono text-sm whitespace-pre-wrap [overflow-wrap:anywhere]">
                 {text}
               </pre>
               <Button
@@ -353,6 +365,14 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
         </div>
       </Shell>
 
+      <ViewsNotice open={open} />
+    </div>
+  )
+}
+
+function ViewsNotice({ open }: { open: ShareOpen }) {
+  return (
+    <>
       {(open.burned || open.viewsLeft !== undefined) && (
         <div className="flex items-start gap-3 rounded-2xl border border-coral/30 bg-coral-soft/60 p-4 text-sm">
           {open.burned ? (
@@ -367,6 +387,103 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
           </p>
         </div>
       )}
+    </>
+  )
+}
+
+function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest: Manifest }) {
+  const { open } = data
+  const [zipping, setZipping] = useState<number | null>(null)
+  const [saving, setSaving] = useState<string | null>(null)
+  const total = manifest.files.reduce((n, f) => n + f.size, 0)
+
+  const zipAll = async () => {
+    try {
+      setZipping(0)
+      const failed = await downloadZip(id, open.ticket, manifest, setZipping)
+      if (failed.length) toast.warning(`${failed.length} file${failed.length === 1 ? " was" : "s were"} no longer available`)
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setZipping(null)
+    }
+  }
+
+  const saveOne = async (f: BundleFile) => {
+    try {
+      setSaving(f.id)
+      await saveDecrypted(fileBlobOpts(id, open.ticket, f))
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  return (
+    <div className="grid gap-3">
+      <Shell>
+        <div className="grid gap-5 p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <FileGlyph kind="folder" className="size-12" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium" title={manifest.name}>
+                {manifest.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {manifest.files.length} file{manifest.files.length === 1 ? "" : "s"} · {formatBytes(total)}
+                {open.expiresAt ? ` · expires ${relativeTime(open.expiresAt)}` : ""}
+              </p>
+            </div>
+          </div>
+
+          <ul className="-mx-2 grid max-h-[45vh] overflow-y-auto">
+            {manifest.files.map((f) => {
+              const dir = f.path.includes("/") ? f.path.slice(0, f.path.lastIndexOf("/")) : ""
+              return (
+                <li key={f.id} className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 hover:bg-muted/50">
+                  <FileGlyph kind="file" type={f.type} className="size-9 rounded-lg" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm" title={f.path}>
+                      {f.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {dir ? `${dir} · ` : ""}
+                      {formatBytes(f.size)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => saveOne(f)}
+                    disabled={saving !== null || zipping !== null}
+                    aria-label={`Download ${f.name}`}
+                  >
+                    {saving === f.id ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
+                  </Button>
+                </li>
+              )
+            })}
+          </ul>
+
+          {zipping !== null ? (
+            <div className="grid gap-2 rounded-full border bg-muted/40 px-5 py-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                  <Loader2Icon className="size-3.5 animate-spin" /> Decrypting & zipping
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">{Math.round(zipping * 100)}%</span>
+              </div>
+              <Progress value={zipping * 100} className="h-1" />
+            </div>
+          ) : (
+            <Button size="lg" onClick={zipAll} disabled={saving !== null}>
+              <DownloadIcon /> Download all as .zip
+            </Button>
+          )}
+        </div>
+      </Shell>
+      <ViewsNotice open={open} />
     </div>
   )
 }

@@ -32,7 +32,8 @@ import { ShareOptionsFields, defaultShareOptions, toShareOptions } from "@/compo
 import { ShareResult } from "@/components/share-result"
 import { FileGlyph } from "@/components/file-glyph"
 import { api } from "@/lib/api"
-import type { DFolder, DItem, DShare } from "@/lib/drive"
+import type { DFolder, DItem, DShare, Drive } from "@/lib/drive"
+import { collectFolder, shareFolder } from "@/lib/bundle"
 import { formatBytes, relativeTime } from "@/lib/format"
 import { useSession } from "@/lib/session"
 import { createShare, downloadToBlob, saveDecrypted, storeItem, type CreatedShare } from "@/lib/transfer"
@@ -339,13 +340,15 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
 
 // ------------------------------------------------------------- share dialog
 
+export type ShareTarget = { type: "item"; item: DItem } | { type: "folder"; folder: DFolder }
+
 export function ShareDialog({
-  item,
-  shares,
+  target,
+  drive,
   onOpenChange,
 }: {
-  item: DItem | null
-  shares: DShare[]
+  target: ShareTarget | null
+  drive: Drive | undefined
   onOpenChange: (o: boolean) => void
 }) {
   const { masterKey } = useSession()
@@ -354,14 +357,19 @@ export function ShareDialog({
   const [created, setCreated] = useState<CreatedShare | null>(null)
   const [creating, setCreating] = useState(false)
   const [composing, setComposing] = useState(false)
+  const key = target ? (target.type === "item" ? target.item.id : target.folder.id) : null
 
   useEffect(() => {
     setCreated(null)
     setOpts(defaultShareOptions(7 * 86400))
     setComposing(false)
-  }, [item?.id])
+  }, [key])
 
-  if (!item) return null
+  if (!target) return null
+  const isFolder = target.type === "folder"
+  const name = isFolder ? target.folder.name : target.item.name
+  const shares = (isFolder ? drive?.sharesByFolder.get(target.folder.id) : drive?.sharesByItem.get(target.item.id)) ?? []
+  const fileCount = isFolder && drive ? collectFolder(drive, target.folder).length : 0
   const showForm = composing || shares.length === 0
 
   const create = async () => {
@@ -369,7 +377,9 @@ export function ShareDialog({
     if (opts.usePassword && !o.password) return toast.error("Enter a password or turn the option off")
     setCreating(true)
     try {
-      const s = await createShare(item.id, item.fileKey!, o, { masterKey })
+      const s = isFolder
+        ? await shareFolder(drive!, target.folder, o, masterKey!)
+        : await createShare(target.item.id, target.item.fileKey!, o, { masterKey })
       setCreated(s)
       setComposing(false)
       qc.invalidateQueries({ queryKey: ["drive"] })
@@ -382,12 +392,21 @@ export function ShareDialog({
 
   return (
     <ResponsiveDialog
-      open={!!item}
+      open={!!target}
       onOpenChange={onOpenChange}
       title={
-        <span className="flex items-center gap-3">
-          <FileGlyph kind={item.kind} type={item.type} className="size-9 rounded-lg" />
-          <span className="min-w-0 truncate">Share “{item.name}”</span>
+        <span className="flex min-w-0 items-center gap-3 pr-6">
+          {isFolder ? (
+            <FileGlyph kind="folder" className="size-9 rounded-lg" />
+          ) : (
+            <FileGlyph kind={target.item.kind} type={target.item.type} className="size-9 rounded-lg" />
+          )}
+          <span className="min-w-0">
+            <span className="block text-xs font-normal text-muted-foreground">
+              {isFolder ? `Share folder · ${fileCount} file${fileCount === 1 ? "" : "s"}` : "Share file"}
+            </span>
+            <span className="block truncate">{name}</span>
+          </span>
         </span>
       }
       className="sm:max-w-lg"
@@ -402,6 +421,12 @@ export function ShareDialog({
           </>
         ) : showForm ? (
           <>
+            {isFolder && (
+              <p className="rounded-xl bg-muted/50 px-3.5 py-2.5 text-xs text-muted-foreground">
+                Shares a snapshot of the folder as it is now, including subfolders. Files you add later need a new link;
+                files you delete disappear from it.
+              </p>
+            )}
             <ShareOptionsFields value={opts} onChange={setOpts} />
             <div className="flex justify-end gap-2">
               {shares.length > 0 && (
@@ -409,7 +434,7 @@ export function ShareDialog({
                   Back
                 </Button>
               )}
-              <Button onClick={create} disabled={creating}>
+              <Button onClick={create} disabled={creating || (isFolder && fileCount === 0)}>
                 {creating ? <Loader2Icon className="animate-spin" /> : <PlusIcon />} Create link
               </Button>
             </div>

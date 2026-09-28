@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS shares (
 	wrapped_key  BLOB NOT NULL,
 	access_hash  BLOB NOT NULL,
 	enc_secret   BLOB,
+	open_secret  TEXT, -- short links only: the link secret, handed to anyone with the id
 	pw_salt      BLOB,
 	pw_params    TEXT,
 	max_views    INTEGER,
@@ -76,6 +77,14 @@ CREATE TABLE IF NOT EXISTS shares (
 );
 CREATE INDEX IF NOT EXISTS shares_item ON shares(item_id);
 CREATE INDEX IF NOT EXISTS shares_user ON shares(user_id);
+
+-- Files a folder link may serve, next to its encrypted manifest ("bundle" item).
+CREATE TABLE IF NOT EXISTS share_items (
+	share_id  TEXT NOT NULL REFERENCES shares(id) ON DELETE CASCADE,
+	item_id   TEXT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+	PRIMARY KEY (share_id, item_id)
+);
+CREATE INDEX IF NOT EXISTS share_items_item ON share_items(item_id);
 `
 
 func openDB(dataDir string) (*sql.DB, error) {
@@ -89,6 +98,16 @@ func openDB(dataDir string) (*sql.DB, error) {
 	db.SetMaxOpenConns(1)
 	if _, err := db.Exec(schema); err != nil {
 		return nil, fmt.Errorf("migrate: %w", err)
+	}
+	// Columns added after the first release.
+	var n int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM pragma_table_info('shares') WHERE name = 'open_secret'`).Scan(&n); err != nil {
+		return nil, err
+	}
+	if n == 0 {
+		if _, err := db.Exec(`ALTER TABLE shares ADD COLUMN open_secret TEXT`); err != nil {
+			return nil, fmt.Errorf("migrate: %w", err)
+		}
 	}
 	return db, nil
 }

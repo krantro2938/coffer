@@ -37,7 +37,7 @@ func (a *App) sweep() {
 	ids, err := a.itemIDs(`SELECT id FROM items WHERE
 		(expires_at IS NOT NULL AND expires_at <= ?)
 		OR (ready = 0 AND created_at <= ?)
-		OR (user_id IS NULL AND created_at <= ? AND NOT EXISTS (SELECT 1 FROM shares WHERE shares.item_id = items.id))`,
+		OR ((user_id IS NULL OR kind = 'bundle') AND created_at <= ? AND NOT EXISTS (SELECT 1 FROM shares WHERE shares.item_id = items.id))`,
 		n, n-24*3600, n-3600)
 	if err != nil {
 		log.Printf("janitor: items: %v", err)

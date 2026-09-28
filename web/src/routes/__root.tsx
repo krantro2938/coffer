@@ -20,8 +20,7 @@ export const Route = createRootRoute({
         content: "Share files and text with end-to-end encryption. Your keys never leave your browser.",
       },
       { name: "referrer", content: "no-referrer" },
-      { name: "theme-color", content: "#f7f6f1", media: "(prefers-color-scheme: light)" },
-      { name: "theme-color", content: "#0f1612", media: "(prefers-color-scheme: dark)" },
+      { name: "theme-color", content: "#fbfbf9" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

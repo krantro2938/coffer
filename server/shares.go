@@ -13,6 +13,7 @@ type shareJSON struct {
 	ItemID      string `json:"itemId"`
 	HasPassword bool   `json:"hasPassword"`
 	EncSecret   []byte `json:"encSecret"`
+	Short       bool   `json:"short"`
 	MaxViews    *int64 `json:"maxViews"`
 	Views       int64  `json:"views"`
 	ExpiresAt   *int64 `json:"expiresAt"`
@@ -23,7 +24,7 @@ type shareJSON struct {
 const activeShare = `burned_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`
 
 func (a *App) listShares(uid string) ([]shareJSON, error) {
-	rows, err := a.db.Query(`SELECT id, item_id, pw_salt IS NOT NULL, enc_secret, max_views, views, expires_at, created_at
+	rows, err := a.db.Query(`SELECT id, item_id, pw_salt IS NOT NULL, enc_secret, open_secret IS NOT NULL, max_views, views, expires_at, created_at
 		FROM shares WHERE user_id = ? AND `+activeShare+` ORDER BY created_at DESC`, uid, now())
 	if err != nil {
 		return nil, err
@@ -32,7 +33,7 @@ func (a *App) listShares(uid string) ([]shareJSON, error) {
 	out := []shareJSON{}
 	for rows.Next() {
 		var s shareJSON
-		if err := rows.Scan(&s.ID, &s.ItemID, &s.HasPassword, &s.EncSecret, &s.MaxViews, &s.Views, &s.ExpiresAt, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.ItemID, &s.HasPassword, &s.EncSecret, &s.Short, &s.MaxViews, &s.Views, &s.ExpiresAt, &s.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, s)
@@ -59,12 +60,14 @@ func (a *App) handleCreateShare(w http.ResponseWriter, r *http.Request) error {
 		WrappedKey []byte     `json:"wrappedKey"`
 		AccessHash []byte     `json:"accessHash"`
 		EncSecret  []byte     `json:"encSecret"`
+		OpenSecret *string    `json:"openSecret"` // short links: stored so the id alone opens it
 		PwSalt     []byte     `json:"pwSalt"`
 		PwKDF      *KDFParams `json:"pwKdf"`
 		MaxViews   *int64     `json:"maxViews"`
 		ExpiresIn  *int64     `json:"expiresIn"`
+		ItemIDs    []string   `json:"itemIds"` // folder links: the files the manifest lists
 	}
-	if err := readJSON(w, r, &req); err != nil {
+	if err := readJSONLimit(w, r, &req, 1<<20); err != nil {
 		return err
 	}
 	it, uid, err := a.authorizeItem(r, req.ItemID)
@@ -79,6 +82,22 @@ func (a *App) handleCreateShare(w http.ResponseWriter, r *http.Request) error {
 	}
 	if len(req.EncSecret) > 256 || (req.EncSecret != nil && uid == "") {
 		return errf(http.StatusBadRequest, "invalid key material")
+	}
+	if req.OpenSecret != nil && !openSecretRe.MatchString(*req.OpenSecret) {
+		return errf(http.StatusBadRequest, "invalid short link")
+	}
+	if (it.Kind == "bundle") != (req.ItemIDs != nil) || len(req.ItemIDs) > 10000 {
+		return errf(http.StatusBadRequest, "invalid folder share")
+	}
+	for _, id := range req.ItemIDs {
+		var n int
+		if err := a.db.QueryRow(`SELECT COUNT(*) FROM items WHERE id = ? AND user_id = ? AND ready = 1 AND kind != 'bundle'`,
+			id, uid).Scan(&n); err != nil {
+			return err
+		}
+		if n != 1 {
+			return errNotFound
+		}
 	}
 	var pwParams any
 	if req.PwSalt != nil || req.PwKDF != nil {
@@ -109,12 +128,18 @@ func (a *App) handleCreateShare(w http.ResponseWriter, r *http.Request) error {
 	}
 	for range 5 {
 		id := randomID(7)
-		_, err = a.db.Exec(`INSERT INTO shares (id, item_id, user_id, wrapped_key, access_hash, enc_secret, pw_salt, pw_params,
-			max_views, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			id, it.ID, owner, req.WrappedKey, req.AccessHash, req.EncSecret, req.PwSalt, pwParams, nullInt(req.MaxViews), nullInt(expires), now())
+		_, err = a.db.Exec(`INSERT INTO shares (id, item_id, user_id, wrapped_key, access_hash, enc_secret, open_secret, pw_salt, pw_params,
+			max_views, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			id, it.ID, owner, req.WrappedKey, req.AccessHash, req.EncSecret, req.OpenSecret, req.PwSalt, pwParams, nullInt(req.MaxViews), nullInt(expires), now())
 		if err == nil {
+			for _, item := range req.ItemIDs {
+				if _, err := a.db.Exec(`INSERT OR IGNORE INTO share_items (share_id, item_id) VALUES (?, ?)`, id, item); err != nil {
+					_, _ = a.db.Exec(`DELETE FROM shares WHERE id = ?`, id)
+					return err
+				}
+			}
 			writeJSON(w, 201, shareJSON{ID: id, ItemID: it.ID, HasPassword: req.PwSalt != nil, EncSecret: req.EncSecret,
-				MaxViews: req.MaxViews, ExpiresAt: expires, CreatedAt: now()})
+				Short: req.OpenSecret != nil, MaxViews: req.MaxViews, ExpiresAt: expires, CreatedAt: now()})
 			return nil
 		}
 	}
@@ -130,13 +155,24 @@ func (a *App) handleDeleteShare(w http.ResponseWriter, r *http.Request) error {
 	} else if err != nil {
 		return err
 	}
-	if _, _, err := a.authorizeItem(r, itemID); err != nil {
+	it, _, err := a.authorizeItem(r, itemID)
+	if err != nil {
 		return err
 	}
 	if _, err := a.db.Exec(`DELETE FROM shares WHERE id = ?`, id); err != nil {
 		return err
 	}
 	a.tickets.revokeShare(id)
+	// A folder link's manifest exists only for that link.
+	if it.Kind == "bundle" {
+		res, err := a.db.Exec(`DELETE FROM items WHERE id = ? AND NOT EXISTS (SELECT 1 FROM shares WHERE item_id = ?)`, it.ID, it.ID)
+		if err != nil {
+			return err
+		}
+		if n, _ := res.RowsAffected(); n > 0 {
+			a.removeBlobs([]string{it.ID})
+		}
+	}
 	writeJSON(w, 200, map[string]bool{"ok": true})
 	return nil
 }
@@ -148,15 +184,22 @@ func (a *App) handleShareInfo(w http.ResponseWriter, r *http.Request) error {
 	if !shareIDRe.MatchString(id) {
 		return errNotFound
 	}
+	if !a.shareOpenLimit.allow(clientIP(r, a.cfg.TrustProxy)) {
+		return errf(http.StatusTooManyRequests, "too many attempts, try again later")
+	}
 	var salt []byte
-	var params sql.NullString
-	err := a.db.QueryRow(`SELECT pw_salt, pw_params FROM shares WHERE id = ? AND `+activeShare, id, now()).Scan(&salt, &params)
+	var params, openSecret sql.NullString
+	err := a.db.QueryRow(`SELECT pw_salt, pw_params, open_secret FROM shares WHERE id = ? AND `+activeShare, id, now()).
+		Scan(&salt, &params, &openSecret)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errf(http.StatusNotFound, "this link does not exist, has expired or has been used up")
 	} else if err != nil {
 		return err
 	}
 	resp := map[string]any{"id": id, "hasPassword": salt != nil}
+	if openSecret.Valid {
+		resp["secret"] = openSecret.String
+	}
 	if salt != nil {
 		var kdf KDFParams
 		_ = json.Unmarshal([]byte(params.String), &kdf)
@@ -257,5 +300,18 @@ func (a *App) handleShareBlob(w http.ResponseWriter, r *http.Request) error {
 	if !ok || t.shareID != id {
 		return errf(http.StatusForbidden, "download ticket expired, reopen the link")
 	}
-	return a.serveBlob(w, r, t.itemID)
+	item := r.URL.Query().Get("item")
+	if item == "" || item == t.itemID {
+		return a.serveBlob(w, r, t.itemID)
+	}
+	// Folder links may also serve the files listed in their manifest.
+	var n int
+	if err := a.db.QueryRow(`SELECT COUNT(*) FROM share_items s JOIN items i ON i.id = s.item_id
+		WHERE s.share_id = ? AND s.item_id = ? AND i.ready = 1`, id, item).Scan(&n); err != nil {
+		return err
+	}
+	if n != 1 {
+		return errf(http.StatusNotFound, "this file is no longer available")
+	}
+	return a.serveBlob(w, r, item)
 }

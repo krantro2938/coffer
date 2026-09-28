@@ -30,9 +30,10 @@ beforeAll(() => {
   }) as typeof fetch
 })
 
-async function openShare(url: string, password?: string) {
-  const [, id, secret] = url.match(/\/s\/(\w+)#(\w+)/)!
+async function openShare(url: string, password?: string, item?: { id: string; key: string; chunkSize: number; chunkCount: number; cipherSize: number }) {
+  const [, id, frag] = url.match(/\/s\/(\w+)(?:#(\w+))?/)!
   const info = await api<ShareInfo>(`/api/s/${id}`)
+  const secret = frag ?? info.secret!
   const pwKey = info.hasPassword ? await stretch(password!, fromB64(info.pwSalt!), info.pwKdf!) : undefined
   const keys = await shareKeys(b32decode(secret)!, pwKey)
   const open = await api<ShareOpen>(`/api/s/${id}/open`, { body: { access: toB64(keys.access) } })
@@ -43,7 +44,14 @@ async function openShare(url: string, password?: string) {
     url: `/api/s/${id}/blob`, headers: { "X-Ticket": open.ticket }, fileKey,
     chunkSize: open.chunkSize, chunkCount: open.chunkCount, size: open.size, type: meta.type,
   })
-  return { meta, blob, open }
+  let file: Blob | undefined
+  if (item) {
+    file = await downloadToBlob({
+      url: `/api/s/${id}/blob?item=${item.id}`, headers: { "X-Ticket": open.ticket }, fileKey: fromB64(item.key),
+      chunkSize: item.chunkSize, chunkCount: item.chunkCount, size: item.cipherSize, type: "",
+    })
+  }
+  return { meta, blob, open, file }
 }
 
 run("coffer end-to-end", () => {
@@ -96,6 +104,24 @@ run("coffer end-to-end", () => {
     const got = await openShare(share.url)
     expect(new Uint8Array(await got.blob.arrayBuffer())).toEqual(data)
     expect(got.open.viewsLeft).toBe(4)
+    cookie = shareCookie
+
+    // Folder link: an encrypted manifest plus the files it may serve.
+    const manifest = { v: 1, name: "Folder", createdAt: 0, files: [{
+      id: row.id, path: "sub/big.bin", name: "big.bin", type: "", size: data.length, key: toB64(fk),
+      chunkSize: row.chunkSize, chunkCount: row.chunkCount, cipherSize: row.size,
+    }] }
+    const bundle = await storeItem({ kind: "bundle", name: "Folder", type: "application/x-coffer-bundle", blob: new Blob([JSON.stringify(manifest)]), masterKey: mk })
+    const folderShare = await createShare(bundle.id, bundle.fileKey, { shortLink: true }, { masterKey: mk, itemIds: [row.id] })
+    expect(folderShare.url).not.toContain("#")
+    cookie = ""
+    const fo = await openShare(folderShare.url, undefined, manifest.files[0])
+    expect(JSON.parse(await fo.blob.text()).files[0].path).toBe("sub/big.bin")
+    expect(new Uint8Array(await fo.file!.arrayBuffer())).toEqual(data)
+    // A folder link must not serve files outside its manifest.
+    const other = await storeItem({ kind: "text", name: "x", type: "text/plain", blob: new Blob(["nope"]), expiresIn: 3600 })
+    const res = await fetch(`/api/s/${folderShare.id}/blob?item=${other.id}`, { headers: { "X-Ticket": fo.open.ticket } })
+    expect(res.status).toBe(404)
     cookie = shareCookie
 
     // Server must never hold plaintext: the name should not appear in the drive JSON.

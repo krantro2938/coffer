@@ -62,7 +62,11 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func readJSON(w http.ResponseWriter, r *http.Request, v any) error {
-	r.Body = http.MaxBytesReader(w, r.Body, 64<<10)
+	return readJSONLimit(w, r, v, 64<<10)
+}
+
+func readJSONLimit(w http.ResponseWriter, r *http.Request, v any, limit int64) error {
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(v); err != nil {
@@ -115,9 +119,10 @@ func hmacSHA(key, msg []byte) []byte {
 func equal(a, b []byte) bool { return subtle.ConstantTimeCompare(a, b) == 1 }
 
 var (
-	itemIDRe  = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{26}$`)
-	shareIDRe = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{7}$`)
-	emailRe   = regexp.MustCompile(`^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$`)
+	itemIDRe     = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{26}$`)
+	shareIDRe    = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{7}$`)
+	openSecretRe = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{16}$`)
+	emailRe      = regexp.MustCompile(`^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$`)
 )
 
 // normalizeShareID folds the characters people commonly mistype.

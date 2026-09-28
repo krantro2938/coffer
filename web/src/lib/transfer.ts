@@ -18,6 +18,7 @@ import {
   KDF_DEFAULT,
   SHARE_SECRET_BYTES,
   sealShareSecret,
+  type ItemKind,
   type ItemMeta,
 } from "./crypto"
 
@@ -37,12 +38,14 @@ export type StoredItem = {
  * that the server deletes after `expiresIn` seconds.
  */
 export async function storeItem(opts: {
-  kind: "file" | "text"
+  kind: ItemKind
   name: string
   type: string
   blob: Blob
   masterKey?: CryptoKey
   folderId?: string | null
+  /** Stored in the encrypted metadata only (for folder-share manifests). */
+  metaFolderId?: string
   expiresIn?: number
   onProgress?: Progress
   signal?: AbortSignal
@@ -51,6 +54,7 @@ export async function storeItem(opts: {
   const fileKey = randomBytes(32)
   const keys = await itemKeys(fileKey)
   const meta: ItemMeta = { name: opts.name, type: opts.type || "application/octet-stream", size: opts.blob.size, v: 1 }
+  if (opts.metaFolderId) meta.folderId = opts.metaFolderId
   const chunkCount = Math.max(1, Math.ceil(opts.blob.size / CHUNK_SIZE))
 
   const created = await api<{ id: string; manageToken?: string; expiresAt?: number }>("/api/items", {
@@ -97,16 +101,18 @@ export type ShareOptions = {
   password?: string
   maxViews?: number | null
   expiresIn?: number | null
+  /** Short link: the server keeps the secret, so /s/<id> alone opens it. */
+  shortLink?: boolean
 }
 
-export type CreatedShare = { id: string; secret: string; url: string; expiresAt: number | null }
+export type CreatedShare = { id: string; secret: string; url: string; short: boolean; expiresAt: number | null }
 
 /** Creates a share link. The secret lives only in the URL fragment, never on the server. */
 export async function createShare(
   itemId: string,
   fileKey: Uint8Array<ArrayBuffer>,
   opts: ShareOptions,
-  auth: { manageToken?: string; masterKey?: CryptoKey | null } = {},
+  auth: { manageToken?: string; masterKey?: CryptoKey | null; itemIds?: string[] } = {},
 ): Promise<CreatedShare> {
   const secretBytes = randomBytes(SHARE_SECRET_BYTES)
   const secret = b32encode(secretBytes)
@@ -128,14 +134,17 @@ export async function createShare(
       pwKdf: pwSalt ? KDF_DEFAULT : undefined,
       maxViews: opts.maxViews ?? undefined,
       expiresIn: opts.expiresIn ?? undefined,
+      itemIds: auth.itemIds,
+      openSecret: opts.shortLink ? secret : undefined,
     },
     headers: auth.manageToken ? { "X-Manage-Token": auth.manageToken } : {},
   })
-  return { id: res.id, secret, url: shareUrl(res.id, secret), expiresAt: res.expiresAt }
+  const short = !!opts.shortLink
+  return { id: res.id, secret, url: shareUrl(res.id, short ? null : secret), short, expiresAt: res.expiresAt }
 }
 
-export function shareUrl(id: string, secret: string) {
-  return `${location.origin}/s/${id}#${secret}`
+export function shareUrl(id: string, secret: string | null) {
+  return secret ? `${location.origin}/s/${id}#${secret}` : `${location.origin}/s/${id}`
 }
 
 /**

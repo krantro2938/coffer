@@ -216,7 +216,10 @@ export async function openName(mk: CryptoKey, sealed: Uint8Array<ArrayBuffer>) {
 
 // -------------------------------------------------------------------- items
 
-export type ItemMeta = { name: string; type: string; size: number; v: 1 }
+export type ItemKind = "file" | "text" | "bundle"
+
+/** `folderId` ties a folder-share manifest ("bundle") back to the folder it snapshots. */
+export type ItemMeta = { name: string; type: string; size: number; v: 1; folderId?: string }
 
 export type ItemKeys = { content: CryptoKey; meta: CryptoKey }
 

@@ -39,9 +39,9 @@ export function ResponsiveDialog({
   if (desktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={cn("gap-5 rounded-2xl p-6 sm:max-w-md", className)}>
+        <DialogContent className={cn("grid-cols-[minmax(0,1fr)] gap-5 rounded-2xl p-6 sm:max-w-md", className)}>
           <DialogHeader>
-            <DialogTitle className="text-lg font-medium tracking-tight">{title}</DialogTitle>
+            <DialogTitle className="min-w-0 text-lg font-medium tracking-tight break-words">{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
           {children}
@@ -54,10 +54,10 @@ export function ResponsiveDialog({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="rounded-t-3xl">
         <DrawerHeader className="text-left">
-          <DrawerTitle className="text-lg font-medium tracking-tight">{title}</DrawerTitle>
+          <DrawerTitle className="min-w-0 text-lg font-medium tracking-tight break-words">{title}</DrawerTitle>
           {description && <DrawerDescription>{description}</DrawerDescription>}
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-2">{children}</div>
+        <div className="min-w-0 overflow-y-auto px-4 pb-2">{children}</div>
         {footer && <DrawerFooter className="pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</DrawerFooter>}
         {!footer && <div className="pb-[max(1rem,env(safe-area-inset-bottom))]" />}
       </DrawerContent>

@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({ component: Home })
 
 function Home() {
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="flex min-h-svh flex-col overflow-x-clip">
       <SiteHeader />
       <main className="flex-1">
         <Hero />
@@ -33,9 +33,13 @@ function Home() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      {/* Soft warm arc behind the composer, echoing the concentric rings of a lock dial. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[22rem] -z-10 flex justify-center">
+    <section className="relative">
+      {/* Soft warm arc behind the composer, echoing the concentric rings of a lock dial.
+          It fades out rather than stopping at the section edge, so it can drift into the next one. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[22rem] -z-10 flex justify-center [mask-image:linear-gradient(to_bottom,black_35%,transparent_85%)]"
+      >
         <div className="relative size-[56rem] shrink-0">
           <div className="absolute inset-0 rounded-full border border-foreground/[0.06]" />
           <div className="absolute inset-24 rounded-full border border-foreground/[0.06]" />
@@ -43,7 +47,7 @@ function Hero() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 sm:pt-20">
+      <div className="mx-auto max-w-6xl px-4 pt-12 pb-28 sm:px-6 sm:pt-20 sm:pb-44">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
             <span className="grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
@@ -141,7 +145,7 @@ const pillars = [
 
 function Pillars() {
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+    <section className="relative mx-auto max-w-6xl px-4 pb-28 sm:px-6 sm:pb-44">
       <p className="mx-auto max-w-3xl text-center text-2xl leading-snug font-medium tracking-tight text-balance sm:text-4xl">
         Private by construction — not by promise. Even the people running this server can't read what you share.
       </p>
@@ -160,7 +164,7 @@ function Pillars() {
 
 function HowItWorks() {
   return (
-    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 sm:px-6">
+    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-28 sm:px-6 sm:pb-44">
       <div className="text-center">
         <p className="eyebrow">How it works</p>
         <h2 className="mt-3 text-3xl font-medium sm:text-5xl">
@@ -246,7 +250,7 @@ const stats = [
 function NoiseBand() {
   return (
     <section className="bg-forest text-forest-foreground">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 pt-16 sm:px-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 pt-20 sm:px-6 sm:pt-28 lg:grid-cols-[1.2fr_1fr] lg:items-end">
         <div>
           <p className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase opacity-60">Built to be breached</p>
           <h2 className="mt-3 text-3xl font-medium sm:text-4xl">
@@ -279,7 +283,7 @@ function NoiseBand() {
 
 function DriveCta() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+    <section className="mx-auto max-w-6xl px-4 py-28 sm:px-6 sm:py-44">
       <div className="grid items-center gap-10 overflow-hidden rounded-3xl border bg-card p-6 sm:p-10 lg:grid-cols-2">
         <div>
           <p className="eyebrow">Optional account</p>

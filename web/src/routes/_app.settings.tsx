@@ -7,9 +7,9 @@ import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useDrive } from "@/lib/drive"
+import { UsageBar } from "@/components/usage-bar"
 import { formatBytes, shortDate } from "@/lib/format"
 import { useSession } from "@/lib/session"
 import { useTheme, type Theme } from "@/lib/theme"
@@ -57,12 +57,14 @@ function SettingsPage() {
                 {formatBytes(usage.used)} of {formatBytes(usage.quota)}
               </span>
             </div>
-            <Progress value={Math.min(100, (usage.used / usage.quota) * 100)} className="mt-2 h-1.5" />
+            <div className="mt-2">
+              <UsageBar used={usage.used} quota={usage.quota} />
+            </div>
           </div>
         </div>
       </Section>
 
-      <Section title="Appearance" description="Follows your system by default.">
+      <Section title="Appearance" description="Light by default. Dark and system are one click away.">
         <ToggleGroup
           type="single"
           value={theme}

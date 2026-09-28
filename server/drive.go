@@ -244,6 +244,7 @@ func (a *App) handleDeleteFolder(w http.ResponseWriter, r *http.Request) error {
 type itemRow struct {
 	ID         string
 	UserID     sql.NullString
+	Kind       string
 	Size       int64
 	ChunkSize  int64
 	ChunkCount int64
@@ -256,8 +257,8 @@ type itemRow struct {
 
 func (a *App) loadItem(id string) (*itemRow, error) {
 	var it itemRow
-	err := a.db.QueryRow(`SELECT id, user_id, size, chunk_size, chunk_count, recv_chunks, recv_bytes, ready, manage_hash, expires_at
-		FROM items WHERE id = ?`, id).Scan(&it.ID, &it.UserID, &it.Size, &it.ChunkSize, &it.ChunkCount,
+	err := a.db.QueryRow(`SELECT id, user_id, kind, size, chunk_size, chunk_count, recv_chunks, recv_bytes, ready, manage_hash, expires_at
+		FROM items WHERE id = ?`, id).Scan(&it.ID, &it.UserID, &it.Kind, &it.Size, &it.ChunkSize, &it.ChunkCount,
 		&it.RecvChunks, &it.RecvBytes, &it.Ready, &it.ManageHash, &it.ExpiresAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errNotFound
@@ -311,7 +312,7 @@ func (a *App) handleCreateItem(w http.ResponseWriter, r *http.Request) error {
 	if err := readJSON(w, r, &req); err != nil {
 		return err
 	}
-	if !itemIDRe.MatchString(req.ID) || (req.Kind != "file" && req.Kind != "text") ||
+	if !itemIDRe.MatchString(req.ID) || (req.Kind != "file" && req.Kind != "text" && req.Kind != "bundle") ||
 		len(req.EncMeta) < 29 || len(req.EncMeta) > maxMetaSize ||
 		req.ChunkSize < minChunkSize || req.ChunkSize > maxChunkSize || req.ChunkCount < 1 ||
 		req.ChunkCount > 1<<20 ||
@@ -356,7 +357,7 @@ func (a *App) handleCreateItem(w http.ResponseWriter, r *http.Request) error {
 		if !a.anonLimit.allow(clientIP(r, a.cfg.TrustProxy)) {
 			return errf(http.StatusTooManyRequests, "upload limit reached, try again later")
 		}
-		if req.WrappedKey != nil || req.FolderID != nil {
+		if req.WrappedKey != nil || req.FolderID != nil || req.Kind == "bundle" {
 			return errf(http.StatusBadRequest, "anonymous drops cannot be stored in a drive")
 		}
 		if plain > a.cfg.AnonMaxFileSize {

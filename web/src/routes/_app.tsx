@@ -2,6 +2,11 @@ import { useEffect, useState } from "react"
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 import {
+  ChevronsUpDownIcon,
+  LockKeyholeOpenIcon,
+  MonitorIcon,
+  MoonIcon,
+  SunIcon,
   HardDriveIcon,
   HomeIcon,
   Link2Icon,
@@ -15,19 +20,22 @@ import { Brand, LogoMark } from "@/components/brand"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
+import { UsageBar } from "@/components/usage-bar"
 import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useDrive } from "@/lib/drive"
 import { formatBytes } from "@/lib/format"
 import { useSession } from "@/lib/session"
+import { useTheme, type Theme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app")({ component: AppLayout })
@@ -71,10 +79,11 @@ function AppLayout() {
 
 function Sidebar() {
   const { me, lock, logout } = useSession()
+  const { theme, setTheme } = useTheme()
   const { data } = useDrive()
   const usage = data?.usage ?? (me ? { used: me.used, quota: me.quota } : null)
   return (
-    <aside className="sticky top-0 hidden h-svh flex-col border-r bg-sidebar p-4 md:flex">
+    <aside className="sticky top-0 hidden h-svh min-w-0 flex-col overflow-hidden border-r bg-sidebar p-4 md:flex">
       <Brand to="/drive" className="px-2 py-1.5" />
       <nav className="mt-8 grid gap-1">
         {nav.map(({ to, label, icon: Icon }) => (
@@ -95,42 +104,55 @@ function Sidebar() {
         </Link>
       </nav>
 
-      <div className="mt-auto grid gap-4">
+      <div className="mt-auto grid min-w-0 gap-3">
         {usage && (
-          <div className="rounded-2xl border bg-card p-3.5">
-            <div className="flex items-center justify-between text-xs">
+          <div className="grid gap-2 rounded-xl border bg-card px-3 py-2.5">
+            <div className="flex items-baseline justify-between gap-2 text-xs">
               <span className="font-medium">Storage</span>
-              <span className="text-muted-foreground">
-                {formatBytes(usage.used)} / {formatBytes(usage.quota)}
+              <span className="truncate text-muted-foreground tabular-nums">
+                {formatBytes(usage.used)} of {formatBytes(usage.quota)}
               </span>
             </div>
-            <Progress value={Math.min(100, (usage.used / usage.quota) * 100)} className="mt-2.5 h-1.5" />
+            <UsageBar used={usage.used} quota={usage.quota} />
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1 px-1">
-            <p className="truncate text-sm font-medium">{me?.email}</p>
-            <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <LockKeyholeIcon className="size-3" /> Unlocked
-            </p>
-          </div>
-          <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Account">
-                <LogOutIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="min-w-44">
-              <DropdownMenuItem onClick={() => lock()}>
-                <LockIcon /> Lock drive
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => logout()} variant="destructive">
-                <LogOutIcon /> Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex min-w-0 items-center gap-2.5 rounded-xl p-1.5 text-left transition-colors hover:bg-sidebar-accent">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground uppercase">
+                {me?.email[0]}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{me?.email}</span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <LockKeyholeOpenIcon className="size-3" /> Unlocked
+                </span>
+              </span>
+              <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="top" className="w-(--radix-dropdown-menu-trigger-width) min-w-52">
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Theme</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
+              <DropdownMenuRadioItem value="light">
+                <SunIcon /> Light
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">
+                <MoonIcon /> Dark
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="system">
+                <MonitorIcon /> System
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => lock()}>
+              <LockIcon /> Lock drive
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => logout()} variant="destructive">
+              <LogOutIcon /> Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   )

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -41,6 +41,7 @@ import {
   NoteDialog,
   PreviewDialog,
   ShareDialog,
+  type ShareTarget,
   canPreview,
   downloadItem,
 } from "@/components/drive-dialogs"
@@ -80,7 +81,7 @@ function DrivePage() {
   const [query, setQuery] = useState("")
   const [dialog, setDialog] = useState<Dialog>(null)
   const [preview, setPreview] = useState<DItem | null>(null)
-  const [sharing, setSharing] = useState<DItem | null>(null)
+  const [sharing, setSharing] = useState<ShareTarget | null>(null)
   const [uploads, setUploads] = useState<Upload[]>([])
   const [dragging, setDragging] = useState(false)
   const dragDepth = useRef(0)
@@ -88,6 +89,14 @@ function DrivePage() {
   const uploadChain = useRef(Promise.resolve())
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["drive"] })
+
+  // Tidy the upload tray away shortly after everything has finished.
+  const settled = uploads.length > 0 && uploads.every((u) => u.state === "done")
+  useEffect(() => {
+    if (!settled) return
+    const t = setTimeout(() => setUploads([]), 4000)
+    return () => clearTimeout(t)
+  }, [settled])
   const closeDialog = useCallback(() => setDialog(null), [])
 
   const folderMap = useMemo(() => new Map(data?.folders.map((f) => [f.id, f]) ?? []), [data])
@@ -114,6 +123,23 @@ function DrivePage() {
     () => (data?.items ?? []).filter((i) => (q ? i.name.toLowerCase().includes(q) : i.folderId === folderId)),
     [data, folderId, q],
   )
+  const folderSizes = useMemo(() => {
+    const direct = new Map<string, number>()
+    for (const i of data?.items ?? []) if (i.folderId) direct.set(i.folderId, (direct.get(i.folderId) ?? 0) + i.size)
+    const kids = new Map<string, string[]>()
+    for (const f of data?.folders ?? []) if (f.parentId) kids.set(f.parentId, [...(kids.get(f.parentId) ?? []), f.id])
+    const total = new Map<string, number>()
+    const sum = (id: string, seen = new Set<string>()): number => {
+      if (total.has(id)) return total.get(id)!
+      if (seen.has(id)) return 0
+      seen.add(id)
+      const t = (direct.get(id) ?? 0) + (kids.get(id) ?? []).reduce((n, k) => n + sum(k, seen), 0)
+      total.set(id, t)
+      return t
+    }
+    for (const f of data?.folders ?? []) sum(f.id)
+    return total
+  }, [data])
   const counts = useMemo(() => {
     const m = new Map<string | null, number>()
     for (const f of data?.folders ?? []) m.set(f.parentId, (m.get(f.parentId) ?? 0) + 1)
@@ -298,41 +324,50 @@ function DrivePage() {
           />
         ) : (
           <div className="overflow-hidden rounded-2xl border bg-card">
-            <div className="hidden grid-cols-[1fr_7rem_8rem_2.5rem] gap-4 border-b px-4 py-2.5 text-xs text-muted-foreground md:grid">
+            <div className="hidden grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] gap-4 border-b px-5 py-2.5 text-xs text-muted-foreground md:grid">
               <span>Name</span>
               <span>Size</span>
               <span>Added</span>
               <span />
             </div>
             <ul className="divide-y">
-              {folders.map((f) => (
-                <Row
-                  key={f.id}
-                  glyph={<FileGlyph kind="folder" />}
-                  name={f.name}
-                  sub={`${counts.get(f.id) ?? 0} items`}
-                  size="—"
-                  date={shortDate(f.createdAt)}
-                  onOpen={() => {
-                    setQuery("")
-                    navigate({ to: "/drive", search: { folder: f.id } })
-                  }}
-                  menu={
-                    <>
-                      <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
-                        <PencilIcon /> Rename
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
-                        <FolderInputIcon /> Move
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
-                        <Trash2Icon /> Delete
-                      </DropdownMenuItem>
-                    </>
-                  }
-                />
-              ))}
+              {folders.map((f) => {
+                const links = data?.sharesByFolder.get(f.id)?.length ?? 0
+                const n = counts.get(f.id) ?? 0
+                return (
+                  <Row
+                    key={f.id}
+                    glyph={<FileGlyph kind="folder" />}
+                    name={f.name}
+                    sub={`Folder · ${n} item${n === 1 ? "" : "s"}`}
+                    size={formatBytes(folderSizes.get(f.id) ?? 0)}
+                    date={shortDate(f.createdAt)}
+                    links={links}
+                    onOpen={() => {
+                      setQuery("")
+                      navigate({ to: "/drive", search: { folder: f.id } })
+                    }}
+                    onShare={() => setSharing({ type: "folder", folder: f })}
+                    menu={
+                      <>
+                        <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
+                          <Link2Icon /> Share folder
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
+                          <PencilIcon /> Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
+                          <FolderInputIcon /> Move
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
+                          <Trash2Icon /> Delete
+                        </DropdownMenuItem>
+                      </>
+                    }
+                  />
+                )
+              })}
               {items.map((i) => {
                 const links = data?.sharesByItem.get(i.id)?.length ?? 0
                 return (
@@ -341,21 +376,12 @@ function DrivePage() {
                     glyph={<FileGlyph kind={i.kind} type={i.type} />}
                     name={i.name}
                     muted={i.broken}
-                    sub={
-                      <>
-                        {i.kind === "text" ? "Note" : formatBytes(i.size)}
-                        {links > 0 && (
-                          <span className="ml-2 inline-flex items-center gap-1 text-primary">
-                            <Link2Icon className="size-3" /> {links}
-                          </span>
-                        )}
-                      </>
-                    }
-                    size={i.kind === "text" ? "Note" : formatBytes(i.size)}
+                    sub={i.broken ? "Can't be decrypted" : i.kind === "text" ? "Note" : describeType(i.type, i.name)}
+                    size={formatBytes(i.size)}
                     date={shortDate(i.createdAt)}
                     links={links}
                     onOpen={() => openItem(i)}
-                    onShare={i.broken ? undefined : () => setSharing(i)}
+                    onShare={i.broken ? undefined : () => setSharing({ type: "item", item: i })}
                     menu={
                       <>
                         {canPreview(i) && (
@@ -368,7 +394,7 @@ function DrivePage() {
                             <DropdownMenuItem onClick={() => downloadItem(i)}>
                               <DownloadIcon /> Download
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSharing(i)}>
+                            <DropdownMenuItem onClick={() => setSharing({ type: "item", item: i })}>
                               <Link2Icon /> Share link
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDialog({ t: "renameItem", i })}>
@@ -459,8 +485,8 @@ function DrivePage() {
       />
       <PreviewDialog item={preview} onOpenChange={(o) => !o && setPreview(null)} />
       <ShareDialog
-        item={sharing}
-        shares={sharing ? (data?.sharesByItem.get(sharing.id) ?? []) : []}
+        target={sharing}
+        drive={data}
         onOpenChange={(o) => !o && setSharing(null)}
       />
     </div>
@@ -522,32 +548,37 @@ function Row({
 }: {
   glyph: React.ReactNode
   name: string
-  sub: React.ReactNode
+  sub: string
   size: string
   date: string
-  links?: number
+  links: number
   muted?: boolean
   onOpen: () => void
   onShare?: () => void
   menu: React.ReactNode
 }) {
   return (
-    <li className="group grid grid-cols-[1fr_auto] items-center gap-2 px-2 py-1.5 transition-colors hover:bg-muted/50 md:grid-cols-[1fr_7rem_8rem_auto] md:gap-4 md:px-4">
-      <button onClick={onOpen} className="flex min-w-0 items-center gap-3 rounded-xl p-1.5 text-left">
+    <li className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 transition-colors hover:bg-muted/40 md:grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] md:gap-4 md:px-3">
+      <button onClick={onOpen} className="flex h-16 min-w-0 items-center gap-3 rounded-xl px-2 text-left">
         {glyph}
         <span className="min-w-0">
           <span className={cn("block truncate text-sm font-medium", muted && "text-muted-foreground italic")}>{name}</span>
-          <span className="block text-xs text-muted-foreground md:hidden">{sub}</span>
-          {links ? (
-            <span className="hidden items-center gap-1 text-xs text-primary md:flex">
-              <Link2Icon className="size-3" /> {links} active link{links === 1 ? "" : "s"}
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="truncate">
+              {sub}
+              <span className="md:hidden"> · {size}</span>
             </span>
-          ) : null}
+            {links > 0 && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-secondary px-1.5 py-px text-[0.6875rem] text-secondary-foreground">
+                <Link2Icon className="size-3" /> {links}
+              </span>
+            )}
+          </span>
         </span>
       </button>
-      <span className="hidden text-sm text-muted-foreground md:block">{size}</span>
-      <span className="hidden text-sm text-muted-foreground md:block">{date}</span>
-      <div className="flex items-center">
+      <span className="hidden text-sm text-muted-foreground tabular-nums md:block">{size}</span>
+      <span className="hidden text-sm text-muted-foreground tabular-nums md:block">{date}</span>
+      <div className="flex items-center justify-end">
         {onShare && (
           <Button
             variant="ghost"
@@ -572,6 +603,15 @@ function Row({
       </div>
     </li>
   )
+}
+
+function describeType(type: string, name: string) {
+  const ext = name.includes(".") ? name.split(".").pop()!.toUpperCase() : ""
+  if (ext && ext.length <= 5) return `${ext} file`
+  if (type.startsWith("image/")) return "Image"
+  if (type.startsWith("video/")) return "Video"
+  if (type.startsWith("audio/")) return "Audio"
+  return "File"
 }
 
 function EmptyState({ searching, onUpload, onNote }: { searching: boolean; onUpload: () => void; onNote: () => void }) {
@@ -614,8 +654,8 @@ function UploadTray({ uploads, onClear }: { uploads: Upload[]; onClear: () => vo
   if (uploads.length === 0) return null
   const active = uploads.filter((u) => u.state === "uploading" || u.state === "queued").length
   return (
-    <div className="fixed right-4 bottom-[calc(10rem+env(safe-area-inset-bottom))] left-4 z-30 rounded-2xl border bg-popover p-3 shadow-soft sm:left-auto sm:w-80 md:bottom-6">
-      <div className="flex items-center justify-between px-1 pb-2">
+    <div className="fixed right-4 bottom-[calc(10rem+env(safe-area-inset-bottom))] left-4 z-30 overflow-hidden rounded-2xl border bg-popover shadow-soft sm:left-auto sm:w-80 md:bottom-6">
+      <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
         <p className="text-sm font-medium">{active ? `Encrypting ${active} file${active === 1 ? "" : "s"}…` : "Uploads complete"}</p>
         {!active && (
           <Button variant="ghost" size="icon-xs" onClick={onClear} aria-label="Dismiss">
@@ -623,10 +663,10 @@ function UploadTray({ uploads, onClear }: { uploads: Upload[]; onClear: () => vo
           </Button>
         )}
       </div>
-      <ul className="grid max-h-60 gap-2 overflow-y-auto">
+      <ul className="grid max-h-60 gap-1.5 overflow-x-hidden overflow-y-auto px-3 pb-3 [scrollbar-width:thin]">
         {uploads.map((u) => (
-          <li key={u.key} className="grid gap-1.5 rounded-xl bg-muted/50 px-3 py-2">
-            <div className="flex items-center gap-2 text-sm">
+          <li key={u.key} className="grid min-w-0 gap-1.5 rounded-xl bg-muted/50 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
               {u.state === "done" ? (
                 <CheckCircle2Icon className="size-4 shrink-0 text-primary" />
               ) : u.state === "error" ? (
@@ -634,11 +674,13 @@ function UploadTray({ uploads, onClear }: { uploads: Upload[]; onClear: () => vo
               ) : (
                 <Loader2Icon className={cn("size-4 shrink-0 text-muted-foreground", u.state === "uploading" && "animate-spin")} />
               )}
-              <span className="flex-1 truncate">{u.name}</span>
-              {u.state === "uploading" && <span className="font-mono text-xs text-muted-foreground">{Math.round(u.progress * 100)}%</span>}
+              <span className="min-w-0 flex-1 truncate">{u.name}</span>
+              {u.state === "uploading" && (
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">{Math.round(u.progress * 100)}%</span>
+              )}
             </div>
             {u.state === "uploading" && <Progress value={u.progress * 100} className="h-1" />}
-            {u.error && <p className="text-xs text-destructive">{u.error}</p>}
+            {u.error && <p className="text-xs break-words text-destructive">{u.error}</p>}
           </li>
         ))}
       </ul>
