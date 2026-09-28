@@ -1,0 +1,65 @@
+# Coffer — end-to-end encrypted file & text sharing.
+#
+#   Local / behind your own proxy:   docker compose up -d        → http://localhost:8080
+#   Public with automatic HTTPS:     DOMAIN=drop.example.com TRUST_PROXY=true HSTS=true \
+#                                      docker compose --profile tls up -d
+#
+# Browsers only allow WebCrypto on HTTPS or localhost, so use the `tls` profile
+# (or your own TLS proxy) for anything other than local use.
+
+services:
+  coffer:
+    build: .
+    image: coffer:latest
+    restart: unless-stopped
+    ports:
+      - "${COFFER_PORT:-8080}:8080"
+    environment:
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}   # let people create drives
+      ALLOW_ANONYMOUS: ${ALLOW_ANONYMOUS:-true}         # allow drops without an account
+      MAX_FILE_MB: ${MAX_FILE_MB:-5120}                 # per file, signed-in users
+      ANON_MAX_FILE_MB: ${ANON_MAX_FILE_MB:-100}        # per file, anonymous drops
+      USER_QUOTA_MB: ${USER_QUOTA_MB:-10240}            # drive size per account
+      ANON_MAX_EXPIRY_HOURS: ${ANON_MAX_EXPIRY_HOURS:-168}
+      SESSION_DAYS: ${SESSION_DAYS:-14}
+      TRUST_PROXY: ${TRUST_PROXY:-false}                # set true when behind a reverse proxy
+      HSTS: ${HSTS:-false}
+    volumes:
+      - coffer-data:/data
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  # Optional TLS front-end with automatic Let's Encrypt certificates.
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["tls"]
+    restart: unless-stopped
+    depends_on: [coffer]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+configs:
+  caddyfile:
+    content: |
+      {$$DOMAIN} {
+        encode zstd gzip
+        reverse_proxy coffer:8080 {
+          header_up X-Forwarded-Proto {scheme}
+        }
+      }
+
+volumes:
+  coffer-data:
+  caddy-data:
+  caddy-config:
