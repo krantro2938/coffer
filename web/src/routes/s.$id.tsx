@@ -218,6 +218,10 @@ function SharePage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter the password you were given"
                       autoComplete="off"
+                      data-1p-ignore
+                      data-lpignore="true"
+                      data-bwignore="true"
+                      data-form-type="other"
                       autoFocus={state.s === "ready"}
                     />
                   </div>

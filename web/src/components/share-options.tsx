@@ -69,7 +69,11 @@ export function ShareOptionsFields({
               <div className="relative">
                 <Input
                   type={show ? "text" : "password"}
-                  autoComplete="new-password"
+                  autoComplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-bwignore="true"
+                  data-form-type="other"
                   placeholder="Link password"
                   value={value.password}
                   onChange={(e) => set({ password: e.target.value })}

@@ -158,6 +158,20 @@
   h1, h2, h3 {
     letter-spacing: -0.035em;
   }
+  /* Everything clickable gets a pointer (Tailwind v4 defaults buttons to the arrow). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([data-disabled]),
+  [role="menuitemradio"]:not([data-disabled]),
+  [role="menuitemcheckbox"]:not([data-disabled]),
+  [role="tab"]:not(:disabled),
+  [role="switch"]:not(:disabled),
+  [role="combobox"]:not(:disabled),
+  summary,
+  label:has(> [role="switch"]) {
+    cursor: pointer;
+  }
   ::selection {
     background: var(--lavender-soft);
   }

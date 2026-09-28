@@ -411,7 +411,7 @@ export function ShareDialog({
       }
       className="sm:max-w-lg"
     >
-      <div className="grid gap-5">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
         {created ? (
           <>
             <ShareResult share={created} hasPassword={opts.usePassword} maxViews={opts.maxViews || null} />

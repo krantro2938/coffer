@@ -146,7 +146,7 @@ export function DropComposer() {
     <div className="grid gap-4">
       <div className="relative rounded-[1.75rem] border bg-card/90 p-2 shadow-soft backdrop-blur-sm">
         {phase.step === "done" ? (
-          <div className="grid gap-5 p-4 sm:p-5">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="flex items-center gap-2 font-medium">

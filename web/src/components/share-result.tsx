@@ -29,10 +29,10 @@ export function ShareResult({
   const canShare = typeof navigator !== "undefined" && "share" in navigator
 
   return (
-    <div className={cn("grid gap-4", className)}>
-      <div className="grid gap-1.5">
+    <div className={cn("grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4", className)}>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
         <span className="eyebrow">Share link</span>
-        <div className="flex items-center gap-2 rounded-xl border bg-card p-1.5 pl-3.5">
+        <div className="flex min-w-0 items-center gap-2 rounded-xl border bg-card p-1.5 pl-3.5">
           <code className="min-w-0 flex-1 truncate font-mono text-[0.8125rem]" title={share.url}>{share.url}</code>
           <Button size="sm" onClick={() => copy(share.url, "Link copied")} className="shrink-0">
             {copied === share.url ? <CheckIcon /> : <CopyIcon />}
@@ -41,14 +41,14 @@ export function ShareResult({
         </div>
       </div>
 
-      <div className="grid gap-1.5">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
         <span className="eyebrow">Or type this code at /receive</span>
         <button
           type="button"
           onClick={() => copy(code, "Code copied")}
           className="group flex items-center justify-between gap-3 rounded-xl border border-dashed bg-muted/40 px-3.5 py-3 text-left transition-colors hover:bg-muted"
         >
-          <span className="font-mono text-[0.9375rem] tracking-wide">
+          <span className="min-w-0 font-mono text-[0.9375rem] tracking-wide break-all">
             <span className="font-semibold text-primary">{share.id}</span>
             {!share.short && <span className="text-muted-foreground"> {formatSecret(share.secret)}</span>}
           </span>
