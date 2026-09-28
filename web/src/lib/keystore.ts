@@ -16,7 +16,9 @@ function open(): Promise<IDBDatabase> {
 }
 
 async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest): Promise<T> {
-  const db = await open()
+  // Some private/locked-down browsers leave IndexedDB requests pending forever.
+  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("IndexedDB timeout")), 2000))
+  const db = await Promise.race([open(), timeout])
   return new Promise<T>((resolve, reject) => {
     const req = fn(db.transaction(STORE, mode).objectStore(STORE))
     req.onsuccess = () => resolve(req.result as T)

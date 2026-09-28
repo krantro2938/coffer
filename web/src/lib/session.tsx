@@ -92,8 +92,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setMasterKey(key)
         setStatus(key ? "unlocked" : "locked")
       } catch {
-        await clearKeys()
         setStatus("anonymous")
+        void clearKeys()
       }
     })()
   }, [])
