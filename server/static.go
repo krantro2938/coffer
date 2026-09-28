@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -28,6 +29,11 @@ func newStaticHandler(dir string) (*staticHandler, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The router's bootstrap script embeds a raw NUL inside a JS string
+	// literal. HTML parsers turn NUL into U+FFFD before hashing and executing,
+	// so the CSP hash would never match. Rewrite it as the equivalent JS escape.
+	shell = bytes.ReplaceAll(shell, []byte{0}, []byte(`\u0000`))
+
 	// Allow exactly the inline bootstrap scripts baked into the shell, by hash.
 	var hashes []string
 	for _, m := range inlineScriptRe.FindAllSubmatch(shell, -1) {

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Toaster } from "@/components/ui/sonner"
@@ -37,6 +37,11 @@ export const Route = createRootRoute({
 
 function App() {
   const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } }))
+  // The prerendered SPA shell has an empty outlet; rendering only after mount
+  // keeps hydration trivially consistent however fast route chunks load.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
   return (
     <QueryClientProvider client={qc}>
       <ThemeProvider>
