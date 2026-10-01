@@ -12,6 +12,7 @@ import { ShareOptionsFields, defaultShareOptions, toShareOptions } from "@/compo
 import { ShareResult } from "@/components/share-result"
 import { api, getConfig } from "@/lib/api"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { createShare, storeItem, type CreatedShare } from "@/lib/transfer"
 import { cn } from "@/lib/utils"
@@ -42,6 +43,7 @@ function saveDrops(d: Drop[]) {
 export function DropComposer() {
   const { status, masterKey } = useSession()
   const qc = useQueryClient()
+  const { t } = useI18n()
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig, staleTime: Infinity })
   const signedIn = status === "unlocked" && masterKey
   const anonMax = config?.anonMaxExpiry ?? 7 * 86400
@@ -69,8 +71,8 @@ export function DropComposer() {
   const pick = (f: File | undefined | null) => {
     if (!f) return
     if (limit && f.size > limit) {
-      toast.error(`That file is larger than ${formatBytes(limit)}`, {
-        description: signedIn ? undefined : "Create a free drive to share bigger files.",
+      toast.error(t("That file is larger than {size}", { size: formatBytes(limit) }), {
+        description: signedIn ? undefined : t("Create a free drive to share bigger files."),
       })
       return
     }
@@ -80,17 +82,17 @@ export function DropComposer() {
   const submit = async () => {
     if (!ready || busy) return
     if (status === "locked") {
-      toast.info("Unlock your drive first", { description: "You're signed in, so drops are saved to your drive." })
+      toast.info(t("Unlock your drive first"), { description: t("You're signed in, so drops are saved to your drive.") })
       return
     }
     const o = toShareOptions(opts)
     if (opts.usePassword && !o.password) {
-      toast.error("Enter a password or turn the password option off")
+      toast.error(t("Enter a password or turn the password option off"))
       return
     }
     try {
       const blob = mode === "file" ? file! : new Blob([text], { type: "text/plain;charset=utf-8" })
-      const name = mode === "file" ? file!.name : `Note ${new Date().toLocaleString()}`
+      const name = mode === "file" ? file!.name : t("Note {date}", { date: new Date().toLocaleString() })
       setPhase({ step: "working", label: "Encrypting & uploading", progress: 0 })
       const stored = await storeItem({
         kind: mode,
@@ -119,7 +121,7 @@ export function DropComposer() {
       setPhase({ step: "done", share })
     } catch (e) {
       setPhase({ step: "idle" })
-      toast.error((e as Error).message || "Something went wrong")
+      toast.error((e as Error).message || t("Something went wrong"))
     }
   }
 
@@ -139,7 +141,7 @@ export function DropComposer() {
     const next = drops.filter((x) => x.itemId !== d.itemId)
     setDrops(next)
     saveDrops(next)
-    toast.success("Deleted from the server")
+    toast.success(t("Deleted from the server"))
   }
 
   return (
@@ -153,18 +155,19 @@ export function DropComposer() {
                   <span className="grid size-6 place-items-center rounded-full bg-secondary text-secondary-foreground">
                     <LockIcon className="size-3.5" />
                   </span>
-                  Encrypted and ready to share
+                  {t("Encrypted and ready to share")}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {phase.share.short ? (
                     opts.usePassword ? (
-                      "Short link — the password is the key; share it separately."
+                      t("Short link — the password is the key; share it separately.")
                     ) : (
-                      "Short link — anyone with the code can open it."
+                      t("Short link — anyone with the code can open it.")
                     )
                   ) : (
                     <>
-                      The key is in the part after <span className="font-mono">#</span> — it never reaches our server.
+                      {t("The key is in the part after")} <span className="font-mono">#</span>{" "}
+                      {t("— it never reaches our server.")}
                     </>
                   )}
                 </p>
@@ -172,7 +175,7 @@ export function DropComposer() {
             </div>
             <ShareResult share={phase.share} hasPassword={opts.usePassword} maxViews={opts.maxViews || null} />
             <Button variant="secondary" onClick={reset} className="w-full">
-              <PlusIcon /> Share something else
+              <PlusIcon /> {t("Share something else")}
             </Button>
           </div>
         ) : (
@@ -181,14 +184,14 @@ export function DropComposer() {
               <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
                 <TabsList>
                   <TabsTrigger value="file" disabled={busy}>
-                    <FileUpIcon /> File
+                    <FileUpIcon /> {t("File")}
                   </TabsTrigger>
                   <TabsTrigger value="text" disabled={busy}>
-                    <TextIcon /> Text
+                    <TextIcon /> {t("Text")}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              <span className="eyebrow hidden sm:block">{signedIn ? "Saved to your drive" : "No account needed"}</span>
+              <span className="eyebrow hidden sm:block">{signedIn ? t("Saved to your drive") : t("No account needed")}</span>
             </div>
 
             {mode === "file" ? (
@@ -199,7 +202,7 @@ export function DropComposer() {
                     <p className="truncate text-sm font-medium">{file.name}</p>
                     <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
                   </div>
-                  <Button variant="ghost" size="icon-sm" onClick={() => setFile(null)} disabled={busy} aria-label="Remove file">
+                  <Button variant="ghost" size="icon-sm" onClick={() => setFile(null)} disabled={busy} aria-label={t("Remove file")}>
                     <XIcon />
                   </Button>
                 </div>
@@ -226,11 +229,11 @@ export function DropComposer() {
                     <UploadIcon className="size-5" />
                   </span>
                   <span>
-                    <span className="block font-medium">Drop a file or tap to browse</span>
+                    <span className="block font-medium">{t("Drop a file or tap to browse")}</span>
                     <span className="mt-1 block text-sm text-muted-foreground">
-                      Up to {limit ? formatBytes(limit) : "…"}
+                      {t("Up to {size}", { size: limit ? formatBytes(limit) : "…" })}
                       {!signedIn && config && config.maxFileSize > config.anonMaxFileSize && (
-                        <> · {formatBytes(config.maxFileSize)} with a drive</>
+                        <> · {t("{size} with a drive", { size: formatBytes(config.maxFileSize) })}</>
                       )}
                     </span>
                   </span>
@@ -241,7 +244,7 @@ export function DropComposer() {
                 <Textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Paste a password, an API key, a private note…"
+                  placeholder={t("Paste a password, an API key, a private note…")}
                   className="max-h-80 min-h-40 resize-none rounded-none border-0 bg-transparent font-mono text-sm [overflow-wrap:anywhere] [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin] focus-visible:ring-0 dark:bg-transparent"
                   disabled={busy}
                   spellCheck={false}
@@ -259,7 +262,7 @@ export function DropComposer() {
                 <div className="grid gap-2 rounded-full border bg-muted/40 px-5 py-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-2">
-                      <LockIcon className="size-3.5 animate-pulse" /> {phase.label}
+                      <LockIcon className="size-3.5 animate-pulse" /> {t(phase.label)}
                     </span>
                     <span className="font-mono text-xs text-muted-foreground">{Math.round(phase.progress * 100)}%</span>
                   </div>
@@ -268,12 +271,12 @@ export function DropComposer() {
               ) : status === "locked" ? (
                 <Button size="lg" asChild className="w-full">
                   <Link to="/drive">
-                    <LockIcon /> Unlock your drive to share
+                    <LockIcon /> {t("Unlock your drive to share")}
                   </Link>
                 </Button>
               ) : (
                 <Button size="lg" onClick={submit} disabled={!ready} className="w-full">
-                  <SparklesIcon /> Encrypt & create link
+                  <SparklesIcon /> {t("Encrypt & create link")}
                 </Button>
               )}
             </div>
@@ -283,7 +286,7 @@ export function DropComposer() {
 
       {drops.length > 0 && !signedIn && (
         <div className="rounded-2xl border bg-card/70 p-4 text-left">
-          <p className="eyebrow mb-3">Your recent drops · this device only</p>
+          <p className="eyebrow mb-3">{t("Your recent drops · this device only")}</p>
           <ul className="grid gap-2">
             {drops.slice(0, 5).map((d) => (
               <li key={d.itemId} className="flex items-center gap-3 text-sm">
@@ -291,10 +294,10 @@ export function DropComposer() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate">{d.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-mono">{d.shareId}</span> · expires {relativeTime(d.expiresAt)}
+                    <span className="font-mono">{d.shareId}</span> · {t("expires {when}", { when: relativeTime(d.expiresAt) })}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon-sm" onClick={() => revoke(d)} aria-label="Delete now">
+                <Button variant="ghost" size="icon-sm" onClick={() => revoke(d)} aria-label={t("Delete now")}>
                   <Trash2Icon />
                 </Button>
               </li>

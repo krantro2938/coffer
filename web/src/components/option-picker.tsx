@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { CheckIcon, ChevronDownIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 export type PickerOption = { label: string; hint?: string; value: number }
@@ -20,6 +21,7 @@ export function OptionPicker({
   onChange: (v: number) => void
 }) {
   const [open, setOpen] = useState(false)
+  const { t } = useI18n()
   const current = options.find((o) => o.value === value) ?? options[0]
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -32,8 +34,8 @@ export function OptionPicker({
             <Icon className="size-3.5" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.6875rem] leading-tight text-muted-foreground">{label}</span>
-            <span className="block truncate text-sm leading-tight font-medium">{current.label}</span>
+            <span className="block text-[0.6875rem] leading-tight text-muted-foreground">{t(label)}</span>
+            <span className="block truncate text-sm leading-tight font-medium">{t(current.label)}</span>
           </span>
           <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
         </button>
@@ -43,7 +45,7 @@ export function OptionPicker({
         sideOffset={6}
         className="w-(--radix-popover-trigger-width) min-w-60 rounded-2xl p-1.5 shadow-soft"
       >
-        <p className="eyebrow px-2.5 pt-1.5 pb-1">{label}</p>
+        <p className="eyebrow px-2.5 pt-1.5 pb-1">{t(label)}</p>
         <div role="listbox" className="grid gap-0.5">
           {options.map((o) => {
             const selected = o.value === value
@@ -63,8 +65,8 @@ export function OptionPicker({
                 )}
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{o.label}</span>
-                  {o.hint && <span className="block text-xs text-muted-foreground">{o.hint}</span>}
+                  <span className="block text-sm font-medium">{t(o.label)}</span>
+                  {o.hint && <span className="block text-xs text-muted-foreground">{t(o.hint)}</span>}
                 </span>
                 {selected && <CheckIcon className="size-4 shrink-0 text-primary" />}
               </button>

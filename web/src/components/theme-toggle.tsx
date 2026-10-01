@@ -7,14 +7,16 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useI18n } from "@/lib/i18n"
 import { useTheme, type Theme } from "@/lib/theme"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const { t } = useI18n()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Change theme">
+        <Button variant="ghost" size="icon" aria-label={t("Change theme")}>
           <SunIcon className="dark:hidden" />
           <MoonIcon className="hidden dark:block" />
         </Button>
@@ -22,13 +24,13 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end" className="min-w-36">
         <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
           <DropdownMenuRadioItem value="light">
-            <SunIcon /> Light
+            <SunIcon /> {t("Light")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
-            <MoonIcon /> Dark
+            <MoonIcon /> {t("Dark")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <MonitorIcon /> System
+            <MonitorIcon /> {t("System")}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

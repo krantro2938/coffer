@@ -1,14 +1,20 @@
 import { CheckIcon, LockKeyholeIcon } from "lucide-react"
 import { Brand } from "@/components/brand"
+import { LangToggle } from "@/components/lang-toggle"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useI18n } from "@/lib/i18n"
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   return (
     <div className="grid min-h-svh lg:grid-cols-[1fr_1.05fr]">
       <div className="flex flex-col px-4 py-5 sm:px-8">
         <div className="flex items-center justify-between">
           <Brand />
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <LangToggle />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-sm">{children}</div>
@@ -21,20 +27,20 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
           aria-hidden
           className="absolute right-10 bottom-10 size-[14rem] rounded-full bg-[radial-gradient(closest-side,var(--lavender),transparent)] opacity-40"
         />
-        <p className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase opacity-60">Zero-knowledge drive</p>
+        <p className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase opacity-60">{t("Zero-knowledge drive")}</p>
         <div className="relative max-w-md">
-          <h2 className="text-4xl leading-tight font-medium">Your password is the only key. We never see it.</h2>
+          <h2 className="text-4xl leading-tight font-medium">{t("Your password is the only key. We never see it.")}</h2>
           <ul className="mt-8 grid gap-3 text-sm opacity-85">
             {[
               "Stretched with Argon2id in your browser",
               "Unwraps a master key that encrypts everything",
               "Server stores only ciphertext and peppered hashes",
-            ].map((t) => (
-              <li key={t} className="flex items-center gap-3">
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-3">
                 <span className="grid size-5 place-items-center rounded-full bg-white/10">
                   <CheckIcon className="size-3" />
                 </span>
-                {t}
+                {t(item)}
               </li>
             ))}
           </ul>
@@ -45,7 +51,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
           </span>
           <div className="text-sm">
             <p className="font-medium">AES-256-GCM</p>
-            <p className="opacity-60">Every file, every name, every folder.</p>
+            <p className="opacity-60">{t("Every file, every name, every folder.")}</p>
           </div>
         </div>
       </aside>
@@ -54,6 +60,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 }
 
 export function PasswordStrength({ password }: { password: string }) {
+  const { t } = useI18n()
   const score = strength(password)
   const labels = ["Too short", "Weak", "Fair", "Good", "Strong"]
   const colors = ["bg-destructive", "bg-coral", "bg-coral", "bg-primary/70", "bg-primary"]
@@ -65,7 +72,7 @@ export function PasswordStrength({ password }: { password: string }) {
           <span key={i} className={`h-1 flex-1 rounded-full ${i < score ? colors[score] : "bg-muted"}`} />
         ))}
       </div>
-      <span className="text-xs text-muted-foreground">{labels[score]}</span>
+      <span className="text-xs text-muted-foreground">{t(labels[score])}</span>
     </div>
   )
 }

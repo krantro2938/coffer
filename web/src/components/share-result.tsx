@@ -4,6 +4,7 @@ import { CheckIcon, CopyIcon, ExternalLinkIcon, QrCodeIcon, Share2Icon } from "l
 import { Button } from "@/components/ui/button"
 import { formatSecret } from "@/lib/crypto"
 import { relativeTime } from "@/lib/format"
+import { useI18n } from "@/lib/i18n"
 import { useCopy } from "@/hooks/use-copy"
 import type { CreatedShare } from "@/lib/transfer"
 import { cn } from "@/lib/utils"
@@ -20,6 +21,7 @@ export function ShareResult({
   className?: string
 }) {
   const { copy, copied } = useCopy()
+  const { t, tn } = useI18n()
   const [qr, setQr] = useState(false)
   const code = share.short ? share.id : `${share.id} ${formatSecret(share.secret)}`
   const svg = useMemo(
@@ -31,21 +33,21 @@ export function ShareResult({
   return (
     <div className={cn("grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4", className)}>
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
-        <span className="eyebrow">Share link</span>
+        <span className="eyebrow">{t("Share link")}</span>
         <div className="flex min-w-0 items-center gap-2 rounded-xl border bg-card p-1.5 pl-3.5">
           <code className="min-w-0 flex-1 truncate font-mono text-[0.8125rem]" title={share.url}>{share.url}</code>
-          <Button size="sm" onClick={() => copy(share.url, "Link copied")} className="shrink-0">
+          <Button size="sm" onClick={() => copy(share.url, t("Link copied"))} className="shrink-0">
             {copied === share.url ? <CheckIcon /> : <CopyIcon />}
-            Copy
+            {t("Copy")}
           </Button>
         </div>
       </div>
 
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
-        <span className="eyebrow">Or type this code at /receive</span>
+        <span className="eyebrow">{t("Or type this code at /receive")}</span>
         <button
           type="button"
-          onClick={() => copy(code, "Code copied")}
+          onClick={() => copy(code, t("Code copied"))}
           className="group flex items-center justify-between gap-3 rounded-xl border border-dashed bg-muted/40 px-3.5 py-3 text-left transition-colors hover:bg-muted"
         >
           <span className="min-w-0 font-mono text-[0.9375rem] tracking-wide break-all">
@@ -61,9 +63,9 @@ export function ShareResult({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span>{share.expiresAt ? `Expires ${relativeTime(share.expiresAt)}` : "Never expires"}</span>
-        {maxViews ? <span>{maxViews === 1 ? "Burns after first view" : `${maxViews} views`}</span> : null}
-        {hasPassword ? <span>Password protected</span> : null}
+        <span>{share.expiresAt ? t("Expires {when}", { when: relativeTime(share.expiresAt) }) : t("Never expires")}</span>
+        {maxViews ? <span>{maxViews === 1 ? t("Burns after first view") : tn(maxViews, "{n} view", "{n} views")}</span> : null}
+        {hasPassword ? <span>{t("Password protected")}</span> : null}
       </div>
 
       {qr && (
@@ -74,20 +76,20 @@ export function ShareResult({
 
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={() => setQr((q) => !q)}>
-          <QrCodeIcon /> {qr ? "Hide QR" : "QR code"}
+          <QrCodeIcon /> {qr ? t("Hide QR") : t("QR code")}
         </Button>
         {canShare && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigator.share({ title: "Encrypted share", url: share.url }).catch(() => {})}
+            onClick={() => navigator.share({ title: t("Encrypted share"), url: share.url }).catch(() => {})}
           >
-            <Share2Icon /> Share
+            <Share2Icon /> {t("Share")}
           </Button>
         )}
         <Button variant="ghost" size="sm" asChild>
           <a href={share.url} target="_blank" rel="noreferrer">
-            <ExternalLinkIcon /> Open
+            <ExternalLinkIcon /> {t("Open")}
           </a>
         </Button>
       </div>

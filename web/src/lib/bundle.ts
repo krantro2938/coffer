@@ -7,6 +7,7 @@ import { Zip, ZipPassThrough } from "fflate"
 import { fromB64, toB64 } from "./crypto"
 import type { DFolder, Drive } from "./drive"
 import { createShare, downloadDecrypted, storeItem, type CreatedShare, type ShareOptions } from "./transfer"
+import { t } from "./i18n"
 
 export const BUNDLE_TYPE = "application/x-coffer-bundle"
 
@@ -60,7 +61,7 @@ export async function shareFolder(
   masterKey: CryptoKey,
 ): Promise<CreatedShare> {
   const files = collectFolder(drive, folder)
-  if (files.length === 0) throw new Error("This folder has no files to share yet")
+  if (files.length === 0) throw new Error(t("This folder has no files to share yet"))
   const manifest: Manifest = { v: 1, name: folder.name, createdAt: Math.floor(Date.now() / 1000), files }
   const stored = await storeItem({
     kind: "bundle",
@@ -155,7 +156,7 @@ export async function downloadZip(
         if (!started) zip.add(entry)
         entry.push(new Uint8Array(0), true)
       } catch {
-        if (started) throw new Error(`Download of ${f.path} was interrupted`)
+        if (started) throw new Error(t("Download of {path} was interrupted", { path: f.path }))
         failed.push(f.path)
       }
       doneBytes += f.cipherSize

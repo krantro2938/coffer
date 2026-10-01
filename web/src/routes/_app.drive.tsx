@@ -49,6 +49,7 @@ import { api, getConfig } from "@/lib/api"
 import { itemKeys, sealMeta, sealName, toB64 } from "@/lib/crypto"
 import { useDrive, type DFolder, type DItem } from "@/lib/drive"
 import { formatBytes, shortDate } from "@/lib/format"
+import { t as tr, useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { storeItem } from "@/lib/transfer"
 import { cn } from "@/lib/utils"
@@ -77,6 +78,7 @@ function DrivePage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { masterKey } = useSession()
+  const { t, tn } = useI18n()
   const { data, isLoading, error } = useDrive()
   const [query, setQuery] = useState("")
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -94,8 +96,8 @@ function DrivePage() {
   const settled = uploads.length > 0 && uploads.every((u) => u.state === "done")
   useEffect(() => {
     if (!settled) return
-    const t = setTimeout(() => setUploads([]), 4000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setUploads([]), 4000)
+    return () => clearTimeout(timer)
   }, [settled])
   const closeDialog = useCallback(() => setDialog(null), [])
 
@@ -133,9 +135,9 @@ function DrivePage() {
       if (total.has(id)) return total.get(id)!
       if (seen.has(id)) return 0
       seen.add(id)
-      const t = (direct.get(id) ?? 0) + (kids.get(id) ?? []).reduce((n, k) => n + sum(k, seen), 0)
-      total.set(id, t)
-      return t
+      const size = (direct.get(id) ?? 0) + (kids.get(id) ?? []).reduce((n, k) => n + sum(k, seen), 0)
+      total.set(id, size)
+      return size
     }
     for (const f of data?.folders ?? []) sum(f.id)
     return total
@@ -160,7 +162,7 @@ function DrivePage() {
       const key = batch[i].key
       uploadChain.current = uploadChain.current.then(async () => {
         if (file.size > config.maxFileSize) {
-          patch(key, { state: "error", error: `Larger than ${formatBytes(config.maxFileSize)}` })
+          patch(key, { state: "error", error: t("Larger than {size}", { size: formatBytes(config.maxFileSize) }) })
           return
         }
         patch(key, { state: "uploading" })
@@ -202,25 +204,25 @@ function DrivePage() {
   const moveFolder = (f: DFolder) => async (target: string | null) => {
     await api(`/api/folders/${f.id}`, { method: "PATCH", body: { parentId: target ?? "" } })
     await refresh()
-    toast.success(`Moved “${f.name}”`)
+    toast.success(t("Moved “{name}”", { name: f.name }))
   }
   const moveItem = (i: DItem) => async (target: string | null) => {
     await api(`/api/items/${i.id}`, { method: "PATCH", body: { folderId: target ?? "" } })
     await refresh()
-    toast.success(`Moved “${i.name}”`)
+    toast.success(t("Moved “{name}”", { name: i.name }))
   }
   const del = async (path: string, label: string) => {
     try {
       await api(path, { method: "DELETE" })
       await refresh()
-      toast.success(`Deleted “${label}”`)
+      toast.success(t("Deleted “{name}”", { name: label }))
     } catch (e) {
       toast.error((e as Error).message)
     }
   }
 
   const openItem = (i: DItem) => {
-    if (i.broken) return toast.error("This item can't be decrypted with your key")
+    if (i.broken) return toast.error(t("This item can't be decrypted with your key"))
     if (canPreview(i)) setPreview(i)
     else downloadItem(i)
   }
@@ -254,7 +256,7 @@ function DrivePage() {
         <div className="min-w-0">
           <nav className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
             <Link to="/drive" search={{}} className="shrink-0 hover:text-foreground">
-              My drive
+              {t("My drive")}
             </Link>
             {crumbs.map((c) => (
               <span key={c.id} className="flex min-w-0 items-center gap-1">
@@ -265,7 +267,7 @@ function DrivePage() {
               </span>
             ))}
           </nav>
-          <h1 className="mt-1 truncate text-3xl font-medium">{q ? "Search" : (current?.name ?? "My drive")}</h1>
+          <h1 className="mt-1 truncate text-3xl font-medium">{q ? t("Search") : (current?.name ?? t("My drive"))}</h1>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 sm:w-64 sm:flex-none">
@@ -273,14 +275,14 @@ function DrivePage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search your drive"
+              placeholder={t("Search your drive")}
               className="rounded-full pl-10"
             />
             {query && (
               <button
                 onClick={() => setQuery("")}
                 className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Clear search"
+                aria-label={t("Clear search")}
               >
                 <XIcon className="size-4" />
               </button>
@@ -325,9 +327,9 @@ function DrivePage() {
         ) : (
           <div className="overflow-hidden rounded-2xl border bg-card">
             <div className="hidden grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] gap-4 border-b px-5 py-2.5 text-xs text-muted-foreground md:grid">
-              <span>Name</span>
-              <span>Size</span>
-              <span>Added</span>
+              <span>{t("Name")}</span>
+              <span>{t("Size")}</span>
+              <span>{t("Added")}</span>
               <span />
             </div>
             <ul className="divide-y">
@@ -339,7 +341,7 @@ function DrivePage() {
                     key={f.id}
                     glyph={<FileGlyph kind="folder" />}
                     name={f.name}
-                    sub={`Folder · ${n} item${n === 1 ? "" : "s"}`}
+                    sub={`${t("Folder")} · ${tn(n, "{n} item", "{n} items")}`}
                     size={formatBytes(folderSizes.get(f.id) ?? 0)}
                     date={shortDate(f.createdAt)}
                     links={links}
@@ -351,17 +353,17 @@ function DrivePage() {
                     menu={
                       <>
                         <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
-                          <Link2Icon /> Share folder
+                          <Link2Icon /> {t("Share folder")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
-                          <PencilIcon /> Rename
+                          <PencilIcon /> {t("Rename")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
-                          <FolderInputIcon /> Move
+                          <FolderInputIcon /> {t("Move")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
-                          <Trash2Icon /> Delete
+                          <Trash2Icon /> {t("Delete")}
                         </DropdownMenuItem>
                       </>
                     }
@@ -376,7 +378,7 @@ function DrivePage() {
                     glyph={<FileGlyph kind={i.kind} type={i.type} />}
                     name={i.name}
                     muted={i.broken}
-                    sub={i.broken ? "Can't be decrypted" : i.kind === "text" ? "Note" : describeType(i.type, i.name)}
+                    sub={i.broken ? t("Can't be decrypted") : i.kind === "text" ? t("Note") : describeType(i.type, i.name)}
                     size={formatBytes(i.size)}
                     date={shortDate(i.createdAt)}
                     links={links}
@@ -386,28 +388,28 @@ function DrivePage() {
                       <>
                         {canPreview(i) && (
                           <DropdownMenuItem onClick={() => setPreview(i)}>
-                            <EyeIcon /> Preview
+                            <EyeIcon /> {t("Preview")}
                           </DropdownMenuItem>
                         )}
                         {!i.broken && (
                           <>
                             <DropdownMenuItem onClick={() => downloadItem(i)}>
-                              <DownloadIcon /> Download
+                              <DownloadIcon /> {t("Download")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setSharing({ type: "item", item: i })}>
-                              <Link2Icon /> Share link
+                              <Link2Icon /> {t("Share link")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDialog({ t: "renameItem", i })}>
-                              <PencilIcon /> Rename
+                              <PencilIcon /> {t("Rename")}
                             </DropdownMenuItem>
                           </>
                         )}
                         <DropdownMenuItem onClick={() => setDialog({ t: "moveItem", i })}>
-                          <FolderInputIcon /> Move
+                          <FolderInputIcon /> {t("Move")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteItem", i })}>
-                          <Trash2Icon /> Delete
+                          <Trash2Icon /> {t("Delete")}
                         </DropdownMenuItem>
                       </>
                     }
@@ -434,8 +436,8 @@ function DrivePage() {
         <div className="pointer-events-none fixed inset-0 z-40 grid place-items-center bg-background/70 backdrop-blur-sm">
           <div className="grid place-items-center gap-3 rounded-3xl border-2 border-dashed border-primary bg-card px-12 py-10 text-center shadow-soft">
             <UploadCloudIcon className="size-8 text-primary" />
-            <p className="font-medium">Drop to encrypt & upload</p>
-            <p className="text-sm text-muted-foreground">into {current?.name ?? "My drive"}</p>
+            <p className="font-medium">{t("Drop to encrypt & upload")}</p>
+            <p className="text-sm text-muted-foreground">{t("into {name}", { name: current?.name ?? t("My drive") })}</p>
           </div>
         </div>
       )}
@@ -446,16 +448,16 @@ function DrivePage() {
       <NameDialog
         open={dialog?.t === "newFolder"}
         onOpenChange={closeDialog}
-        title="New folder"
-        cta="Create"
+        title={t("New folder")}
+        cta={t("Create")}
         onSubmit={createFolder}
       />
       <NoteDialog open={dialog?.t === "note"} onOpenChange={closeDialog} folderId={folderId} />
       {dialog?.t === "renameFolder" && (
-        <NameDialog open onOpenChange={closeDialog} title="Rename folder" initial={dialog.f.name} cta="Rename" onSubmit={renameFolder(dialog.f)} />
+        <NameDialog open onOpenChange={closeDialog} title={t("Rename folder")} initial={dialog.f.name} cta={t("Rename")} onSubmit={renameFolder(dialog.f)} />
       )}
       {dialog?.t === "renameItem" && (
-        <NameDialog open onOpenChange={closeDialog} title="Rename" initial={dialog.i.name} cta="Rename" onSubmit={renameItem(dialog.i)} />
+        <NameDialog open onOpenChange={closeDialog} title={t("Rename")} initial={dialog.i.name} cta={t("Rename")} onSubmit={renameItem(dialog.i)} />
       )}
       {dialog?.t === "moveFolder" && (
         <MoveDialog open onOpenChange={closeDialog} folders={data?.folders ?? []} exclude={dialog.f.id} onMove={moveFolder(dialog.f)} />
@@ -466,9 +468,9 @@ function DrivePage() {
       <ConfirmDialog
         open={dialog?.t === "deleteFolder"}
         onOpenChange={closeDialog}
-        title={`Delete “${dialog?.t === "deleteFolder" ? dialog.f.name : ""}”?`}
-        description="The folder, everything inside it and all their share links will be permanently destroyed."
-        cta="Delete folder"
+        title={t("Delete “{name}”?", { name: dialog?.t === "deleteFolder" ? dialog.f.name : "" })}
+        description={t("The folder, everything inside it and all their share links will be permanently destroyed.")}
+        cta={t("Delete folder")}
         onConfirm={() => {
           if (dialog?.t === "deleteFolder") return del(`/api/folders/${dialog.f.id}`, dialog.f.name)
         }}
@@ -476,9 +478,9 @@ function DrivePage() {
       <ConfirmDialog
         open={dialog?.t === "deleteItem"}
         onOpenChange={closeDialog}
-        title={`Delete “${dialog?.t === "deleteItem" ? dialog.i.name : ""}”?`}
-        description="The encrypted file and all of its share links will be permanently destroyed."
-        cta="Delete"
+        title={t("Delete “{name}”?", { name: dialog?.t === "deleteItem" ? dialog.i.name : "" })}
+        description={t("The encrypted file and all of its share links will be permanently destroyed.")}
+        cta={t("Delete")}
         onConfirm={() => {
           if (dialog?.t === "deleteItem") return del(`/api/items/${dialog.i.id}`, dialog.i.name)
         }}
@@ -506,28 +508,29 @@ function NewMenu({
   fab?: boolean
   className?: string
 }) {
+  const { t } = useI18n()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {fab ? (
-          <Button size="icon-lg" className="size-14 shadow-lg" aria-label="New">
+          <Button size="icon-lg" className="size-14 shadow-lg" aria-label={t("New")}>
             <PlusIcon className="size-6" />
           </Button>
         ) : (
           <Button className={className}>
-            <PlusIcon /> New
+            <PlusIcon /> {t("New")}
           </Button>
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side={fab ? "top" : "bottom"} className="min-w-48">
         <DropdownMenuItem onClick={onUpload}>
-          <UploadIcon /> Upload files
+          <UploadIcon /> {t("Upload files")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onNote}>
-          <StickyNoteIcon /> New note
+          <StickyNoteIcon /> {t("New note")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onFolder}>
-          <FolderPlusIcon /> New folder
+          <FolderPlusIcon /> {t("New folder")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -557,6 +560,7 @@ function Row({
   onShare?: () => void
   menu: React.ReactNode
 }) {
+  const { t } = useI18n()
   return (
     <li className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 transition-colors hover:bg-muted/40 md:grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] md:gap-4 md:px-3">
       <button onClick={onOpen} className="flex h-16 min-w-0 items-center gap-3 rounded-xl px-2 text-left">
@@ -585,14 +589,14 @@ function Row({
             size="icon-sm"
             onClick={onShare}
             className="hidden opacity-0 group-hover:opacity-100 focus-visible:opacity-100 md:inline-flex"
-            aria-label="Share"
+            aria-label={t("Share")}
           >
             <Link2Icon />
           </Button>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="More actions">
+            <Button variant="ghost" size="icon-sm" aria-label={t("More actions")}>
               <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
@@ -607,20 +611,21 @@ function Row({
 
 function describeType(type: string, name: string) {
   const ext = name.includes(".") ? name.split(".").pop()!.toUpperCase() : ""
-  if (ext && ext.length <= 5) return `${ext} file`
-  if (type.startsWith("image/")) return "Image"
-  if (type.startsWith("video/")) return "Video"
-  if (type.startsWith("audio/")) return "Audio"
-  return "File"
+  if (ext && ext.length <= 5) return tr("{ext} file", { ext })
+  if (type.startsWith("image/")) return tr("Image")
+  if (type.startsWith("video/")) return tr("Video")
+  if (type.startsWith("audio/")) return tr("Audio")
+  return tr("File")
 }
 
 function EmptyState({ searching, onUpload, onNote }: { searching: boolean; onUpload: () => void; onNote: () => void }) {
+  const { t } = useI18n()
   if (searching) {
     return (
       <div className="grid place-items-center rounded-3xl border border-dashed py-20 text-center">
         <SearchIcon className="size-6 text-muted-foreground" />
-        <p className="mt-3 font-medium">No matches</p>
-        <p className="text-sm text-muted-foreground">Names are decrypted locally, so search stays private too.</p>
+        <p className="mt-3 font-medium">{t("No matches")}</p>
+        <p className="text-sm text-muted-foreground">{t("Names are decrypted locally, so search stays private too.")}</p>
       </div>
     )
   }
@@ -634,16 +639,16 @@ function EmptyState({ searching, onUpload, onNote }: { searching: boolean; onUpl
           <StickyNoteIcon className="size-3.5" />
         </span>
       </div>
-      <p className="mt-6 text-lg font-medium">Nothing here yet</p>
+      <p className="mt-6 text-lg font-medium">{t("Nothing here yet")}</p>
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-        Drag files anywhere on this page, or start with a note. Everything is encrypted before it leaves your device.
+        {t("Drag files anywhere on this page, or start with a note. Everything is encrypted before it leaves your device.")}
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Button onClick={onUpload}>
-          <UploadIcon /> Upload files
+          <UploadIcon /> {t("Upload files")}
         </Button>
         <Button variant="outline" onClick={onNote}>
-          <StickyNoteIcon /> Write a note
+          <StickyNoteIcon /> {t("Write a note")}
         </Button>
       </div>
     </div>
@@ -651,14 +656,15 @@ function EmptyState({ searching, onUpload, onNote }: { searching: boolean; onUpl
 }
 
 function UploadTray({ uploads, onClear }: { uploads: Upload[]; onClear: () => void }) {
+  const { t, tn } = useI18n()
   if (uploads.length === 0) return null
   const active = uploads.filter((u) => u.state === "uploading" || u.state === "queued").length
   return (
     <div className="fixed right-4 bottom-[calc(10rem+env(safe-area-inset-bottom))] left-4 z-30 overflow-hidden rounded-2xl border bg-popover shadow-soft sm:left-auto sm:w-80 md:bottom-6">
       <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
-        <p className="text-sm font-medium">{active ? `Encrypting ${active} file${active === 1 ? "" : "s"}…` : "Uploads complete"}</p>
+        <p className="text-sm font-medium">{active ? tn(active, "Encrypting {n} file…", "Encrypting {n} files…") : t("Uploads complete")}</p>
         {!active && (
-          <Button variant="ghost" size="icon-xs" onClick={onClear} aria-label="Dismiss">
+          <Button variant="ghost" size="icon-xs" onClick={onClear} aria-label={t("Dismiss")}>
             <XIcon />
           </Button>
         )}

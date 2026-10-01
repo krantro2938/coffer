@@ -35,6 +35,7 @@ import { api } from "@/lib/api"
 import type { DFolder, DItem, DShare, Drive } from "@/lib/drive"
 import { collectFolder, shareFolder } from "@/lib/bundle"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { t as tr, useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { createShare, downloadToBlob, saveDecrypted, storeItem, type CreatedShare } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
@@ -55,15 +56,15 @@ export function itemBlobOpts(item: DItem) {
 }
 
 export async function downloadItem(item: DItem) {
-  const t = toast.loading(`Decrypting ${item.name}…`)
+  const id = toast.loading(tr("Decrypting {name}…", { name: item.name }))
   try {
     await saveDecrypted({
       ...itemBlobOpts(item),
-      onProgress: (p) => toast.loading(`Decrypting ${item.name}… ${Math.round(p * 100)}%`, { id: t }),
+      onProgress: (p) => toast.loading(`${tr("Decrypting {name}…", { name: item.name })} ${Math.round(p * 100)}%`, { id }),
     })
-    toast.success("Download ready", { id: t })
+    toast.success(tr("Download ready"), { id })
   } catch (e) {
-    toast.error((e as Error).message, { id: t })
+    toast.error((e as Error).message, { id })
   }
 }
 
@@ -86,6 +87,7 @@ export function NameDialog({
 }) {
   const [name, setName] = useState(initial)
   const [busy, setBusy] = useState(false)
+  const { t } = useI18n()
   useEffect(() => {
     if (open) setName(initial)
   }, [open, initial])
@@ -110,7 +112,7 @@ export function NameDialog({
         <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus maxLength={255} />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button type="submit" disabled={busy || !name.trim()}>
             {busy && <Loader2Icon className="animate-spin" />} {cta}
@@ -138,6 +140,7 @@ export function MoveDialog({
   onMove: (folderId: string | null) => Promise<void>
 }) {
   const [busy, setBusy] = useState(false)
+  const { t } = useI18n()
   const tree = useMemo(() => {
     const children = new Map<string | null, DFolder[]>()
     for (const f of folders) children.set(f.parentId, [...(children.get(f.parentId) ?? []), f])
@@ -180,9 +183,9 @@ export function MoveDialog({
   )
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title="Move to…">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title={t("Move to…")}>
       <div className="-mx-2 grid max-h-[50vh] gap-0.5 overflow-y-auto">
-        <Row id={null} name="My drive" depth={0} icon={HardDriveIcon} />
+        <Row id={null} name={t("My drive")} depth={0} icon={HardDriveIcon} />
         {tree.map(({ f, depth }) => (
           <Row key={f.id} id={f.id} name={f.name} depth={depth + 1} icon={FolderIcon} />
         ))}
@@ -207,6 +210,7 @@ export function NoteDialog({
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [busy, setBusy] = useState(false)
+  const { t } = useI18n()
   useEffect(() => {
     if (open) {
       setTitle("")
@@ -221,14 +225,14 @@ export function NoteDialog({
     try {
       await storeItem({
         kind: "text",
-        name: title.trim() || `Note ${new Date().toLocaleString()}`,
+        name: title.trim() || t("Note {date}", { date: new Date().toLocaleString() }),
         type: "text/plain",
         blob: new Blob([body], { type: "text/plain;charset=utf-8" }),
         masterKey,
         folderId,
       })
       await qc.invalidateQueries({ queryKey: ["drive"] })
-      toast.success("Note encrypted and saved")
+      toast.success(t("Note encrypted and saved"))
       onOpenChange(false)
     } catch (err) {
       toast.error((err as Error).message)
@@ -238,11 +242,11 @@ export function NoteDialog({
   }
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title="New private note" className="sm:max-w-lg">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title={t("New private note")} className="sm:max-w-lg">
       <form onSubmit={save} className="grid gap-3">
-        <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
+        <Input placeholder={t("Title")} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
         <Textarea
-          placeholder="Anything you want to keep private…"
+          placeholder={t("Anything you want to keep private…")}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           className="max-h-[45vh] min-h-48 font-mono text-sm"
@@ -250,10 +254,10 @@ export function NoteDialog({
         />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button type="submit" disabled={busy || !body.trim()}>
-            {busy && <Loader2Icon className="animate-spin" />} Encrypt & save
+            {busy && <Loader2Icon className="animate-spin" />} {t("Encrypt & save")}
           </Button>
         </div>
       </form>
@@ -270,6 +274,7 @@ export const canPreview = (item: DItem) =>
 export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOpenChange: (o: boolean) => void }) {
   const [state, setState] = useState<{ url?: string; text?: string; progress: number } | null>(null)
   const { copy, copied } = useCopy()
+  const { t } = useI18n()
 
   useEffect(() => {
     if (!item) return
@@ -302,14 +307,14 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
       open={!!item}
       onOpenChange={onOpenChange}
       title={<span className="block truncate pr-6">{item.name}</span>}
-      description={`${formatBytes(item.size)} · added ${relativeTime(item.createdAt)}`}
+      description={`${formatBytes(item.size)} · ${t("added {when}", { when: relativeTime(item.createdAt) })}`}
       className="sm:max-w-3xl"
     >
       <div className="grid gap-4">
         {!state || (state.url === undefined && state.text === undefined) ? (
           <div className="grid h-64 place-items-center rounded-2xl bg-muted/50">
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2Icon className="size-4 animate-spin" /> Decrypting… {Math.round((state?.progress ?? 0) * 100)}%
+              <Loader2Icon className="size-4 animate-spin" /> {t("Decrypting…")} {Math.round((state?.progress ?? 0) * 100)}%
             </span>
           </div>
         ) : state.text !== undefined ? (
@@ -325,12 +330,12 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
         )}
         <div className="flex flex-wrap justify-end gap-2">
           {state?.text !== undefined && (
-            <Button variant="outline" onClick={() => copy(state.text!, "Copied")}>
-              {copied === state.text ? <CheckIcon /> : <CopyIcon />} Copy
+            <Button variant="outline" onClick={() => copy(state.text!, t("Copied"))}>
+              {copied === state.text ? <CheckIcon /> : <CopyIcon />} {t("Copy")}
             </Button>
           )}
           <Button onClick={() => downloadItem(item)}>
-            <DownloadIcon /> Download
+            <DownloadIcon /> {t("Download")}
           </Button>
         </div>
       </div>
@@ -357,6 +362,7 @@ export function ShareDialog({
   const [created, setCreated] = useState<CreatedShare | null>(null)
   const [creating, setCreating] = useState(false)
   const [composing, setComposing] = useState(false)
+  const { t, tn } = useI18n()
   const key = target ? (target.type === "item" ? target.item.id : target.folder.id) : null
 
   useEffect(() => {
@@ -374,7 +380,7 @@ export function ShareDialog({
 
   const create = async () => {
     const o = toShareOptions(opts)
-    if (opts.usePassword && !o.password) return toast.error("Enter a password or turn the option off")
+    if (opts.usePassword && !o.password) return toast.error(t("Enter a password or turn the option off"))
     setCreating(true)
     try {
       const s = isFolder
@@ -403,7 +409,7 @@ export function ShareDialog({
           )}
           <span className="min-w-0">
             <span className="block text-xs font-normal text-muted-foreground">
-              {isFolder ? `Share folder · ${fileCount} file${fileCount === 1 ? "" : "s"}` : "Share file"}
+              {isFolder ? `${t("Share folder")} · ${tn(fileCount, "{n} file", "{n} files")}` : t("Share file")}
             </span>
             <span className="block truncate">{name}</span>
           </span>
@@ -416,26 +422,25 @@ export function ShareDialog({
           <>
             <ShareResult share={created} hasPassword={opts.usePassword} maxViews={opts.maxViews || null} />
             <Button variant="secondary" onClick={() => setCreated(null)}>
-              Done
+              {t("Done")}
             </Button>
           </>
         ) : showForm ? (
           <>
             {isFolder && (
               <p className="rounded-xl bg-muted/50 px-3.5 py-2.5 text-xs text-muted-foreground">
-                Shares a snapshot of the folder as it is now, including subfolders. Files you add later need a new link;
-                files you delete disappear from it.
+                {t("Shares a snapshot of the folder as it is now, including subfolders. Files you add later need a new link; files you delete disappear from it.")}
               </p>
             )}
             <ShareOptionsFields value={opts} onChange={setOpts} />
             <div className="flex justify-end gap-2">
               {shares.length > 0 && (
                 <Button variant="ghost" onClick={() => setComposing(false)}>
-                  Back
+                  {t("Back")}
                 </Button>
               )}
               <Button onClick={create} disabled={creating || (isFolder && fileCount === 0)}>
-                {creating ? <Loader2Icon className="animate-spin" /> : <PlusIcon />} Create link
+                {creating ? <Loader2Icon className="animate-spin" /> : <PlusIcon />} {t("Create link")}
               </Button>
             </div>
           </>
@@ -443,7 +448,7 @@ export function ShareDialog({
           <>
             <ShareList shares={shares} />
             <Button variant="secondary" onClick={() => setComposing(true)}>
-              <PlusIcon /> New link
+              <PlusIcon /> {t("New link")}
             </Button>
           </>
         )}
@@ -456,12 +461,13 @@ export function ShareList({ shares, names }: { shares: DShare[]; names?: Map<str
   const qc = useQueryClient()
   const { copy, copied } = useCopy()
   const [revoking, setRevoking] = useState<DShare | null>(null)
+  const { t, tn } = useI18n()
 
   const revoke = async (s: DShare) => {
     try {
       await api(`/api/shares/${s.id}`, { method: "DELETE" })
       await qc.invalidateQueries({ queryKey: ["drive"] })
-      toast.success("Link revoked — it can no longer be opened")
+      toast.success(t("Link revoked — it can no longer be opened"))
     } catch (e) {
       toast.error((e as Error).message)
     }
@@ -481,29 +487,29 @@ export function ShareList({ shares, names }: { shares: DShare[]; names?: Map<str
                   /s/<span className="font-semibold text-foreground">{s.id}</span>
                 </p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
-                  <Chip>{s.expiresAt ? `expires ${relativeTime(s.expiresAt)}` : "no expiry"}</Chip>
+                  <Chip>{s.expiresAt ? t("expires {when}", { when: relativeTime(s.expiresAt) }) : t("no expiry")}</Chip>
                   <Chip tone={s.maxViews === 1 ? "coral" : undefined}>
                     {s.maxViews === 1 ? (
                       <>
-                        <FlameIcon className="size-3" /> one view
+                        <FlameIcon className="size-3" /> {t("one view")}
                       </>
                     ) : (
-                      `${s.views}${s.maxViews ? ` / ${s.maxViews}` : ""} views`
+                      s.maxViews ? t("{n} / {max} views", { n: s.views, max: s.maxViews }) : tn(s.views, "{n} view", "{n} views")
                     )}
                   </Chip>
                   {s.hasPassword && (
                     <Chip tone="lavender">
-                      <KeyRoundIcon className="size-3" /> password
+                      <KeyRoundIcon className="size-3" /> {t("password")}
                     </Chip>
                   )}
                 </div>
               </div>
               {s.url && (
-                <Button variant="ghost" size="icon-sm" onClick={() => copy(s.url!, "Link copied")} aria-label="Copy link">
+                <Button variant="ghost" size="icon-sm" onClick={() => copy(s.url!, t("Link copied"))} aria-label={t("Copy link")}>
                   {copied === s.url ? <CheckIcon /> : <CopyIcon />}
                 </Button>
               )}
-              <Button variant="ghost" size="icon-sm" onClick={() => setRevoking(s)} aria-label="Revoke link">
+              <Button variant="ghost" size="icon-sm" onClick={() => setRevoking(s)} aria-label={t("Revoke link")}>
                 <Trash2Icon />
               </Button>
             </li>
@@ -513,9 +519,9 @@ export function ShareList({ shares, names }: { shares: DShare[]; names?: Map<str
       <ConfirmDialog
         open={!!revoking}
         onOpenChange={(o) => !o && setRevoking(null)}
-        title="Revoke this link?"
-        description="Anyone holding it will no longer be able to open it. The file stays in your drive."
-        cta="Revoke link"
+        title={t("Revoke this link?")}
+        description={t("Anyone holding it will no longer be able to open it. The file stays in your drive.")}
+        cta={t("Revoke link")}
         onConfirm={() => revoke(revoking!)}
       />
     </>
@@ -552,6 +558,7 @@ export function ConfirmDialog({
   cta: string
   onConfirm: () => Promise<void> | void
 }) {
+  const { t } = useI18n()
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="rounded-2xl">
@@ -560,7 +567,7 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={() => void onConfirm()}>
             {cta}
           </AlertDialogAction>

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { OptionPicker } from "@/components/option-picker"
 import { EXPIRY_OPTIONS, VIEW_OPTIONS } from "@/lib/format"
+import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 export type ShareOptionsState = {
@@ -34,6 +35,7 @@ export function ShareOptionsFields({
   className?: string
 }) {
   const [show, setShow] = useState(false)
+  const { t } = useI18n()
   const set = (patch: Partial<ShareOptionsState>) => onChange({ ...value, ...patch })
   const expiries = EXPIRY_OPTIONS.filter((o) => !maxExpiry || (o.value > 0 && o.value <= maxExpiry))
 
@@ -60,7 +62,7 @@ export function ShareOptionsFields({
           <label className="flex cursor-pointer items-center justify-between gap-3">
             <span className="flex items-center gap-2 text-sm">
               <KeyRoundIcon className="size-4 text-muted-foreground" />
-              Require a password
+              {t("Require a password")}
             </span>
             <Switch checked={value.usePassword} onCheckedChange={(c) => set({ usePassword: c })} />
           </label>
@@ -74,7 +76,7 @@ export function ShareOptionsFields({
                   data-lpignore="true"
                   data-bwignore="true"
                   data-form-type="other"
-                  placeholder="Link password"
+                  placeholder={t("Link password")}
                   value={value.password}
                   onChange={(e) => set({ password: e.target.value })}
                   className="pr-11"
@@ -84,13 +86,13 @@ export function ShareOptionsFields({
                   type="button"
                   onClick={() => setShow((s) => !s)}
                   className="absolute inset-y-0 right-1 grid w-9 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label={show ? "Hide password" : "Show password"}
+                  aria-label={show ? t("Hide password") : t("Show password")}
                 >
                   {show ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Mixed into the encryption key. Share it through a different channel than the link.
+                {t("Mixed into the encryption key. Share it through a different channel than the link.")}
               </p>
             </div>
           )}
@@ -99,7 +101,7 @@ export function ShareOptionsFields({
           <label className="flex cursor-pointer items-center justify-between gap-3">
             <span className="flex items-center gap-2 text-sm">
               <Link2Icon className="size-4 text-muted-foreground" />
-              Short link only
+              {t("Short link only")}
             </span>
             <Switch checked={value.shortLink} onCheckedChange={(c) => set({ shortLink: c })} />
           </label>
@@ -107,9 +109,9 @@ export function ShareOptionsFields({
             <p className="mt-2 flex gap-2 text-xs text-muted-foreground">
               <ShieldAlertIcon className="mt-px size-3.5 shrink-0 text-coral" />
               <span>
-                Just <span className="font-mono text-foreground">/s/k7m3xq2</span> — easy to type, no key in the link. The
-                server keeps the key, so this isn't end-to-end encrypted
-                {value.usePassword ? " — but your password still is." : ". Add a password to keep it private."}
+                {t("Just")} <span className="font-mono text-foreground">/s/k7m3xq2</span>{" "}
+                {t("— easy to type, no key in the link. The server keeps the key, so this isn't end-to-end encrypted")}
+                {value.usePassword ? t(" — but your password still is.") : t(". Add a password to keep it private.")}
               </span>
             </p>
           )}

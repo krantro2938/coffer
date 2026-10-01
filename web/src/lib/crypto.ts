@@ -12,6 +12,7 @@
  * reordered, dropped or truncated without detection.
  */
 import { argon2id } from "hash-wasm"
+import { t } from "./i18n"
 
 const te = new TextEncoder()
 const td = new TextDecoder()
@@ -145,7 +146,7 @@ async function unseal(key: CryptoKey, sealed: Uint8Array<ArrayBuffer>, aad: stri
 
 export class DecryptError extends Error {
   constructor() {
-    super("Decryption failed — wrong key or tampered data")
+    super(t("Decryption failed — wrong key or tampered data"))
   }
 }
 

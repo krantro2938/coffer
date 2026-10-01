@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
+import { useI18n } from "@/lib/i18n"
 
 export const Route = createFileRoute("/security")({ component: Security })
 
@@ -39,30 +40,30 @@ const sections = [
 ]
 
 function Security() {
+  const { t } = useI18n()
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 sm:px-6">
-        <p className="eyebrow">Security model</p>
-        <h1 className="mt-3 text-4xl font-medium sm:text-5xl">How Coffer keeps your data unreadable.</h1>
+        <p className="eyebrow">{t("Security model")}</p>
+        <h1 className="mt-3 text-4xl font-medium sm:text-5xl">{t("How Coffer keeps your data unreadable.")}</h1>
         <p className="mt-5 text-lg text-muted-foreground">
-          Coffer is designed so that a complete compromise of the server — database, disks and code on disk — reveals
-          nothing about what you've stored or shared.
+          {t("Coffer is designed so that a complete compromise of the server — database, disks and code on disk — reveals nothing about what you've stored or shared.")}
         </p>
         <ol className="mt-12 grid gap-4">
           {sections.map((s, i) => (
             <li key={s.title} className="grid gap-3 rounded-2xl border bg-card p-6 sm:grid-cols-[3rem_1fr]">
               <span className="font-mono text-sm text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <h2 className="text-lg font-medium">{s.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                <h2 className="text-lg font-medium">{t(s.title)}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(s.body)}</p>
               </div>
             </li>
           ))}
         </ol>
         <p className="mt-10 rounded-2xl bg-secondary p-5 text-sm text-secondary-foreground">
-          <strong className="font-medium">One honest caveat:</strong> end-to-end encryption in a web app relies on the
-          server delivering honest JavaScript. Self-host Coffer, pin your image version and serve it over HTTPS.
+          <strong className="font-medium">{t("One honest caveat:")}</strong>{" "}
+          {t("end-to-end encryption in a web app relies on the server delivering honest JavaScript. Self-host Coffer, pin your image version and serve it over HTTPS.")}
         </p>
       </main>
       <SiteFooter />

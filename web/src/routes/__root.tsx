@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { SessionProvider } from "@/lib/session"
 import { ThemeProvider, themeInitScript } from "@/lib/theme"
+import { I18nProvider, useI18n } from "@/lib/i18n"
 
 import appCss from "../styles.css?url"
 
@@ -44,26 +45,29 @@ function App() {
   return (
     <QueryClientProvider client={qc}>
       <ThemeProvider>
+        <I18nProvider>
         <SessionProvider>
           <TooltipProvider delayDuration={300}>
             <Outlet />
             <Toaster position="bottom-center" />
           </TooltipProvider>
         </SessionProvider>
+        </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )
 }
 
 function NotFound() {
+  const { t } = useI18n()
   return (
     <main className="grid min-h-svh place-items-center p-6 text-center">
       <div className="grid gap-4">
-        <p className="eyebrow">Error 404</p>
-        <h1 className="text-4xl font-medium">Nothing to see here.</h1>
-        <p className="text-muted-foreground">Which, for an encrypted drive, is kind of the point.</p>
+        <p className="eyebrow">{t("Error 404")}</p>
+        <h1 className="text-4xl font-medium">{t("Nothing to see here.")}</h1>
+        <p className="text-muted-foreground">{t("Which, for an encrypted drive, is kind of the point.")}</p>
         <Button asChild className="mx-auto mt-2">
-          <Link to="/">Back home</Link>
+          <Link to="/">{t("Back home")}</Link>
         </Button>
       </div>
     </main>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getConfig } from "@/lib/api"
+import { useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { triggerDownload } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/register")({ component: Register })
 
 function Register() {
   const { register } = useSession()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig, staleTime: Infinity })
   const [email, setEmail] = useState("")
@@ -28,8 +30,8 @@ function Register() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (strength(password) < 1) return toast.error("Use at least 10 characters")
-    if (password !== confirm) return toast.error("Passwords don't match")
+    if (strength(password) < 1) return toast.error(t("Use at least 10 characters"))
+    if (password !== confirm) return toast.error(t("Passwords don't match"))
     setBusy(true)
     try {
       setRecovery(await register(email, password, false))
@@ -42,7 +44,7 @@ function Register() {
 
   if (recovery) {
     const download = () => {
-      const text = `Coffer recovery key\n\nAccount: ${email}\nRecovery key: ${recovery}\n\nKeep this somewhere safe and offline. Anyone with this key and your email can reset your password.\n`
+      const text = t("Coffer recovery key\n\nAccount: {email}\nRecovery key: {key}\n\nKeep this somewhere safe and offline. Anyone with this key and your email can reset your password.\n", { email, key: recovery })
       triggerDownload(new Blob([text], { type: "text/plain" }), "coffer-recovery-key.txt")
       setSaved(true)
     }
@@ -50,11 +52,10 @@ function Register() {
       <AuthLayout>
         <div className="grid gap-6">
           <div>
-            <p className="eyebrow">Last step</p>
-            <h1 className="mt-2 text-3xl font-medium">Save your recovery key</h1>
+            <p className="eyebrow">{t("Last step")}</p>
+            <h1 className="mt-2 text-3xl font-medium">{t("Save your recovery key")}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              We can't reset your password — we never had it. This key is the only way back into your drive if you
-              forget it.
+              {t("We can't reset your password — we never had it. This key is the only way back into your drive if you forget it.")}
             </p>
           </div>
           <div className="rounded-2xl border border-dashed bg-muted/40 p-4">
@@ -64,22 +65,22 @@ function Register() {
             <Button
               variant="outline"
               onClick={() => {
-                copy(recovery, "Recovery key copied")
+                copy(recovery, t("Recovery key copied"))
                 setSaved(true)
               }}
             >
-              {copied === recovery ? <CheckIcon /> : <CopyIcon />} Copy
+              {copied === recovery ? <CheckIcon /> : <CopyIcon />} {t("Copy")}
             </Button>
             <Button variant="outline" onClick={download}>
-              <DownloadIcon /> Download
+              <DownloadIcon /> {t("Download")}
             </Button>
           </div>
           <div className="flex gap-3 rounded-xl bg-coral-soft/60 p-3 text-sm">
             <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-coral" />
-            <p>Store it in a password manager or print it. It won't be shown again.</p>
+            <p>{t("Store it in a password manager or print it. It won't be shown again.")}</p>
           </div>
           <Button size="lg" disabled={!saved} onClick={() => navigate({ to: "/drive" })}>
-            I've saved it — open my drive <ArrowRightIcon data-icon="inline-end" />
+            {t("I've saved it — open my drive")} <ArrowRightIcon data-icon="inline-end" />
           </Button>
         </div>
       </AuthLayout>
@@ -90,16 +91,16 @@ function Register() {
     <AuthLayout>
       <form onSubmit={submit} className="grid gap-6">
         <div>
-          <h1 className="text-3xl font-medium">Create your drive</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Just an email and a password. No verification, no tracking.</p>
+          <h1 className="text-3xl font-medium">{t("Create your drive")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("Just an email and a password. No verification, no tracking.")}</p>
         </div>
         {config && !config.allowRegistration ? (
-          <p className="rounded-xl border bg-muted/40 p-4 text-sm">Registration is closed on this server.</p>
+          <p className="rounded-xl border bg-muted/40 p-4 text-sm">{t("Registration is closed on this server.")}</p>
         ) : (
           <>
             <div className="grid gap-4">
               <div className="grid gap-1.5">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("Email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -111,7 +112,7 @@ function Register() {
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("Password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -124,7 +125,7 @@ function Register() {
                 <PasswordStrength password={password} />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="confirm">Confirm password</Label>
+                <Label htmlFor="confirm">{t("Confirm password")}</Label>
                 <Input
                   id="confirm"
                   type="password"
@@ -139,20 +140,20 @@ function Register() {
             <Button size="lg" type="submit" disabled={busy}>
               {busy ? (
                 <>
-                  <Loader2Icon className="animate-spin" /> Generating keys…
+                  <Loader2Icon className="animate-spin" /> {t("Generating keys…")}
                 </>
               ) : (
                 <>
-                  Create drive <ArrowRightIcon data-icon="inline-end" />
+                  {t("Create drive")} <ArrowRightIcon data-icon="inline-end" />
                 </>
               )}
             </Button>
           </>
         )}
         <p className="text-center text-sm text-muted-foreground">
-          Already have one?{" "}
+          {t("Already have one?")}{" "}
           <Link to="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Sign in
+            {t("Sign in")}
           </Link>
         </p>
       </form>

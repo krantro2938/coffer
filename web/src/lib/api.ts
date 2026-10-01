@@ -1,11 +1,13 @@
 import type { ItemKind, KdfParams } from "./crypto"
+import { t } from "./i18n"
 
 export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
   ) {
-    super(message)
+    // Server and client messages are English; show them in the reader's language.
+    super(t(message))
   }
 }
 

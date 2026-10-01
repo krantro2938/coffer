@@ -33,6 +33,7 @@ import {
   type ItemMeta,
 } from "@/lib/crypto"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { useI18n } from "@/lib/i18n"
 import { downloadZip, fileBlobOpts, type BundleFile, type Manifest } from "@/lib/bundle"
 import { downloadToBlob, saveDecrypted, triggerDownload } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
@@ -59,6 +60,7 @@ type State =
 
 function SharePage() {
   const { id } = Route.useParams()
+  const { t } = useI18n()
   const [state, setState] = useState<State>({ s: "loading" })
   const [secret, setSecret] = useState("")
   const [password, setPassword] = useState("")
@@ -86,15 +88,15 @@ function SharePage() {
     const info = state.info
     const secretBytes = b32decode(secret)
     if (!secretBytes || secretBytes.length !== SHARE_SECRET_BYTES || normalizeCode(secret).length !== 16) {
-      toast.error("That key doesn't look right", { description: "It should be 16 characters, like h4c9-w2pz-8rtf-6mxn." })
+      toast.error(t("That key doesn't look right"), { description: t("It should be 16 characters, like h4c9-w2pz-8rtf-6mxn.") })
       return
     }
     if (info.hasPassword && !password) {
-      toast.error("This link needs a password")
+      toast.error(t("This link needs a password"))
       return
     }
     try {
-      setWorking(info.hasPassword ? "Deriving key from password" : "Unlocking")
+      setWorking(info.hasPassword ? t("Deriving key from password") : t("Unlocking"))
       const pwKey = info.hasPassword ? await stretch(password, fromB64(info.pwSalt!), info.pwKdf!) : undefined
       const keys = await shareKeys(secretBytes, pwKey)
       const open = await api<ShareOpen>(`/api/s/${encodeURIComponent(id)}/open`, { body: { access: toB64(keys.access) } })
@@ -106,7 +108,7 @@ function SharePage() {
       const data: Opened = { open, meta, fileKey }
       const small = open.size <= PREVIEW_LIMIT
       if (open.kind === "bundle" || open.kind === "text" || (small && /^(image|video|audio)\//.test(meta.type))) {
-        setWorking("Decrypting")
+        setWorking(t("Decrypting"))
         const blob = await downloadToBlob({
           url: `/api/s/${id}/blob`,
           headers: { "X-Ticket": open.ticket },
@@ -124,7 +126,7 @@ function SharePage() {
       setState({ s: "opened", data })
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) setState({ s: "gone", message: e.message })
-      else toast.error(e instanceof ApiError ? e.message : "Couldn't decrypt — the link may be damaged")
+      else toast.error(e instanceof ApiError ? e.message : t("Couldn't decrypt — the link may be damaged"))
     } finally {
       setWorking(null)
       setProgress(0)
@@ -153,13 +155,12 @@ function SharePage() {
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-coral-soft">
                   <FlameIcon className="size-6 text-coral" />
                 </span>
-                <h1 className="text-2xl font-medium">This link is gone</h1>
+                <h1 className="text-2xl font-medium">{t("This link is gone")}</h1>
                 <p className="text-sm text-muted-foreground">
-                  It may have expired, reached its view limit, or been revoked by its owner. There's nothing left to
-                  decrypt — that's by design.
+                  {t("It may have expired, reached its view limit, or been revoked by its owner. There's nothing left to decrypt — that's by design.")}
                 </p>
                 <Button asChild variant="secondary" className="mx-auto mt-2">
-                  <Link to="/">Share something yourself</Link>
+                  <Link to="/">{t("Share something yourself")}</Link>
                 </Button>
               </div>
             </Shell>
@@ -179,9 +180,9 @@ function SharePage() {
                     <LockKeyholeIcon className="size-6" />
                   </span>
                   <div>
-                    <h1 className="text-2xl font-medium">Someone sent you something private</h1>
+                    <h1 className="text-2xl font-medium">{t("Someone sent you something private")}</h1>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      It will be decrypted right here in your browser. Nothing readable ever touches the server.
+                      {t("It will be decrypted right here in your browser. Nothing readable ever touches the server.")}
                     </p>
                   </div>
                 </div>
@@ -189,7 +190,7 @@ function SharePage() {
                 {state.s === "missing" && (
                   <div className="grid gap-1.5">
                     <label className="eyebrow" htmlFor="secret">
-                      Decryption key
+                      {t("Decryption key")}
                     </label>
                     <Input
                       id="secret"
@@ -202,21 +203,21 @@ function SharePage() {
                       spellCheck={false}
                       autoFocus
                     />
-                    <p className="text-xs text-muted-foreground">This link arrived without its key. Ask the sender for it.</p>
+                    <p className="text-xs text-muted-foreground">{t("This link arrived without its key. Ask the sender for it.")}</p>
                   </div>
                 )}
 
                 {state.info.hasPassword && (
                   <div className="grid gap-1.5">
                     <label className="eyebrow flex items-center gap-1.5" htmlFor="pw">
-                      <KeyRoundIcon className="size-3" /> Password required
+                      <KeyRoundIcon className="size-3" /> {t("Password required")}
                     </label>
                     <Input
                       id="pw"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter the password you were given"
+                      placeholder={t("Enter the password you were given")}
                       autoComplete="off"
                       data-1p-ignore
                       data-lpignore="true"
@@ -241,12 +242,12 @@ function SharePage() {
                   </div>
                 ) : (
                   <Button size="lg" type="submit" className="w-full">
-                    <LockKeyholeOpenIcon /> Decrypt
+                    <LockKeyholeOpenIcon /> {t("Decrypt")}
                   </Button>
                 )}
                 <p className="flex items-start justify-center gap-1.5 text-center text-xs text-muted-foreground">
                   <FlameIcon className="mt-px size-3.5 shrink-0" />
-                  Some links self-destruct once opened. Save what you need.
+                  {t("Some links self-destruct once opened. Save what you need.")}
                 </p>
               </form>
             </Shell>
@@ -271,6 +272,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 function OpenedView({ id, data }: { id: string; data: Opened }) {
   const { open, meta, fileKey, text, previewUrl } = data
   const { copy, copied } = useCopy()
+  const { t } = useI18n()
   const [saving, setSaving] = useState<number | null>(null)
   const isImage = meta.type.startsWith("image/")
   const isVideo = meta.type.startsWith("video/")
@@ -310,14 +312,14 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
           <div className="flex items-center gap-3">
             <FileGlyph kind={open.kind} type={meta.type} className="size-12" />
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium" title={meta.name}>{open.kind === "text" ? "Private note" : meta.name}</p>
+              <p className="truncate font-medium" title={meta.name}>{open.kind === "text" ? t("Private note") : meta.name}</p>
               <p className="text-sm text-muted-foreground">
                 {formatBytes(meta.size)}
-                {open.expiresAt ? ` · link expires ${relativeTime(open.expiresAt)}` : ""}
+                {open.expiresAt ? ` · ${t("link expires {when}", { when: relativeTime(open.expiresAt) })}` : ""}
               </p>
             </div>
             <span className="hidden items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground sm:flex">
-              <ShieldCheckIcon className="size-3.5" /> Verified
+              <ShieldCheckIcon className="size-3.5" /> {t("Verified")}
             </span>
           </div>
 
@@ -330,8 +332,8 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
                 size="icon-sm"
                 variant="outline"
                 className="absolute top-2.5 right-2.5"
-                onClick={() => copy(text, "Copied")}
-                aria-label="Copy text"
+                onClick={() => copy(text, t("Copied"))}
+                aria-label={t("Copy text")}
               >
                 {copied === text ? <CheckIcon /> : <CopyIcon />}
               </Button>
@@ -348,7 +350,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
             <div className="grid gap-2 rounded-full border bg-muted/40 px-5 py-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2">
-                  <Loader2Icon className="size-3.5 animate-spin" /> Decrypting
+                  <Loader2Icon className="size-3.5 animate-spin" /> {t("Decrypting")}
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">{Math.round(saving * 100)}%</span>
               </div>
@@ -357,11 +359,11 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
           ) : (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button size="lg" onClick={save} className="flex-1">
-                <DownloadIcon /> Download{open.kind === "text" ? " as .txt" : ""}
+                <DownloadIcon /> {open.kind === "text" ? t("Download as .txt") : t("Download")}
               </Button>
               {text !== undefined && (
-                <Button size="lg" variant="outline" onClick={() => copy(text, "Copied")} className="flex-1">
-                  <CopyIcon /> Copy text
+                <Button size="lg" variant="outline" onClick={() => copy(text, t("Copied"))} className="flex-1">
+                  <CopyIcon /> {t("Copy text")}
                 </Button>
               )}
             </div>
@@ -375,6 +377,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
 }
 
 function ViewsNotice({ open }: { open: ShareOpen }) {
+  const { t, tn } = useI18n()
   return (
     <>
       {(open.burned || open.viewsLeft !== undefined) && (
@@ -386,8 +389,8 @@ function ViewsNotice({ open }: { open: ShareOpen }) {
           )}
           <p>
             {open.burned
-              ? "This link has now self-destructed. Save anything you need before closing this page — it can't be opened again."
-              : `This link can be opened ${open.viewsLeft} more time${open.viewsLeft === 1 ? "" : "s"}.`}
+              ? t("This link has now self-destructed. Save anything you need before closing this page — it can't be opened again.")
+              : tn(open.viewsLeft ?? 0, "This link can be opened {n} more time.", "This link can be opened {n} more times.")}
           </p>
         </div>
       )}
@@ -397,6 +400,7 @@ function ViewsNotice({ open }: { open: ShareOpen }) {
 
 function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest: Manifest }) {
   const { open } = data
+  const { t, tn } = useI18n()
   const [zipping, setZipping] = useState<number | null>(null)
   const [saving, setSaving] = useState<string | null>(null)
   const total = manifest.files.reduce((n, f) => n + f.size, 0)
@@ -405,7 +409,7 @@ function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest
     try {
       setZipping(0)
       const failed = await downloadZip(id, open.ticket, manifest, setZipping)
-      if (failed.length) toast.warning(`${failed.length} file${failed.length === 1 ? " was" : "s were"} no longer available`)
+      if (failed.length) toast.warning(tn(failed.length, "{n} file was no longer available", "{n} files were no longer available"))
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -435,8 +439,8 @@ function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest
                 {manifest.name}
               </p>
               <p className="text-sm text-muted-foreground">
-                {manifest.files.length} file{manifest.files.length === 1 ? "" : "s"} · {formatBytes(total)}
-                {open.expiresAt ? ` · expires ${relativeTime(open.expiresAt)}` : ""}
+                {tn(manifest.files.length, "{n} file", "{n} files")} · {formatBytes(total)}
+                {open.expiresAt ? ` · ${t("expires {when}", { when: relativeTime(open.expiresAt) })}` : ""}
               </p>
             </div>
           </div>
@@ -461,7 +465,7 @@ function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest
                     size="icon-sm"
                     onClick={() => saveOne(f)}
                     disabled={saving !== null || zipping !== null}
-                    aria-label={`Download ${f.name}`}
+                    aria-label={t("Download {name}", { name: f.name })}
                   >
                     {saving === f.id ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
                   </Button>
@@ -474,7 +478,7 @@ function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest
             <div className="grid gap-2 rounded-full border bg-muted/40 px-5 py-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2">
-                  <Loader2Icon className="size-3.5 animate-spin" /> Decrypting & zipping
+                  <Loader2Icon className="size-3.5 animate-spin" /> {t("Decrypting & zipping")}
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">{Math.round(zipping * 100)}%</span>
               </div>
@@ -482,7 +486,7 @@ function FolderView({ id, data, manifest }: { id: string; data: Opened; manifest
             </div>
           ) : (
             <Button size="lg" onClick={zipAll} disabled={saving !== null}>
-              <DownloadIcon /> Download all as .zip
+              <DownloadIcon /> {t("Download all as .zip")}
             </Button>
           )}
         </div>

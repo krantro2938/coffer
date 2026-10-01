@@ -5,19 +5,21 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ShareList } from "@/components/drive-dialogs"
 import { useDrive } from "@/lib/drive"
+import { useI18n } from "@/lib/i18n"
 
 export const Route = createFileRoute("/_app/links")({ component: LinksPage })
 
 function LinksPage() {
   const { data, isLoading } = useDrive()
+  const { t } = useI18n()
   const names = useMemo(() => new Map([...(data?.items ?? []), ...(data?.bundles ?? [])].map((i) => [i.id, i])), [data])
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
-      <p className="eyebrow">Active links</p>
-      <h1 className="mt-1 text-3xl font-medium">Shared links</h1>
+      <p className="eyebrow">{t("Active links")}</p>
+      <h1 className="mt-1 text-3xl font-medium">{t("Shared links")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Every link that can still be opened. Revoking one destroys its wrapped key on the server immediately.
+        {t("Every link that can still be opened. Revoking one destroys its wrapped key on the server immediately.")}
       </p>
       <div className="mt-6">
         {isLoading ? (
@@ -33,12 +35,12 @@ function LinksPage() {
             <span className="grid size-14 place-items-center rounded-2xl bg-lavender-soft text-accent-foreground">
               <Link2Icon className="size-6" />
             </span>
-            <p className="mt-5 font-medium">No active links</p>
+            <p className="mt-5 font-medium">{t("No active links")}</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Share a file from your drive and it will show up here, until it expires or burns.
+              {t("Share a file from your drive and it will show up here, until it expires or burns.")}
             </p>
             <Button asChild className="mt-6">
-              <Link to="/drive">Go to my drive</Link>
+              <Link to="/drive">{t("Go to my drive")}</Link>
             </Button>
           </div>
         )}

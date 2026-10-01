@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SiteHeader } from "@/components/site-header"
 import { normalizeCode } from "@/lib/crypto"
+import { useI18n } from "@/lib/i18n"
 
 export const Route = createFileRoute("/receive")({ component: Receive })
 
@@ -22,13 +23,14 @@ function parse(idRaw: string, keyRaw: string): { id: string; secret: string } | 
 
 function Receive() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const [id, setId] = useState("")
   const [key, setKey] = useState("")
 
   const go = () => {
     const p = parse(id, key)
     if (!p) {
-      toast.error("That code doesn't look right", { description: "Codes look like k7m3xq2 followed by the key." })
+      toast.error(t("That code doesn't look right"), { description: t("Codes look like k7m3xq2 followed by the key.") })
       return
     }
     // Navigate with the key in the fragment so it never hits the server.
@@ -51,17 +53,16 @@ function Receive() {
               <InboxIcon className="size-5" />
             </span>
             <div>
-              <h1 className="text-2xl font-medium">Receive a share</h1>
+              <h1 className="text-2xl font-medium">{t("Receive a share")}</h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Type the short code you were given, or paste the full link. Letters are case-insensitive and look-alikes
-                like O/0 are forgiven.
+                {t("Type the short code you were given, or paste the full link. Letters are case-insensitive and look-alikes like O/0 are forgiven.")}
               </p>
             </div>
           </div>
           <div className="grid gap-3">
             <div className="grid gap-1.5">
               <label htmlFor="code" className="eyebrow">
-                Code or link
+                {t("Code or link")}
               </label>
               <Input
                 id="code"
@@ -78,7 +79,7 @@ function Receive() {
             {!id.includes("#") && !/\s\S/.test(id.trim()) && (
               <div className="grid gap-1.5">
                 <label htmlFor="key" className="eyebrow">
-                  Key
+                  {t("Key")}
                 </label>
                 <Input
                   id="key"
@@ -94,7 +95,7 @@ function Receive() {
             )}
           </div>
           <Button size="lg" type="submit" disabled={!id.trim()}>
-            Continue <ArrowRightIcon data-icon="inline-end" />
+            {t("Continue")} <ArrowRightIcon data-icon="inline-end" />
           </Button>
         </form>
       </main>
