@@ -1,0 +1,9 @@
+{
+  "short_name": "Coffer",
+  "name": "Coffer — encrypted sharing",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1f4d36",
+  "background_color": "#f7f6f1"
+}

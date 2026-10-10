@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "import", "jsx-a11y", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "env": { "browser": true, "es2024": true },
+  "ignorePatterns": ["dist", ".tanstack", "src/routeTree.gen.ts"],
+  "rules": {
+    // The automatic JSX runtime needs no React import.
+    "react/react-in-jsx-scope": "off",
+
+    // Dialogs and the sign-in forms focus their first field on purpose.
+    "jsx-a11y/no-autofocus": "off",
+    // Previews play what the user decrypted; there are no captions to offer.
+    "jsx-a11y/media-has-caption": "off",
+    // The option picker is a popover listbox, which <select> cannot be styled into.
+    "jsx-a11y/prefer-tag-over-role": "off",
+
+    // Array#toSorted is ES2023; the build targets ES2022.
+    "unicorn/no-array-sort": "off",
+    // IndexedDB requests are written with onsuccess/onerror throughout.
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/consistent-function-scoping": "off",
+
+    // Advice worth working through, but not yet a gate: these flag existing
+    // patterns (resetting state when a prop changes, refs read while rendering).
+    "react/set-state-in-effect": "warn",
+    "react/refs": "warn",
+    "react/memo-dependencies": "warn",
+    "react/exhaustive-effect-dependencies": "warn"
+  }
+}

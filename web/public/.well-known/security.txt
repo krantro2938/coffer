@@ -1,0 +1,6 @@
+Contact: https://github.com/krantro2938/coffer/security/advisories/new
+Contact: mailto:coffer-support@aansl.com
+Expires: 2027-10-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://coffer.aansl.com/.well-known/security.txt
+Policy: https://github.com/krantro2938/coffer/blob/main/docs/security.md#reporting-a-vulnerability

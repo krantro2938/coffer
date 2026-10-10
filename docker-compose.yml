@@ -1,0 +1,91 @@
+# Coffer — end-to-end encrypted file & text sharing.
+#
+#   Local / behind your own proxy:   docker compose up -d        → http://localhost:8080
+#   Public with automatic HTTPS:     DOMAIN=drop.example.com TRUST_PROXY=true HSTS=true \
+#                                      docker compose --profile tls up -d
+#
+# Browsers only allow WebCrypto on HTTPS or localhost, so use the `tls` profile
+# (or your own TLS proxy) for anything other than local use.
+
+services:
+  coffer:
+    # `docker compose pull` fetches the image CI published for main; without it, `up` builds from this checkout.
+    # COFFER_TAG picks a release: a commit's short hash to pin or roll back, `latest` otherwise.
+    build: .
+    image: ghcr.io/krantro2938/coffer:${COFFER_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${COFFER_PORT:-8080}:8080"
+    environment:
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}   # let people create drives
+      ALLOW_ANONYMOUS: ${ALLOW_ANONYMOUS:-true}         # allow drops without an account
+      MAX_FILE_MB: ${MAX_FILE_MB:-1024}                 # per file, in a drive
+      ANON_MAX_SHARE_MB: ${ANON_MAX_SHARE_MB:-100}      # per quick share, all its files together
+      ANON_MAX_FILES: ${ANON_MAX_FILES:-5}              # files per quick share
+      USER_QUOTA_MB: ${USER_QUOTA_MB:-10240}            # drive size per account when billing is off
+      ANON_MAX_EXPIRY_HOURS: ${ANON_MAX_EXPIRY_HOURS:-168}
+      SESSION_DAYS: ${SESSION_DAYS:-14}
+      TRUST_PROXY: ${TRUST_PROXY:-false}                # set true when behind a reverse proxy
+      HSTS: ${HSTS:-false}
+      PUBLIC_URL: ${PUBLIC_URL:-}                       # e.g. https://coffer.example
+      # S3-compatible storage for file contents (leave S3_BUCKET empty to keep them in the volume).
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}                     # https://s3.<region>.example.com
+      S3_REGION: ${S3_REGION:-}                         # only if the endpoint does not name it
+      S3_PREFIX: ${S3_PREFIX:-}                         # e.g. prod/ ; required if anything else uses the bucket
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      # Paddle subscriptions (leave PADDLE_API_KEY empty for free drives). See README.
+      PADDLE_API_KEY: ${PADDLE_API_KEY:-}
+      PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
+      PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
+      PADDLE_CHECKOUT_URL: ${PADDLE_CHECKOUT_URL:-}
+      LAPSE_GRACE_DAYS: ${LAPSE_GRACE_DAYS:-30}         # days a lapsed drive is kept before it is emptied
+      # Email codes at sign-up and lapse warnings, through Resend (leave empty to skip verification).
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}                         # e.g. Coffer <no-reply@mail.example.com>
+      # "Continue with Google" (optional). Redirect URI: <PUBLIC_URL>/api/auth/google/callback
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Admin console on port 8081, for its own hostname. Off while ADMIN_TOKEN is empty (24+ characters).
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      ADMIN_NOTIFY_EMAIL: ${ADMIN_NOTIFY_EMAIL:-}       # hears about new abuse reports
+    volumes:
+      - coffer-data:/data
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  # Optional TLS front-end with automatic Let's Encrypt certificates.
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["tls"]
+    restart: unless-stopped
+    depends_on: [coffer]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+configs:
+  caddyfile:
+    content: |
+      {$$DOMAIN} {
+        encode zstd gzip
+        reverse_proxy coffer:8080 {
+          header_up X-Forwarded-Proto {scheme}
+        }
+      }
+
+volumes:
+  coffer-data:
+  caddy-data:
+  caddy-config:
