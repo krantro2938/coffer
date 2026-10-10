@@ -1,0 +1,8 @@
+**/node_modules
+web/dist
+web/.tanstack
+server/data
+**/.git
+*.md
+.env
+**/.env

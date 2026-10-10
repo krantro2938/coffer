@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or idea
+    url: https://github.com/krantro2938/coffer/discussions
+    about: Ask how something works or suggest a feature.
+  - name: Security problem
+    url: https://github.com/krantro2938/coffer/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.

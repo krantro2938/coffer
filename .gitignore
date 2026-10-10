@@ -1,0 +1,6 @@
+node_modules/
+web/dist/
+server/data/
+server/coffer
+.env
+Акселератор МИРЭА/
