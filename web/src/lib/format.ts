@@ -25,6 +25,31 @@ export function relativeTime(unixSeconds: number): string {
   return new Date(unixSeconds * 1000).toLocaleDateString(currentLang(), { dateStyle: "medium" })
 }
 
+/** The exact moment, 24-hour, to the second: what a tooltip over a relative time shows. */
+export function exactTime(unixSeconds: number): string {
+  return new Date(unixSeconds * 1000).toLocaleString(currentLang(), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  })
+}
+
+/** "11/10/2026, 22:44": day first and 24-hour, whatever the browser's locale. Used to name new notes. */
+export function noteStamp(date = new Date()): string {
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  })
+}
+
 export function shortDate(unixSeconds: number): string {
   return new Date(unixSeconds * 1000).toLocaleDateString(currentLang(), { month: "short", day: "numeric", year: "numeric" })
 }

@@ -1,6 +1,9 @@
 /** Where people reach the operator: support, privacy requests and abuse reports. */
 export const SUPPORT_EMAIL = "coffer-support@aansl.com"
 
+/** The address the marketing shows in its examples. */
+export const SITE_HOST = "coffer.rest"
+
 /** Where the source lives. */
 export const GITHUB_URL = "https://github.com/krantro2938/coffer"
 

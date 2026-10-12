@@ -73,8 +73,24 @@ function Privacy() {
         </p>
       </Clause>
 
+      <Clause title="Counting visits">
+        <p>
+          We count visits to our pages and a short list of actions, such as opening a share dialog, making an upload link or pressing a
+          button on the home page, with Umami, a tool we host ourselves on our own domain. It sets no cookies and stores nothing in your
+          browser, and it is not shared with anyone.
+        </p>
+        <p>
+          It receives the kind of page you are on ("a share link", "the drive", "the home page"), never the address of a link, a file name,
+          a key or anything you store. For the public pages it also receives the website that sent you there, with its path. It also
+          receives your browser's language and screen size, and, as any server does, your IP address and browser string, from which it works
+          out a country, browser and device type and an anonymous visit identifier that changes regularly; it does not keep the address
+          itself. Nothing is sent from the admin console or the payment page, and nothing at all when your browser says Do Not Track or
+          Global Privacy Control.
+        </p>
+      </Clause>
+
       <Clause title="Cookies and browser storage">
-        <p>We use no advertising or analytics cookies and no third-party trackers. We use only what the app needs to work:</p>
+        <p>We use no advertising cookies and no third-party trackers. We use only what the app needs to work:</p>
         <ul>
           <li>a session cookie while you are signed in, and short-lived cookies during a Google sign-in;</li>
           <li>a cookie remembering your language;</li>

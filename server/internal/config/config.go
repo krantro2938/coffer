@@ -2,8 +2,11 @@ package config
 
 import (
 	"bufio"
+	"errors"
 	"log"
+	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +23,7 @@ type Config struct {
 	AnonMaxShareSize  int64 // plaintext bytes per quick share, all files together
 	AnonMaxFiles      int64 // files per quick share
 	UserQuota         int64 // bytes of ciphertext per user when billing is off
+	FreeQuota         int64 // bytes of ciphertext on the free account, when billing is on
 	AnonMaxExpiry     time.Duration
 	SessionTTL        time.Duration
 	TrustProxy        bool
@@ -52,6 +56,11 @@ type Config struct {
 	// Google sign-in (optional).
 	GoogleClientID string
 	GoogleSecret   string
+
+	// Visit counting on the public pages, through a self-hosted Umami (optional).
+	// Both are set, or neither: Load clears them if either is missing or malformed.
+	AnalyticsURL    string // the Umami origin, e.g. https://stats.example.com
+	AnalyticsSiteID string // the website's UUID in Umami
 }
 
 // Load reads the configuration from the environment, and from a .env file if
@@ -69,6 +78,7 @@ func Load() Config {
 		AnonMaxShareSize:  envInt("ANON_MAX_SHARE_MB", 100) << 20,
 		AnonMaxFiles:      envInt("ANON_MAX_FILES", 5),
 		UserQuota:         envInt("USER_QUOTA_MB", 10240) << 20,
+		FreeQuota:         envInt("FREE_QUOTA_MB", 300) << 20,
 		AnonMaxExpiry:     time.Duration(envInt("ANON_MAX_EXPIRY_HOURS", 168)) * time.Hour,
 		SessionTTL:        time.Duration(envInt("SESSION_DAYS", 14)) * 24 * time.Hour,
 		TrustProxy:        envBool("TRUST_PROXY", false),
@@ -95,6 +105,13 @@ func Load() Config {
 		GoogleClientID: env("GOOGLE_CLIENT_ID", ""),
 		GoogleSecret:   env("GOOGLE_CLIENT_SECRET", ""),
 	}
+	if rawURL, rawID := env("ANALYTICS_URL", ""), env("ANALYTICS_SITE_ID", ""); rawURL != "" || rawID != "" {
+		if u, id, err := Analytics(rawURL, rawID); err != nil {
+			log.Printf("config: analytics stays off: %v", err)
+		} else {
+			c.AnalyticsURL, c.AnalyticsSiteID = u, id
+		}
+	}
 	if c.AdminToken != "" && len(c.AdminToken) < 24 {
 		log.Fatal("config: ADMIN_TOKEN must be at least 24 characters")
 	}
@@ -102,6 +119,28 @@ func Load() Config {
 		log.Fatal("config: S3_BUCKET needs S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY and S3_ENDPOINT")
 	}
 	return c
+}
+
+var siteIDRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+// Analytics checks the two analytics settings and returns the Umami origin
+// and site ID to use. The origin goes into the content security policy, so
+// anything that is not a bare http(s) origin is refused rather than repaired.
+func Analytics(rawURL, siteID string) (origin, id string, err error) {
+	if rawURL == "" || siteID == "" {
+		return "", "", errors.New("ANALYTICS_URL and ANALYTICS_SITE_ID must both be set")
+	}
+	if !siteIDRe.MatchString(siteID) {
+		return "", "", errors.New("ANALYTICS_SITE_ID is not a UUID")
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Hostname() == "" {
+		return "", "", errors.New("ANALYTICS_URL must be an http(s) address such as https://stats.example.com")
+	}
+	if u.User != nil || (u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.Fragment != "" || strings.ContainsAny(rawURL, " \t\r\n;,'\"") {
+		return "", "", errors.New("ANALYTICS_URL must be an origin only: scheme, host and optional port")
+	}
+	return u.Scheme + "://" + u.Host, strings.ToLower(siteID), nil
 }
 
 // loadDotEnv reads KEY=VALUE lines from the first file that exists. Variables

@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// Setup creates whatever is missing in the Paddle account: a product and
-// monthly price per plan, a client-side token for the checkout page and, when
+// Setup creates whatever is missing in the Paddle account: a product and a
+// monthly and a yearly price per plan, a client-side token for the checkout page and, when
 // given the site's public URL, the webhook destination. Safe to run again.
 // It reports on stderr, prints lines for the .env file on stdout and returns
 // the process exit code.
@@ -39,15 +39,17 @@ func Setup(key, clientToken, webhookSecret string, args []string) int {
 		return fail("list products", err)
 	}
 	for _, pl := range Plans {
-		tag := Tag{Plan: pl.ID}
-		productID, hasPrice := "", false
+		productID := ""
+		have := map[string]bool{} // intervals this plan already has an active price for
 		for _, p := range products {
 			if p.CustomData == nil || p.CustomData.Plan != pl.ID {
 				continue
 			}
 			productID = p.ID
 			for _, pr := range p.Prices {
-				hasPrice = hasPrice || (pr.Status == "active" && pr.CustomData != nil && pr.CustomData.Plan == pl.ID)
+				if plan, interval := pr.listed(); pr.Status == "active" && plan == pl.ID {
+					have[interval] = true
+				}
 			}
 		}
 		if productID == "" {
@@ -58,7 +60,7 @@ func Setup(key, clientToken, webhookSecret string, args []string) int {
 				"name":         "Coffer " + pl.Name,
 				"description":  fmt.Sprintf("%d GB of end-to-end encrypted storage", pl.Quota>>30),
 				"tax_category": "saas",
-				"custom_data":  tag,
+				"custom_data":  Tag{Plan: pl.ID},
 			}
 			err := b.Call(ctx, http.MethodPost, "/products", product, &created)
 			if err != nil {
@@ -72,23 +74,32 @@ func Setup(key, clientToken, webhookSecret string, args []string) int {
 			productID = created.ID
 			fmt.Fprintf(os.Stderr, "created product %s (%s)\n", pl.Name, productID)
 		}
-		if hasPrice {
-			fmt.Fprintf(os.Stderr, "plan %s is already set up\n", pl.Name)
-			continue
+		for _, c := range []struct {
+			interval string
+			cents    int
+			tag      Tag
+		}{
+			{Month, pl.Cents, Tag{Plan: pl.ID}},
+			{Year, pl.YearCents(), Tag{PlanYear: pl.ID}},
+		} {
+			if have[c.interval] {
+				fmt.Fprintf(os.Stderr, "plan %s already has its %sly price\n", pl.Name, c.interval)
+				continue
+			}
+			err := b.Call(ctx, http.MethodPost, "/prices", map[string]any{
+				"product_id":    productID,
+				"name":          pl.Name,
+				"description":   pl.Name + ", " + c.interval + "ly",
+				"unit_price":    map[string]string{"amount": fmt.Sprint(c.cents), "currency_code": "EUR"},
+				"billing_cycle": map[string]any{"interval": c.interval, "frequency": 1},
+				"quantity":      map[string]int{"minimum": 1, "maximum": 1},
+				"custom_data":   c.tag,
+			}, nil)
+			if err != nil {
+				return fail("create "+c.interval+"ly price "+pl.Name, err)
+			}
+			fmt.Fprintf(os.Stderr, "created price for %s: €%d.%02d / %s\n", pl.Name, c.cents/100, c.cents%100, c.interval)
 		}
-		err := b.Call(ctx, http.MethodPost, "/prices", map[string]any{
-			"product_id":    productID,
-			"name":          pl.Name,
-			"description":   pl.Name + ", monthly",
-			"unit_price":    map[string]string{"amount": fmt.Sprint(pl.Cents), "currency_code": "EUR"},
-			"billing_cycle": map[string]any{"interval": "month", "frequency": 1},
-			"quantity":      map[string]int{"minimum": 1, "maximum": 1},
-			"custom_data":   tag,
-		}, nil)
-		if err != nil {
-			return fail("create price "+pl.Name, err)
-		}
-		fmt.Fprintf(os.Stderr, "created price for %s: €%d.%02d / month\n", pl.Name, pl.Cents/100, pl.Cents%100)
 	}
 
 	// Lines on stdout are meant for the .env file.

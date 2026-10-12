@@ -2,11 +2,7 @@ import type { Messages } from "../types"
 
 /** Signing up, signing in, recovery and the welcome. */
 const messages: Messages = {
-  "Zero-knowledge drive": "Диск с нулевым разглашением",
   "Your password is the only key. We never see it.": "Ваш пароль — единственный ключ. Мы его никогда не видим.",
-  "Stretched with Argon2id in your browser": "Обрабатывается Argon2id в вашем браузере",
-  "Unwraps a master key that encrypts everything": "Открывает мастер-ключ, которым зашифровано всё",
-  "Server stores only ciphertext and peppered hashes": "Сервер хранит только шифротекст и защищённые хеши",
   "Every file, every name, every folder.": "Каждый файл, каждое имя, каждая папка.",
   "Too short": "Слишком короткий",
   Weak: "Слабый",
@@ -67,15 +63,10 @@ const messages: Messages = {
   "Pick as many as you like and we'll lay out your first folders. Your answer stays in this browser; we never see it.":
     "Отметьте всё, что подходит, — мы подготовим первые папки. Ответ остаётся в этом браузере, мы его не видим.",
   Documents: "Документы",
-  "Passports, contracts, tax papers": "Паспорта, договоры, налоговые бумаги",
   Photos: "Фотографии",
-  "The ones that are nobody's business": "Те, что никого не касаются",
   "Client work": "Работа с клиентами",
-  "Files you are trusted with": "Файлы, которые вам доверили",
   "Passwords and codes": "Пароли и коды",
-  "Recovery keys, PINs, door codes": "Ключи восстановления, ПИН-коды, коды от дверей",
   "Things to send": "То, что нужно отправить",
-  "Links that expire or burn": "Ссылки, которые истекают или сгорают",
   Skip: "Пропустить",
   "Choose my drive": "Выбрать диск",
   "Open my drive": "Открыть диск",
@@ -88,7 +79,7 @@ const messages: Messages = {
   "We hold no copy and no back door, so keep it safe.": "У нас нет ни копии, ни чёрного хода — берегите его.",
   "This is all we hold of your key:": "Вот всё, что есть у нас от вашего ключа:",
   "Setting the combination…": "Набираем комбинацию…",
-  "Your drive is open.": "Диск открыт.",
+  "Your private drive is ready.": "Личный диск готов.",
   "{size} that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
     "{size}, которые прочитаете только вы. Ни мы, ни наш хостинг, ни тот, кому достанутся наши диски.",
   "Space that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
@@ -107,6 +98,9 @@ const messages: Messages = {
   terms: "условия",
   "and the": "и",
   "privacy policy": "политику конфиденциальности",
+  "Your password stays on your device": "Ваш пароль остаётся на вашем устройстве",
+  "It unlocks the key that protects your files": "Он открывает ключ, который защищает ваши файлы",
+  "Our server only stores what it can't read": "Наш сервер хранит только то, что не может прочитать",
 }
 
 export default messages

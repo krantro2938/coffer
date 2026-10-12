@@ -71,9 +71,11 @@ works.
 
 ## Plans and billing
 
-With `PADDLE_API_KEY` set there is no free drive: an account picks a plan (Starter 100 GB, Plus 500 GB, Pro 1 TB,
-defined in `server/internal/paddle`) and pays through [Paddle](https://www.paddle.com). Quick shares stay free and
-account-less: up to 5 files and 100 MB per share. Without the key, drives are free and sized by `USER_QUOTA_MB`.
+With `PADDLE_API_KEY` set an account is on the free account until it picks a plan (Starter 100 GB, Plus 500 GB,
+Pro 1 TB, defined in `server/internal/paddle`) and pays through [Paddle](https://www.paddle.com). The free account
+has `FREE_QUOTA_MB` of space (300 by default), two request links open at a time and share links of 30 days at most;
+nothing is deleted for being on it. Quick shares stay free and account-less: up to 5 files and 100 MB per share.
+Without the key, drives are free, without those limits, and sized by `USER_QUOTA_MB`.
 
 1. `PADDLE_API_KEY=... coffer paddle-setup https://coffer.example` creates the products and prices, a
    client-side token and the webhook destination, and prints the `PADDLE_CLIENT_TOKEN` and
@@ -136,3 +138,20 @@ The database schema is versioned. A new version of the server applies whatever m
 starts, including on databases from before migrations existed, so upgrading is replacing the container. Take a copy
 of the data volume first if you want a way back: an older server does not understand a newer schema's additions,
 though it will run alongside them.
+
+## Counting visits (optional)
+
+To see how the site and the app are used, point Coffer at your own [Umami](https://umami.is), on a subdomain of your
+own:
+
+```sh
+ANALYTICS_URL=https://stats.example.com          # the Umami origin: scheme, host, optional port, no path
+ANALYTICS_SITE_ID=0c1d3e5f-1a2b-4c3d-8e9f-0123456789ab   # the website's ID in Umami
+```
+
+Both must be set; otherwise, or if either is malformed (a log line says so), counting stays off and nothing about it
+reaches the page or the content security policy. In Umami, add a website for your Coffer hostname and copy its ID.
+Umami answers cross-origin requests from any origin, so there is no allowed-origin setting to make there.
+
+Pages report their kind, never an address, and a short fixed list of actions is counted; what is sent, and what is
+not, is listed in [security.md](security.md#visit-counting). Coffer does not load Umami's script.

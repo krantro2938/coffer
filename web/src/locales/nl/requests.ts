@@ -100,6 +100,10 @@ const messages: Messages = {
   "Check your connection and try again.": "Controleer je verbinding en probeer het opnieuw.",
   "About Coffer": "Over Coffer",
   "{n} files were delivered before that.": "Daarvoor is {n} bestand afgeleverd.|Daarvoor zijn {n} bestanden afgeleverd.",
+  "Need files from someone yourself?": "Heb je zelf bestanden van iemand nodig?",
+  "Send your own files the same way. No account needed.": "Stuur je eigen bestanden op dezelfde manier. Geen account nodig.",
+  "Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.":
+    "Je gratis account heeft {n} aanvraaglinks tegelijk open. Sluit er één, of kies een abonnement voor zoveel je wilt.",
 }
 
 export default messages

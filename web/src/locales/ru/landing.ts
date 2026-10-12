@@ -2,62 +2,16 @@ import type { Messages } from "../types"
 
 /** The home page and the quick-share composer on it. */
 const messages: Messages = {
-  "Zero-knowledge · keys never leave your device": "Zero-knowledge · ключи не покидают ваше устройство",
-  "Share anything.": "Делитесь чем угодно.",
-  "Reveal nothing.": "Не раскрывая ничего.",
-  "Files and notes are encrypted in your browser before they leave it. The link carries the key — our server only ever stores noise.":
-    "Файлы и заметки шифруются прямо в браузере, ещё до отправки. Ключ передаётся в самой ссылке — на нашем сервере хранится только «шум».",
-  "AES-GCM per file": "AES-GCM для каждого файла",
-  "Password locked": "Защищено паролем",
-  "Key derived on-device": "Ключ получен на устройстве",
+  "Expires in 7 days · 1 view left": "Истекает через 7 дней · остался 1 просмотр",
   "Share link": "Ссылка",
   "1 day": "1 день",
-  "1 view": "1 просмотр",
   pw: "пароль",
-  "Burned after reading": "Сожжено после прочтения",
-  "Link opened once, then destroyed.": "Ссылку открыли один раз — и она уничтожена.",
-  "Private by construction — not by promise. Even the people running this server can't read what you share.":
-    "Приватность заложена в архитектуру, а не в обещания. Даже те, кто управляет сервером, не могут прочитать то, чем вы делитесь.",
-  "Encrypted in your browser": "Шифрование в браузере",
-  "AES-256-GCM before a single byte is uploaded.": "AES-256-GCM — до того, как на сервер уйдёт хоть один байт.",
-  "Key lives in the link": "Ключ — в самой ссылке",
-  "After the #, which browsers never send to servers.": "После символа #, который браузеры никогда не отправляют на сервер.",
   "Burn after reading": "Сжечь после прочтения",
-  "Links that expire by time, by views, or both.": "Ссылки, которые истекают по времени, по числу просмотров или по обоим условиям.",
-  "Optional passwords": "Пароль по желанию",
-  "Mixed into the key with Argon2id for a second factor.": "Подмешивается в ключ через Argon2id — второй фактор защиты.",
   "Three steps.": "Три шага.",
-  "Zero trust required.": "Доверять никому не нужно.",
-  "Encrypt locally": "Шифрование на устройстве",
-  "A fresh 256-bit key is generated for every file. Your file is sealed in 4 MB chunks, right here in the tab.":
-    "Для каждого файла создаётся новый 256-битный ключ. Файл шифруется блоками по 4 МБ прямо в этой вкладке.",
-  "quarterly-report.pdf": "отчёт-за-квартал.pdf",
-  "Share the link": "Отправьте ссылку",
-  "The decryption key rides in the URL fragment. Add a password, an expiry or a view limit if you like.":
-    "Ключ расшифровки передаётся во фрагменте URL. При желании добавьте пароль, срок жизни или лимит просмотров.",
-  "Decrypt on arrival": "Расшифровка у получателя",
-  "Your recipient's browser fetches the ciphertext and unlocks it locally. Burned links vanish for good.":
-    "Браузер получателя скачивает шифротекст и расшифровывает его локально. Сожжённые ссылки исчезают навсегда.",
-  "Integrity verified · decrypted in 38 ms": "Целостность проверена · расшифровано за 38 мс",
-  "Built to be breached": "Готов ко взлому",
-  "If someone steals our disks,": "Если кто-то украдёт наши диски,",
-  "they get very expensive noise.": "он получит очень дорогой шум.",
-  "No master key on the server. No plaintext file names. Passwords are stretched on your device and never sent. Access tokens are hashed; account hashes are peppered.":
-    "На сервере нет мастер-ключа и нет открытых имён файлов. Пароли обрабатываются на вашем устройстве и никогда не передаются. Токены доступа хранятся в виде хешей, а хеши аккаунтов дополнительно защищены «перцем».",
   bytes: "байт",
-  "Plaintext stored on the server": "Открытых данных на сервере",
   bit: "бит",
-  "Unique key for every file": "Уникальный ключ для каждого файла",
-  "Secret in every share link": "Секрет в каждой ссылке",
   MiB: "МиБ",
-  "Argon2id memory per guess": "Памяти Argon2id на каждую попытку подбора",
-  "Optional account": "Аккаунт — по желанию",
-  "A private drive, when you want one.": "Личный диск — когда он вам нужен.",
-  "Sign up with just an email and a password to keep everything in one encrypted place — folders, notes, and every link you've shared, revocable at any time.":
-    "Зарегистрируйтесь по почте и паролю, чтобы хранить всё в одном зашифрованном месте: папки, заметки и все ваши ссылки, которые можно отозвать в любой момент.",
-  "Folders and file names are encrypted too": "Папки и имена файлов тоже зашифрованы",
   "Revoke any share link instantly": "Любую ссылку можно мгновенно отозвать",
-  "Recovery key so a forgotten password isn't fatal": "Ключ восстановления — забытый пароль не приговор",
   "Create your drive": "Создайте свой диск",
   "I have an account": "У меня есть аккаунт",
   "My drive": "Мой диск",
@@ -65,7 +19,6 @@ const messages: Messages = {
   "Folder · 12 items": "Папка · 12 объектов",
   "passport-scan.jpg": "скан-паспорта.jpg",
   "1.8 MB · 2 links": "1,8 МБ · 2 ссылки",
-  "Wi-Fi & door codes": "Wi-Fi и коды от двери",
   "Note · burned": "Заметка · сожжена",
   "That file is larger than {size}": "Файл больше {size}",
   "Create a free drive to share bigger files.": "Создайте бесплатный диск, чтобы делиться файлами побольше.",
@@ -104,24 +57,55 @@ const messages: Messages = {
   "That's more than {size}": "Это больше, чем {size}",
   "A drive takes files up to {size} each.": "С диском можно отправлять файлы до {size} каждый.",
   "Send files": "Отправить файлы",
-  "Share private files without making the other person sign up for anything.":
-    "Делитесь личными файлами, не заставляя получателя где-либо регистрироваться.",
-  "They open your link in any browser and the files decrypt right there. No account, no app, nothing to install.":
-    "Получатель открывает ссылку в любом браузере, и файлы расшифровываются прямо там. Без аккаунта, без приложения, без установки.",
-  "Send something": "Отправить",
-  "Need someone to send you a file? Create a secure upload link. No account required for them.":
-    "Нужно, чтобы вам прислали файл? Создайте защищённую ссылку для загрузки. Отправителю аккаунт не нужен.",
-  "Their browser encrypts each file to a key only you hold. The link can upload, and nothing else: not even read back what it sent.":
-    "Браузер отправителя шифрует каждый файл ключом, который есть только у вас. По ссылке можно лишь загружать: даже прочитать отправленное нельзя.",
-  "Get a drive to request files": "Завести диск и запросить файлы",
-  "Try it first": "Сначала попробуйте",
-  "Want to try a drive before you pay for one?": "Хотите попробовать диск, прежде чем платить?",
-  "Thanks. We'll email you a link to try Coffer.": "Спасибо. Мы пришлём ссылку, чтобы попробовать Coffer.",
-  "Leave your email and we'll send you a link to a drive you can use for free for a while.":
-    "Оставьте адрес почты, и мы пришлём ссылку на диск, которым какое-то время можно пользоваться бесплатно.",
-  "you@example.com": "you@example.com",
-  "Send me a link": "Пришлите мне ссылку",
-  "We use your address to send that link, and for nothing else.": "Адрес нужен только для того, чтобы отправить эту ссылку.",
+  "File requests, no account for your clients": "Запрос файлов, без аккаунта для ваших клиентов",
+  "Collect documents from clients.": "Собирайте документы от клиентов.",
+  "Only you can open them.": "Открыть их сможете только вы.",
+  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
+    "Отправьте ссылку. Клиент загрузит файлы из любого браузера, без аккаунта. Мы не можем прочитать, что он присылает.",
+  "Create a request link": "Создать ссылку для запроса",
+  "Just need to send a file?": "Нужно просто отправить файл?",
+  "Free to start. No card needed.": "Начать бесплатно. Карта не нужна.",
+  "Documents for your tax return": "Документы для налоговой декларации",
+  "Only the owner can open what you send.": "То, что вы отправите, сможет открыть только владелец.",
+  "payslip-march.pdf": "расчётный-листок-март.pdf",
+  "Three steps. Nothing for your client to install.": "Три шага. Клиенту ничего не нужно устанавливать.",
+  "Make a link": "Создайте ссылку",
+  "Say what you need and by when. Set how many files, how large, and when the link stops working.":
+    "Напишите, что вам нужно и к какому сроку. Задайте, сколько файлов, какого размера и когда ссылка перестанет работать.",
+  "Up to 10 files, closes in 7 days": "До 10 файлов, закроется через 7 дней",
+  "Send it to your client": "Отправьте клиенту",
+  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
+    "Они открывают её в любом браузере и перетаскивают файлы. Ссылка умеет только загружать: прочитать, показать список или удалить она ничего не может.",
+  "Open them in your drive": "Откройте их в своём диске",
+  "The files show up in your drive the next time you open it. Only you can read them.":
+    "Файлы появятся в вашем диске при следующем входе. Прочитать их можете только вы.",
+  "The paperwork you keep chasing": "Бумаги, за которыми вы всё время гоняетесь",
+  "Client documents": "Документы клиентов",
+  "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
+    "Налоговые бумаги, паспорта и чеки. Одна ссылка на клиента, и всё приходит в одно место, а не теряется в переписке.",
+  "Coursework with a deadline": "Работы со сроком сдачи",
+  "Set the link to close at the deadline and cap the file size. Students upload without making an account.":
+    "Пусть ссылка закроется в момент дедлайна, и ограничьте размер файлов. Студенты загружают работы без аккаунта.",
+  "A contract that burns after one view": "Договор, который сгорает после одного просмотра",
+  "Send a file with a link that works once or expires tomorrow. Add a password for a second lock.":
+    "Отправьте файл по ссылке, которая сработает один раз или истечёт завтра. Пароль станет вторым замком.",
+  "Applications and CVs": "Отклики и резюме",
+  "Put one link in a job post. Candidates upload their documents, and only you can open them.":
+    "Поместите одну ссылку в вакансию. Кандидаты загрузят документы, и открыть их сможете только вы.",
+  "Drop it here and get a link. No account needed. Add a password, an expiry or a view limit if you like.":
+    "Перетащите файл сюда и получите ссылку. Аккаунт не нужен. По желанию добавьте пароль, срок действия или лимит просмотров.",
+  "A private place for what comes in.": "Личное место для всего, что приходит.",
+  "A drive keeps what clients send, with folders, notes and every link you've shared. You can revoke any link at any time.":
+    "В диске хранится всё, что присылают клиенты, вместе с папками, заметками и каждой ссылкой, которой вы поделились. Любую ссылку можно отозвать в любой момент.",
+  "File names stay private too": "Названия файлов тоже остаются закрытыми",
+  "A recovery key, so a forgotten password isn't the end": "Ключ восстановления: забытый пароль не станет концом",
+  "Tax documents": "Налоговые документы",
+  "Rental application": "Заявка на аренду",
+  "We can't read your files.": "Мы не можем прочитать ваши файлы.",
+  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
+    "Файлы и их названия шифруются в вашем браузере до загрузки, поэтому наш сервер хранит только то, что не может открыть. Код открыт.",
+  "How it works in detail": "Подробно, как это работает",
+  "Read the code on GitHub": "Читать код на GitHub",
 }
 
 export default messages

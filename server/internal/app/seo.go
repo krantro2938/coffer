@@ -119,6 +119,7 @@ Disallow: /s/
 Disallow: /r/
 Disallow: /drive
 Disallow: /links
+Disallow: /share
 Disallow: /requests
 Disallow: /settings
 Disallow: /welcome

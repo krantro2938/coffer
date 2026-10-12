@@ -2,62 +2,16 @@ import type { Messages } from "../types"
 
 /** The home page and the quick-share composer on it. */
 const messages: Messages = {
-  "Zero-knowledge · keys never leave your device": "零知识 · 密钥从不离开你的设备",
-  "Share anything.": "什么都能分享。",
-  "Reveal nothing.": "什么都不泄露。",
-  "Files and notes are encrypted in your browser before they leave it. The link carries the key — our server only ever stores noise.":
-    "文件和笔记在离开浏览器之前就已加密。密钥在链接里——我们的服务器只保存一堆噪声。",
-  "AES-GCM per file": "每个文件独立 AES-GCM",
-  "Password locked": "密码保护",
-  "Key derived on-device": "密钥在设备上派生",
+  "Expires in 7 days · 1 view left": "7 天后过期 · 剩余 1 次查看",
   "Share link": "分享链接",
   "1 day": "1 天",
-  "1 view": "1 次查看",
   pw: "密码",
-  "Burned after reading": "阅后即焚",
-  "Link opened once, then destroyed.": "链接打开一次后即销毁。",
-  "Private by construction — not by promise. Even the people running this server can't read what you share.":
-    "隐私来自设计，而不是承诺。就连运营这台服务器的人也读不到你分享的内容。",
-  "Encrypted in your browser": "在浏览器中加密",
-  "AES-256-GCM before a single byte is uploaded.": "上传第一个字节之前就已用 AES-256-GCM 加密。",
-  "Key lives in the link": "密钥就在链接里",
-  "After the #, which browsers never send to servers.": "位于 # 之后，浏览器从不把这部分发送给服务器。",
   "Burn after reading": "阅后即焚",
-  "Links that expire by time, by views, or both.": "链接可按时间、按查看次数或两者同时失效。",
-  "Optional passwords": "可选密码",
-  "Mixed into the key with Argon2id for a second factor.": "通过 Argon2id 混入密钥，作为第二重保护。",
   "Three steps.": "三个步骤。",
-  "Zero trust required.": "无需信任任何人。",
-  "Encrypt locally": "本地加密",
-  "A fresh 256-bit key is generated for every file. Your file is sealed in 4 MB chunks, right here in the tab.":
-    "每个文件都会生成一个全新的 256 位密钥。文件以 4 MB 为一块，就在这个标签页里封存。",
-  "quarterly-report.pdf": "季度报告.pdf",
-  "Share the link": "分享链接",
-  "The decryption key rides in the URL fragment. Add a password, an expiry or a view limit if you like.":
-    "解密密钥藏在网址的片段部分。你还可以加上密码、有效期或查看次数上限。",
-  "Decrypt on arrival": "送达后解密",
-  "Your recipient's browser fetches the ciphertext and unlocks it locally. Burned links vanish for good.":
-    "接收方的浏览器取回密文并在本地解锁。已焚毁的链接将永久消失。",
-  "Integrity verified · decrypted in 38 ms": "完整性已验证 · 用时 38 毫秒解密",
-  "Built to be breached": "为被攻破而设计",
-  "If someone steals our disks,": "就算有人偷走我们的硬盘，",
-  "they get very expensive noise.": "拿到的也只是昂贵的噪声。",
-  "No master key on the server. No plaintext file names. Passwords are stretched on your device and never sent. Access tokens are hashed; account hashes are peppered.":
-    "服务器上没有主密钥，没有明文文件名。密码在你的设备上拉伸，从不发送。访问令牌只存哈希，账户哈希还额外加了服务器密钥。",
   bytes: "字节",
-  "Plaintext stored on the server": "服务器上保存的明文",
   bit: "位",
-  "Unique key for every file": "每个文件独立的密钥",
-  "Secret in every share link": "每个分享链接里的密钥",
   MiB: "MiB",
-  "Argon2id memory per guess": "每次猜测消耗的 Argon2id 内存",
-  "Optional account": "可选账户",
-  "A private drive, when you want one.": "需要时，再开一个私密云盘。",
-  "Sign up with just an email and a password to keep everything in one encrypted place — folders, notes, and every link you've shared, revocable at any time.":
-    "只需邮箱和密码即可注册，把一切放在同一个加密的地方——文件夹、笔记，以及你分享过的每个链接，都可随时撤销。",
-  "Folders and file names are encrypted too": "文件夹名和文件名同样加密",
   "Revoke any share link instantly": "随时撤销任何分享链接",
-  "Recovery key so a forgotten password isn't fatal": "提供恢复密钥，忘记密码也不至于无法挽回",
   "Create your drive": "创建你的云盘",
   "I have an account": "我已有账户",
   "My drive": "我的云盘",
@@ -65,7 +19,6 @@ const messages: Messages = {
   "Folder · 12 items": "文件夹 · 12 项",
   "passport-scan.jpg": "护照扫描件.jpg",
   "1.8 MB · 2 links": "1.8 MB · 2 个链接",
-  "Wi-Fi & door codes": "Wi-Fi 和门禁密码",
   "Note · burned": "笔记 · 已焚毁",
   "That file is larger than {size}": "该文件超过 {size}",
   "Create a free drive to share bigger files.": "创建免费云盘即可分享更大的文件。",
@@ -103,23 +56,55 @@ const messages: Messages = {
   "That's more than {size}": "已超过 {size}",
   "A drive takes files up to {size} each.": "云盘单个文件最大可达 {size}。",
   "Send files": "发送文件",
-  "Share private files without making the other person sign up for anything.": "分享私密文件，对方无需注册任何东西。",
-  "They open your link in any browser and the files decrypt right there. No account, no app, nothing to install.":
-    "对方用任意浏览器打开你的链接，文件就在那里解密。无需账户，无需应用，无需安装。",
-  "Send something": "发送点什么",
-  "Need someone to send you a file? Create a secure upload link. No account required for them.":
-    "需要别人给你发文件？创建一个安全的上传链接，对方无需账户。",
-  "Their browser encrypts each file to a key only you hold. The link can upload, and nothing else: not even read back what it sent.":
-    "对方的浏览器会把每个文件加密给只有你持有的密钥。这个链接只能上传，别无他用，连它自己传过的内容也读不回来。",
-  "Get a drive to request files": "开通云盘以收取文件",
-  "Try it first": "先试用",
-  "Want to try a drive before you pay for one?": "想在付费前先试用云盘吗？",
-  "Thanks. We'll email you a link to try Coffer.": "谢谢。我们会通过邮件把试用 Coffer 的链接发给你。",
-  "Leave your email and we'll send you a link to a drive you can use for free for a while.":
-    "留下你的邮箱，我们会发给你一个链接，你可以在一段时间内免费使用一个云盘。",
-  "you@example.com": "you@example.com",
-  "Send me a link": "把链接发给我",
-  "We use your address to send that link, and for nothing else.": "你的邮箱地址只用于发送该链接，不作他用。",
+  "File requests, no account for your clients": "文件请求，客户无需账户",
+  "Collect documents from clients.": "向客户收集文件。",
+  "Only you can open them.": "只有你能打开。",
+  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
+    "发送一个链接。客户用任何浏览器上传，无需账户。我们无法读取他们发来的内容。",
+  "Create a request link": "创建请求链接",
+  "Just need to send a file?": "只想发送一个文件？",
+  "Free to start. No card needed.": "免费开始，无需绑定银行卡。",
+  "Documents for your tax return": "报税所需的文件",
+  "Only the owner can open what you send.": "只有所有者能打开你发送的内容。",
+  "payslip-march.pdf": "三月工资单.pdf",
+  "Three steps. Nothing for your client to install.": "三步完成。客户无需安装任何东西。",
+  "Make a link": "创建链接",
+  "Say what you need and by when. Set how many files, how large, and when the link stops working.":
+    "写明需要什么、什么时候要。设置文件数量、大小，以及链接何时失效。",
+  "Up to 10 files, closes in 7 days": "最多 10 个文件，7 天后关闭",
+  "Send it to your client": "发给你的客户",
+  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
+    "对方在任何浏览器里打开链接，把文件拖进去即可。链接只能上传，不能读取、列出或删除任何内容。",
+  "Open them in your drive": "在你的云盘中打开",
+  "The files show up in your drive the next time you open it. Only you can read them.":
+    "下次打开云盘时，文件就会出现在里面。只有你能读取。",
+  "The paperwork you keep chasing": "那些总要追着要的文件",
+  "Client documents": "客户文件",
+  "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
+    "税务文件、证件和收据。每位客户一个链接，所有文件汇集在一处，而不是散落在各个邮件往来里。",
+  "Coursework with a deadline": "有截止日期的作业",
+  "Set the link to close at the deadline and cap the file size. Students upload without making an account.":
+    "让链接在截止时间关闭，并限制文件大小。学生无需注册账户即可上传。",
+  "A contract that burns after one view": "查看一次就销毁的合同",
+  "Send a file with a link that works once or expires tomorrow. Add a password for a second lock.":
+    "发送一个只能打开一次、或明天就失效的文件链接。再加一个密码，多一道锁。",
+  "Applications and CVs": "求职申请和简历",
+  "Put one link in a job post. Candidates upload their documents, and only you can open them.":
+    "在招聘信息里放一个链接。候选人上传自己的材料，只有你能打开。",
+  "Drop it here and get a link. No account needed. Add a password, an expiry or a view limit if you like.":
+    "把文件拖到这里，得到一个链接。无需账户。需要的话可以加密码、有效期或查看次数限制。",
+  "A private place for what comes in.": "存放收到文件的私密空间。",
+  "A drive keeps what clients send, with folders, notes and every link you've shared. You can revoke any link at any time.":
+    "云盘会保存客户发来的内容，包括文件夹、笔记和你分享过的每个链接。任何链接都可以随时撤销。",
+  "File names stay private too": "文件名同样保持私密",
+  "A recovery key, so a forgotten password isn't the end": "恢复密钥，忘记密码也不至于无法挽回",
+  "Tax documents": "税务文件",
+  "Rental application": "租房申请",
+  "We can't read your files.": "我们读不了你的文件。",
+  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
+    "文件及其名称在上传前就在你的浏览器里加密，所以我们的服务器只保存它打不开的内容。代码是开源的。",
+  "How it works in detail": "详细原理",
+  "Read the code on GitHub": "在 GitHub 上查看代码",
 }
 
 export default messages

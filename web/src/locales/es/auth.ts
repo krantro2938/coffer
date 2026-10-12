@@ -2,11 +2,7 @@ import type { Messages } from "../types"
 
 /** Signing up, signing in, recovery and the welcome. */
 const messages: Messages = {
-  "Zero-knowledge drive": "Unidad de conocimiento cero",
   "Your password is the only key. We never see it.": "Tu contraseña es la única clave. Nunca la vemos.",
-  "Stretched with Argon2id in your browser": "Estirada con Argon2id en tu navegador",
-  "Unwraps a master key that encrypts everything": "Abre una clave maestra que lo cifra todo",
-  "Server stores only ciphertext and peppered hashes": "El servidor solo guarda texto cifrado y hashes con secreto",
   "Every file, every name, every folder.": "Cada archivo, cada nombre, cada carpeta.",
   "Too short": "Demasiado corta",
   Weak: "Débil",
@@ -68,15 +64,10 @@ const messages: Messages = {
   "Pick as many as you like and we'll lay out your first folders. Your answer stays in this browser; we never see it.":
     "Elige cuantas quieras y prepararemos tus primeras carpetas. Tu respuesta se queda en este navegador; nunca la vemos.",
   Documents: "Documentos",
-  "Passports, contracts, tax papers": "Pasaportes, contratos, papeles de impuestos",
   Photos: "Fotos",
-  "The ones that are nobody's business": "Las que no son asunto de nadie",
   "Client work": "Trabajo de clientes",
-  "Files you are trusted with": "Archivos que te han confiado",
   "Passwords and codes": "Contraseñas y códigos",
-  "Recovery keys, PINs, door codes": "Claves de recuperación, PIN, códigos de la puerta",
   "Things to send": "Cosas para enviar",
-  "Links that expire or burn": "Enlaces que caducan o se destruyen",
   Skip: "Omitir",
   "Choose my drive": "Elegir mi unidad",
   "Open my drive": "Abrir mi unidad",
@@ -89,7 +80,7 @@ const messages: Messages = {
   "We hold no copy and no back door, so keep it safe.": "No tenemos copia ni puerta trasera, así que guárdala bien.",
   "This is all we hold of your key:": "Esto es todo lo que tenemos de tu clave:",
   "Setting the combination…": "Ajustando la combinación…",
-  "Your drive is open.": "Tu unidad está abierta.",
+  "Your private drive is ready.": "Tu unidad privada está lista.",
   "{size} that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
     "{size} que solo tú puedes leer. Ni nosotros, ni nuestro proveedor de almacenamiento, ni nadie que se haga con nuestros discos.",
   "Space that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
@@ -108,6 +99,9 @@ const messages: Messages = {
   terms: "condiciones",
   "and the": "y la",
   "privacy policy": "política de privacidad",
+  "Your password stays on your device": "Tu contraseña no sale de tu dispositivo",
+  "It unlocks the key that protects your files": "Abre la clave que protege tus archivos",
+  "Our server only stores what it can't read": "Nuestro servidor solo guarda lo que no puede leer",
 }
 
 export default messages

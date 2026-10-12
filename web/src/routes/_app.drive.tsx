@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
+  ArrowLeftIcon,
   CheckCircle2Icon,
   ChevronRightIcon,
   DownloadIcon,
@@ -48,7 +49,8 @@ import {
 import { api, getConfig } from "@/lib/api"
 import { itemKeys, sealMeta, sealName, toB64 } from "@/lib/crypto"
 import { useDrive, type DFolder, type DItem } from "@/lib/drive"
-import { formatBytes, shortDate } from "@/lib/format"
+import { formatBytes } from "@/lib/format"
+import { DateLabel } from "@/components/date-label"
 import { t as tr, useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { storeItem } from "@/lib/transfer"
@@ -113,6 +115,7 @@ function DrivePage() {
   }, [current, folderMap])
 
   const q = query.trim().toLowerCase()
+  const usage = data?.usage
   const folders = useMemo(
     () =>
       (data?.folders ?? [])
@@ -222,8 +225,7 @@ function DrivePage() {
 
   const openItem = (i: DItem) => {
     if (i.broken) return toast.error(t("This item can't be decrypted with your key"))
-    if (canPreview(i)) setPreview(i)
-    else downloadItem(i)
+    setPreview(i)
   }
 
   // ------------------------------------------------------------ render
@@ -251,31 +253,54 @@ function DrivePage() {
       }}
     >
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <nav className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/drive" search={{}} className="shrink-0 hover:text-foreground">
-              {t("My drive")}
-            </Link>
-            {crumbs.map((c) => (
-              <span key={c.id} className="flex min-w-0 items-center gap-1">
-                <ChevronRightIcon className="size-3.5 shrink-0" />
-                <Link to="/drive" search={{ folder: c.id }} className="truncate hover:text-foreground">
-                  {c.name}
+          {crumbs.length > 0 || q ? (
+            <nav className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
+              <Link to="/drive" search={{}} className="shrink-0 hover:text-foreground">
+                {t("My drive")}
+              </Link>
+              {!q &&
+                crumbs.slice(0, -1).map((c) => (
+                  <span key={c.id} className="flex min-w-0 items-center gap-1">
+                    <ChevronRightIcon className="size-3.5 shrink-0" />
+                    <Link to="/drive" search={{ folder: c.id }} className="truncate hover:text-foreground">
+                      {c.name}
+                    </Link>
+                  </span>
+                ))}
+            </nav>
+          ) : (
+            usage && (
+              <div className="flex items-center gap-3">
+                <p className="eyebrow tabular-nums">
+                  {t("{used} of {total}", { used: formatBytes(usage.used), total: formatBytes(usage.quota) })}
+                </p>
+                <Progress value={usage.quota ? Math.min(100, (usage.used / usage.quota) * 100) : 0} className="h-1.5 w-28" />
+              </div>
+            )
+          )}
+          <div className="mt-1.5 flex min-w-0 items-center gap-3">
+            {current && !q && (
+              <Button variant="outline" size="icon" className="shrink-0 rounded-full" asChild>
+                <Link to="/drive" search={current.parentId ? { folder: current.parentId } : {}} aria-label={t("Back")} title={t("Back")}>
+                  <ArrowLeftIcon />
                 </Link>
-              </span>
-            ))}
-          </nav>
-          <h1 className="mt-1 truncate text-3xl font-medium">{q ? t("Search") : (current?.name ?? t("My drive"))}</h1>
+              </Button>
+            )}
+            <h1 className="truncate text-4xl leading-tight font-semibold tracking-tight">
+              {q ? t("Search") : (current?.name ?? t("My drive"))}
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative flex-1 sm:w-64 sm:flex-none">
+          <div className="relative flex-1 sm:w-72 sm:flex-none">
             <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("Search your drive")}
-              className="rounded-full pl-10"
+              className="h-10 rounded-full bg-card pl-10"
             />
             {query && (
               <button
@@ -320,107 +345,118 @@ function DrivePage() {
         ) : empty ? (
           <EmptyState searching={!!q} onUpload={() => fileInput.current?.click()} onNote={() => setDialog({ t: "note" })} />
         ) : (
-          <div className="overflow-hidden rounded-2xl border bg-card">
-            <div className="hidden grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] gap-4 border-b px-5 py-2.5 text-xs text-muted-foreground md:grid">
-              <span>{t("Name")}</span>
-              <span>{t("Size")}</span>
-              <span>{t("Added")}</span>
-              <span />
-            </div>
-            <ul className="divide-y">
-              {folders.map((f) => {
-                const links = data?.sharesByFolder.get(f.id)?.length ?? 0
-                const n = counts.get(f.id) ?? 0
-                return (
-                  <Row
-                    key={f.id}
-                    glyph={<FileGlyph kind="folder" />}
-                    name={f.name}
-                    sub={`${t("Folder")} · ${tn(n, "{n} item", "{n} items")}`}
-                    size={formatBytes(folderSizes.get(f.id) ?? 0)}
-                    date={shortDate(f.createdAt)}
-                    links={links}
-                    onOpen={() => {
-                      setQuery("")
-                      navigate({ to: "/drive", search: { folder: f.id } })
-                    }}
-                    onShare={() => setSharing({ type: "folder", folder: f })}
-                    menu={
-                      <>
-                        <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
-                          <Link2Icon /> {t("Share folder")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
-                          <PencilIcon /> {t("Rename")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
-                          <FolderInputIcon /> {t("Move")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
-                          <Trash2Icon /> {t("Delete")}
-                        </DropdownMenuItem>
-                      </>
-                    }
-                  />
-                )
-              })}
-              {items.map((i) => {
-                const links = data?.sharesByItem.get(i.id)?.length ?? 0
-                return (
-                  <Row
-                    key={i.id}
-                    glyph={<FileGlyph kind={i.kind} type={i.type} />}
-                    name={i.name}
-                    muted={i.broken}
-                    sub={
-                      i.broken
-                        ? t("Can't be decrypted")
-                        : i.kind === "text"
-                          ? t("Note")
-                          : i.requestId
-                            ? `${describeType(i.type, i.name)} · ${i.from ? t("from {name}", { name: i.from }) : t("via file request")}`
-                            : describeType(i.type, i.name)
-                    }
-                    title={i.note}
-                    size={formatBytes(i.size)}
-                    date={shortDate(i.createdAt)}
-                    links={links}
-                    onOpen={() => openItem(i)}
-                    onShare={i.broken ? undefined : () => setSharing({ type: "item", item: i })}
-                    menu={
-                      <>
-                        {canPreview(i) && (
-                          <DropdownMenuItem onClick={() => setPreview(i)}>
-                            <EyeIcon /> {t("Preview")}
-                          </DropdownMenuItem>
-                        )}
-                        {!i.broken && (
+          <div className="grid gap-8">
+            {folders.length > 0 && (
+              <section>
+                <h2 className="mb-3 px-1 font-sans text-sm font-medium text-muted-foreground">{t("Folders")}</h2>
+                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {folders.map((f) => {
+                    const links = data?.sharesByFolder.get(f.id)?.length ?? 0
+                    const n = counts.get(f.id) ?? 0
+                    return (
+                      <FolderCard
+                        key={f.id}
+                        name={f.name}
+                        sub={`${tn(n, "{n} item", "{n} items")} · ${formatBytes(folderSizes.get(f.id) ?? 0)}`}
+                        links={links}
+                        onOpen={() => {
+                          setQuery("")
+                          navigate({ to: "/drive", search: { folder: f.id } })
+                        }}
+                        onShare={() => setSharing({ type: "folder", folder: f })}
+                        menu={
                           <>
-                            <DropdownMenuItem onClick={() => downloadItem(i)}>
-                              <DownloadIcon /> {t("Download")}
+                            <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
+                              <Link2Icon /> {t("Share folder")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSharing({ type: "item", item: i })}>
-                              <Link2Icon /> {t("Share link")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDialog({ t: "renameItem", i })}>
+                            <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
                               <PencilIcon /> {t("Rename")}
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
+                              <FolderInputIcon /> {t("Move")}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
+                              <Trash2Icon /> {t("Delete")}
+                            </DropdownMenuItem>
                           </>
-                        )}
-                        <DropdownMenuItem onClick={() => setDialog({ t: "moveItem", i })}>
-                          <FolderInputIcon /> {t("Move")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteItem", i })}>
-                          <Trash2Icon /> {t("Delete")}
-                        </DropdownMenuItem>
-                      </>
-                    }
-                  />
-                )
-              })}
-            </ul>
+                        }
+                      />
+                    )
+                  })}
+                </ul>
+              </section>
+            )}
+            {items.length > 0 && (
+              <section>
+                {folders.length > 0 && <h2 className="mb-3 px-1 font-sans text-sm font-medium text-muted-foreground">{t("Files")}</h2>}
+                <div className="overflow-hidden rounded-3xl border bg-card">
+                  <div className="hidden grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] gap-4 border-b px-6 py-3 text-xs text-muted-foreground md:grid">
+                    <span>{t("Name")}</span>
+                    <span>{t("Size")}</span>
+                    <span>{t("Added")}</span>
+                    <span />
+                  </div>
+                  <ul className="divide-y">
+                    {items.map((i) => {
+                      const links = data?.sharesByItem.get(i.id)?.length ?? 0
+                      return (
+                        <Row
+                          key={i.id}
+                          glyph={<FileGlyph kind={i.kind} type={i.type} name={i.name} />}
+                          name={i.name}
+                          muted={i.broken}
+                          sub={
+                            i.broken
+                              ? t("Can't be decrypted")
+                              : i.kind === "text"
+                                ? t("Note")
+                                : i.requestId
+                                  ? `${describeType(i.type, i.name)} · ${i.from ? t("from {name}", { name: i.from }) : t("via file request")}`
+                                  : describeType(i.type, i.name)
+                          }
+                          title={i.note}
+                          size={formatBytes(i.size)}
+                          added={i.createdAt}
+                          links={links}
+                          onOpen={() => openItem(i)}
+                          onShare={i.broken ? undefined : () => setSharing({ type: "item", item: i })}
+                          menu={
+                            <>
+                              {canPreview(i) && (
+                                <DropdownMenuItem onClick={() => setPreview(i)}>
+                                  <EyeIcon /> {t("Preview")}
+                                </DropdownMenuItem>
+                              )}
+                              {!i.broken && (
+                                <>
+                                  <DropdownMenuItem onClick={() => downloadItem(i)}>
+                                    <DownloadIcon /> {t("Download")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setSharing({ type: "item", item: i })}>
+                                    <Link2Icon /> {t("Share link")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setDialog({ t: "renameItem", i })}>
+                                    <PencilIcon /> {t("Rename")}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              <DropdownMenuItem onClick={() => setDialog({ t: "moveItem", i })}>
+                                <FolderInputIcon /> {t("Move")}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteItem", i })}>
+                                <Trash2Icon /> {t("Delete")}
+                              </DropdownMenuItem>
+                            </>
+                          }
+                        />
+                      )
+                    })}
+                  </ul>
+                </div>
+              </section>
+            )}
           </div>
         )}
       </div>
@@ -554,7 +590,7 @@ function Row({
   name,
   sub,
   size,
-  date,
+  added,
   links,
   muted,
   title,
@@ -566,7 +602,7 @@ function Row({
   name: string
   sub: string
   size: string
-  date: string
+  added: number
   links: number
   muted?: boolean
   /** Shown on hover: for a requested file, the message its sender left. */
@@ -577,8 +613,8 @@ function Row({
 }) {
   const { t } = useI18n()
   return (
-    <li className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 transition-colors hover:bg-muted/40 md:grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] md:gap-4 md:px-3">
-      <button onClick={onOpen} title={title} className="flex h-16 min-w-0 items-center gap-3 rounded-xl px-2 text-left">
+    <li className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 transition-colors hover:bg-muted/50 md:grid-cols-[minmax(0,1fr)_7rem_8rem_4.5rem] md:gap-4 md:px-4">
+      <button onClick={onOpen} title={title} className="flex h-[4.25rem] min-w-0 items-center gap-3.5 rounded-xl px-2 text-left">
         {glyph}
         <span className="min-w-0">
           <span className={cn("block truncate text-sm font-medium", muted && "text-muted-foreground italic")}>{name}</span>
@@ -596,7 +632,10 @@ function Row({
         </span>
       </button>
       <span className="hidden text-sm text-muted-foreground tabular-nums md:block">{size}</span>
-      <span className="hidden text-sm text-muted-foreground tabular-nums md:block">{date}</span>
+      <DateLabel
+        at={added}
+        className="hidden w-fit cursor-default justify-self-start text-sm text-muted-foreground tabular-nums md:block"
+      />
       <div className="flex items-center justify-end">
         {onShare && (
           <Button
@@ -609,6 +648,63 @@ function Row({
             <Link2Icon />
           </Button>
         )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon-sm" aria-label={t("More actions")}>
+              <MoreHorizontalIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-44">
+            {menu}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </li>
+  )
+}
+
+function FolderCard({
+  name,
+  sub,
+  links,
+  onOpen,
+  onShare,
+  menu,
+}: {
+  name: string
+  sub: string
+  links: number
+  onOpen: () => void
+  onShare: () => void
+  menu: React.ReactNode
+}) {
+  const { t } = useI18n()
+  return (
+    <li className="group relative flex items-center gap-3.5 rounded-3xl border bg-card p-3 pr-2 transition-colors hover:bg-muted/50">
+      <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3.5 rounded-2xl text-left">
+        <FileGlyph kind="folder" className="size-12" />
+        <span className="min-w-0">
+          <span className="block truncate font-medium">{name}</span>
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="truncate">{sub}</span>
+            {links > 0 && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-secondary px-1.5 py-px text-[0.6875rem] text-secondary-foreground">
+                <Link2Icon className="size-3" /> {links}
+              </span>
+            )}
+          </span>
+        </span>
+      </button>
+      <div className="flex shrink-0 items-center">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onShare}
+          className="hidden opacity-0 group-hover:opacity-100 focus-visible:opacity-100 md:inline-flex"
+          aria-label={t("Share")}
+        >
+          <Link2Icon />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm" aria-label={t("More actions")}>

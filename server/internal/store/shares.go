@@ -110,6 +110,9 @@ func (s *Store) CreateShare(sh NewShare) error {
 			return err
 		}
 	}
+	if err := bump(tx, "share_created"); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 
@@ -250,6 +253,9 @@ func (s *Store) OpenShare(id string, billing bool, authorize func(accessHash []b
 		burnedAt, o.Burned = &n, true
 	}
 	if _, err := tx.Exec(`UPDATE shares SET views = ?, burned_at = ? WHERE id = ?`, o.Views, burnedAt, id); err != nil {
+		return nil, err
+	}
+	if err := bump(tx, "share_opened"); err != nil {
 		return nil, err
 	}
 	if err := tx.QueryRow(`SELECT kind, enc_meta, size, chunk_size, chunk_count FROM items WHERE id = ? AND ready = 1`, o.ItemID).

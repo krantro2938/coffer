@@ -100,6 +100,10 @@ const messages: Messages = {
   "About Coffer": "О Coffer",
   "{n} files were delivered before that.":
     "До этого был доставлен {n} файл.|До этого было доставлено {n} файла.|До этого было доставлено {n} файлов.",
+  "Need files from someone yourself?": "Вам тоже нужно получать файлы от других?",
+  "Send your own files the same way. No account needed.": "Отправляйте свои файлы так же. Аккаунт не нужен.",
+  "Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.":
+    "В бесплатном аккаунте одновременно открыто не больше {n} ссылок для запроса. Закройте одну или выберите тариф, чтобы их было сколько угодно.",
 }
 
 export default messages

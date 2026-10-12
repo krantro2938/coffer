@@ -6,6 +6,7 @@ import "database/sql"
 // taken away, and whether its address is proven.
 type Standing struct {
 	Plan, Status, SubID, CustomerID, PendingTxn sql.NullString
+	Interval                                    sql.NullString // how the plan bills: month or year
 	PeriodEnd, CancelAt, LapsedAt               sql.NullInt64
 	Quota                                       int64
 	Verified                                    bool // email address proven
@@ -18,9 +19,9 @@ type Standing struct {
 func (s *Store) Standing(userID string) (*Standing, error) {
 	var st Standing
 	err := s.db.QueryRow(`SELECT plan, sub_status, sub_id, customer_id, pending_txn, period_end, cancel_at, lapsed_at, quota, email_verified,
-		suspended_at IS NOT NULL, comp_quota, comp_until, offer FROM users WHERE id = ?`, userID).
+		suspended_at IS NOT NULL, comp_quota, comp_until, offer, sub_interval FROM users WHERE id = ?`, userID).
 		Scan(&st.Plan, &st.Status, &st.SubID, &st.CustomerID, &st.PendingTxn, &st.PeriodEnd, &st.CancelAt, &st.LapsedAt, &st.Quota, &st.Verified,
-			&st.Suspended, &st.CompQuota, &st.CompUntil, &st.OfferJSON)
+			&st.Suspended, &st.CompQuota, &st.CompUntil, &st.OfferJSON, &st.Interval)
 	return &st, err
 }
 
@@ -29,9 +30,9 @@ func (s *Store) Standing(userID string) (*Standing, error) {
 const entitledSQL = `('active', 'trialing', 'past_due')`
 
 // coveredSQL is the condition, on a users row aliased u, for a drive that can
-// be added to: a plan in good standing or a complimentary allowance, and no
-// suspension.
-const coveredSQL = `u.suspended_at IS NULL AND (u.sub_status IN ` + entitledSQL + `
+// be added to: a plan in good standing, a complimentary allowance or the free
+// account (nothing has lapsed), and no suspension.
+const coveredSQL = `u.suspended_at IS NULL AND (u.lapsed_at IS NULL OR u.sub_status IN ` + entitledSQL + `
 	OR (u.comp_quota IS NOT NULL AND (u.comp_until IS NULL OR u.comp_until > CAST(strftime('%s', 'now') AS INTEGER))))`
 
 // SetPendingTxn remembers the checkout an account has open.
@@ -54,6 +55,7 @@ type Subscription struct {
 	ID         string
 	CustomerID string
 	Plan       string
+	Interval   string // month or year; "" when Paddle did not say
 	Status     string
 	Quota      int64
 	PeriodEnd  *int64
@@ -68,12 +70,12 @@ type Subscription struct {
 // before a lapsed drive is emptied when the plan stops covering it.
 func (s *Store) ApplySubscription(userID string, sub Subscription) error {
 	return s.exec(`UPDATE users SET plan = ?, sub_status = ?, sub_id = ?, customer_id = ?, period_end = ?, cancel_at = ?,
-		quota = ?, sub_updated = ?, pending_txn = NULL,
+		quota = ?, sub_updated = ?, pending_txn = NULL, sub_interval = NULLIF(?, ''),
 		lapsed_at = CASE WHEN ? OR (comp_quota IS NOT NULL AND (comp_until IS NULL OR comp_until > ?)) THEN NULL ELSE COALESCE(lapsed_at, ?) END,
 		lapse_notice = CASE WHEN ? THEN 0 ELSE lapse_notice END
 		WHERE id = ? AND sub_updated <= ?`,
 		sub.Plan, sub.Status, sub.ID, sub.CustomerID, sub.PeriodEnd, sub.CancelAt, sub.Quota,
-		sub.UpdatedAt, sub.Entitled, now(), now(), sub.Entitled, userID, sub.UpdatedAt)
+		sub.UpdatedAt, sub.Interval, sub.Entitled, now(), now(), sub.Entitled, userID, sub.UpdatedAt)
 }
 
 // SubscriptionAccount finds the account a subscription event is about: the one

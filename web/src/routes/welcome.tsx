@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowRightIcon, BriefcaseIcon, CheckIcon, FileTextIcon, ImageIcon, KeyRoundIcon, Loader2Icon, SendIcon } from "lucide-react"
+import { ArrowRightIcon, CheckIcon, Loader2Icon } from "lucide-react"
 import { Brand } from "@/components/brand"
-import { Dial } from "@/components/dial"
 import { usePlans } from "@/components/plans"
 import { Button } from "@/components/ui/button"
 import { fromB64 } from "@/lib/crypto"
@@ -13,21 +12,23 @@ import { readWelcome, saveWelcome, type Pick } from "@/lib/welcome"
 
 export const Route = createFileRoute("/welcome")({ component: WelcomePage })
 
-const choices: { id: Pick; icon: typeof FileTextIcon; label: string; hint: string }[] = [
-  { id: "documents", icon: FileTextIcon, label: "Documents", hint: "Passports, contracts, tax papers" },
-  { id: "photos", icon: ImageIcon, label: "Photos", hint: "The ones that are nobody's business" },
-  { id: "work", icon: BriefcaseIcon, label: "Client work", hint: "Files you are trusted with" },
-  { id: "secrets", icon: KeyRoundIcon, label: "Passwords and codes", hint: "Recovery keys, PINs, door codes" },
-  { id: "sharing", icon: SendIcon, label: "Things to send", hint: "Links that expire or burn" },
+/** Each answer has its own 3D object in /public/3d; until it is there the older render stands in. */
+const choices: { id: Pick; stand: string; label: string }[] = [
+  { id: "documents", stand: "cv", label: "Documents" },
+  { id: "photos", stand: "folder", label: "Photos" },
+  { id: "work", stand: "inbox", label: "Client work" },
+  { id: "secrets", stand: "lock", label: "Passwords and codes" },
+  { id: "sharing", stand: "share", label: "Things to send" },
 ]
+
+function Art({ name, stand, className }: { name: string; stand: string; className?: string }) {
+  const [src, setSrc] = useState(`/3d/${name}.webp`)
+  return <img src={src} alt="" onError={() => setSrc(`/3d/${stand}.webp`)} className={cn("object-contain", className)} />
+}
 
 function WelcomePage() {
   const { status, me } = useSession()
   const navigate = useNavigate()
-  const { t } = useI18n()
-  const plans = usePlans()
-  const [step, setStep] = useState<1 | 2>(1)
-  const [picks, setPicks] = useState<Pick[]>([])
 
   useEffect(() => {
     if (status === "anonymous") navigate({ to: "/login" })
@@ -43,20 +44,33 @@ function WelcomePage() {
     )
   }
 
+  return (
+    <WelcomeFlow
+      wrapped={me.wrappedMasterKey}
+      onDone={(picks) => {
+        saveWelcome({ email: me.email, picks, stage: "unbox" })
+        navigate({ to: "/drive" })
+      }}
+    />
+  )
+}
+
+/** The two welcome steps. */
+function WelcomeFlow({ wrapped, onDone }: { wrapped: string; onDone: (picks: Pick[]) => void }) {
+  const { t } = useI18n()
+  const plans = usePlans()
+  const [step, setStep] = useState<1 | 2>(1)
+  const [picks, setPicks] = useState<Pick[]>([])
+
   const toggle = (p: Pick) => setPicks((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]))
-  const done = (chosen: Pick[]) => {
-    saveWelcome({ email: me.email, picks: chosen, stage: "unbox" })
-    navigate({ to: "/drive" })
-  }
   const steps = plans ? 3 : 2
 
   return (
     <div className="relative flex min-h-svh flex-col overflow-hidden">
-      <Dial
-        state={step === 2 ? "turning" : "idle"}
-        numerals
-        className="pointer-events-none absolute top-1/2 -right-[18rem] hidden size-[52rem] -translate-y-1/2 text-forest/25 lg:block dark:text-forest-foreground/15"
-      />
+      <div aria-hidden className="pointer-events-none absolute top-1/2 right-[6%] hidden size-[30rem] -translate-y-1/2 lg:block">
+        <div className="absolute inset-[-20%] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklch,var(--lime)_22%,transparent),color-mix(in_oklch,var(--mint)_18%,transparent)_55%,transparent)]" />
+        <img src="/3d/lock.webp" alt="" className="relative size-full animate-float object-contain" />
+      </div>
       <header className="flex items-center justify-between px-4 py-5 sm:px-8">
         <Brand />
         <p className="text-sm text-muted-foreground tabular-nums">{t("Step {n} of {total}", { n: step, total: steps })}</p>
@@ -72,7 +86,7 @@ function WelcomePage() {
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {choices.map(({ id, icon: Icon, label, hint }) => {
+              {choices.map(({ id, stand, label }) => {
                 const on = picks.includes(id)
                 return (
                   <button
@@ -81,22 +95,28 @@ function WelcomePage() {
                     aria-pressed={on}
                     onClick={() => toggle(id)}
                     className={cn(
-                      "flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:last:odd:col-span-2",
-                      on ? "border-forest bg-forest text-forest-foreground" : "bg-card hover:border-foreground/25"
+                      "group relative flex items-center gap-4 rounded-2xl border bg-card p-3 pr-4 text-left transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:last:odd:col-span-2",
+                      on ? "border-primary bg-primary/[0.06] shadow-[inset_0_0_0_1px_var(--primary)]" : "hover:border-foreground/25"
                     )}
                   >
-                    <Icon className="size-5 shrink-0" strokeWidth={1.75} />
+                    <Art
+                      name={id}
+                      stand={stand}
+                      className={cn(
+                        "size-16 shrink-0 transition-transform duration-300 ease-out",
+                        on ? "scale-110 -rotate-3" : "group-hover:scale-105"
+                      )}
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block font-medium">{t(label)}</span>
-                      <span className={cn("block text-sm", on ? "text-forest-foreground/65" : "text-muted-foreground")}>{t(hint)}</span>
                     </span>
                     <span
                       className={cn(
-                        "grid size-5 shrink-0 place-items-center rounded-full border transition-opacity",
-                        on ? "border-transparent bg-mint text-forest" : "opacity-40"
+                        "absolute top-2.5 right-2.5 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm transition-[opacity,scale] duration-200",
+                        on ? "scale-100 opacity-100" : "scale-50 opacity-0"
                       )}
                     >
-                      {on && <CheckIcon className="size-3" strokeWidth={3} />}
+                      <CheckIcon className="size-3" strokeWidth={3} />
                     </span>
                   </button>
                 )
@@ -112,7 +132,7 @@ function WelcomePage() {
             </div>
           </div>
         ) : (
-          <Sealed wrapped={me.wrappedMasterKey} next={plans ? t("Choose my drive") : t("Open my drive")} onNext={() => done(picks)} />
+          <Sealed wrapped={wrapped} next={plans ? t("Choose my drive") : t("Open my drive")} onNext={() => onDone(picks)} />
         )}
       </main>
     </div>
@@ -140,7 +160,7 @@ function Sealed({ wrapped, next, onNext }: { wrapped: string; next: string; onNe
       <ol className="grid gap-5">
         {facts.map(([title, body], i) => (
           <li key={title} className="flex animate-rise gap-4" style={{ animationDelay: `${0.35 + i * 0.45}s` }}>
-            <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground">
+            <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
               <CheckIcon className="size-3.5" strokeWidth={2.5} />
             </span>
             <div>
@@ -150,9 +170,9 @@ function Sealed({ wrapped, next, onNext }: { wrapped: string; next: string; onNe
           </li>
         ))}
       </ol>
-      <div className="animate-rise rounded-2xl bg-forest p-5 text-forest-foreground" style={{ animationDelay: "1.8s" }}>
-        <p className="text-sm text-forest-foreground/65">{t("This is all we hold of your key:")}</p>
-        <p className="mt-2 font-mono text-sm leading-relaxed break-all text-mint">{noise} …</p>
+      <div className="animate-rise rounded-2xl border bg-card p-5 shadow-soft" style={{ animationDelay: "1.8s" }}>
+        <p className="text-sm text-muted-foreground">{t("This is all we hold of your key:")}</p>
+        <p className="mt-2 font-mono text-sm leading-relaxed break-all text-primary">{noise} …</p>
       </div>
       <div className="animate-rise" style={{ animationDelay: "2.2s" }}>
         <Button size="lg" onClick={onNext}>

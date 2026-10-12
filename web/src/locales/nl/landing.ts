@@ -2,62 +2,16 @@ import type { Messages } from "../types"
 
 /** The home page and the quick-share composer on it. */
 const messages: Messages = {
-  "Zero-knowledge · keys never leave your device": "Zero-knowledge · sleutels verlaten je apparaat nooit",
-  "Share anything.": "Deel alles.",
-  "Reveal nothing.": "Onthul niets.",
-  "Files and notes are encrypted in your browser before they leave it. The link carries the key — our server only ever stores noise.":
-    "Bestanden en notities worden in je browser versleuteld voordat ze die verlaten. De link draagt de sleutel — onze server bewaart alleen ruis.",
-  "AES-GCM per file": "AES-GCM per bestand",
-  "Password locked": "Met wachtwoord beveiligd",
-  "Key derived on-device": "Sleutel afgeleid op het apparaat",
+  "Expires in 7 days · 1 view left": "Verloopt over 7 dagen · nog 1 keer te openen",
   "Share link": "Deellink",
   "1 day": "1 dag",
-  "1 view": "1 weergave",
   pw: "pw",
-  "Burned after reading": "Vernietigd na lezen",
-  "Link opened once, then destroyed.": "Link één keer geopend, daarna vernietigd.",
-  "Private by construction — not by promise. Even the people running this server can't read what you share.":
-    "Privé door ontwerp — niet door een belofte. Zelfs wie deze server beheert, kan niet lezen wat je deelt.",
-  "Encrypted in your browser": "Versleuteld in je browser",
-  "AES-256-GCM before a single byte is uploaded.": "AES-256-GCM voordat er één byte wordt geüpload.",
-  "Key lives in the link": "De sleutel zit in de link",
-  "After the #, which browsers never send to servers.": "Na het #, dat browsers nooit naar servers sturen.",
   "Burn after reading": "Vernietigen na lezen",
-  "Links that expire by time, by views, or both.": "Links die verlopen op tijd, op aantal weergaven of allebei.",
-  "Optional passwords": "Optionele wachtwoorden",
-  "Mixed into the key with Argon2id for a second factor.": "Met Argon2id in de sleutel gemengd als tweede factor.",
   "Three steps.": "Drie stappen.",
-  "Zero trust required.": "Geen vertrouwen nodig.",
-  "Encrypt locally": "Lokaal versleutelen",
-  "A fresh 256-bit key is generated for every file. Your file is sealed in 4 MB chunks, right here in the tab.":
-    "Voor elk bestand wordt een nieuwe 256-bits sleutel gemaakt. Je bestand wordt in blokken van 4 MB verzegeld, hier in het tabblad.",
-  "quarterly-report.pdf": "kwartaalrapport.pdf",
-  "Share the link": "Deel de link",
-  "The decryption key rides in the URL fragment. Add a password, an expiry or a view limit if you like.":
-    "De sleutel reist mee in het fragment van de URL. Voeg als je wilt een wachtwoord, een vervaldatum of een weergavelimiet toe.",
-  "Decrypt on arrival": "Ontsleutelen bij aankomst",
-  "Your recipient's browser fetches the ciphertext and unlocks it locally. Burned links vanish for good.":
-    "De browser van de ontvanger haalt de versleutelde gegevens op en ontgrendelt ze lokaal. Vernietigde links zijn voorgoed weg.",
-  "Integrity verified · decrypted in 38 ms": "Integriteit gecontroleerd · ontsleuteld in 38 ms",
-  "Built to be breached": "Gebouwd om een inbraak te doorstaan",
-  "If someone steals our disks,": "Wie onze schijven steelt,",
-  "they get very expensive noise.": "krijgt heel dure ruis.",
-  "No master key on the server. No plaintext file names. Passwords are stretched on your device and never sent. Access tokens are hashed; account hashes are peppered.":
-    "Geen hoofdsleutel op de server. Geen bestandsnamen in leesbare vorm. Wachtwoorden worden op je apparaat opgerekt en nooit verstuurd. Toegangstokens worden gehasht; accounthashes krijgen daarbij een geheim van de server.",
   bytes: "bytes",
-  "Plaintext stored on the server": "Leesbare tekst op de server",
   bit: "bit",
-  "Unique key for every file": "Unieke sleutel voor elk bestand",
-  "Secret in every share link": "Geheim in elke deellink",
   MiB: "MiB",
-  "Argon2id memory per guess": "Argon2id-geheugen per poging",
-  "Optional account": "Optioneel account",
-  "A private drive, when you want one.": "Een privédrive, wanneer je er een wilt.",
-  "Sign up with just an email and a password to keep everything in one encrypted place — folders, notes, and every link you've shared, revocable at any time.":
-    "Meld je aan met alleen een e-mailadres en een wachtwoord om alles op één versleutelde plek te bewaren — mappen, notities en elke link die je hebt gedeeld, op elk moment in te trekken.",
-  "Folders and file names are encrypted too": "Ook map- en bestandsnamen zijn versleuteld",
   "Revoke any share link instantly": "Trek elke deellink direct in",
-  "Recovery key so a forgotten password isn't fatal": "Herstelsleutel, zodat een vergeten wachtwoord niet fataal is",
   "Create your drive": "Maak je drive",
   "I have an account": "Ik heb al een account",
   "My drive": "Mijn drive",
@@ -65,7 +19,6 @@ const messages: Messages = {
   "Folder · 12 items": "Map · 12 items",
   "passport-scan.jpg": "paspoort-scan.jpg",
   "1.8 MB · 2 links": "1,8 MB · 2 links",
-  "Wi-Fi & door codes": "Wifi- en deurcodes",
   "Note · burned": "Notitie · vernietigd",
   "That file is larger than {size}": "Dat bestand is groter dan {size}",
   "Create a free drive to share bigger files.": "Maak een gratis drive om grotere bestanden te delen.",
@@ -103,24 +56,55 @@ const messages: Messages = {
   "That's more than {size}": "Dat is meer dan {size}",
   "A drive takes files up to {size} each.": "Een drive neemt bestanden aan tot {size} per stuk.",
   "Send files": "Bestanden versturen",
-  "Share private files without making the other person sign up for anything.":
-    "Deel privébestanden zonder dat de ander zich ergens voor hoeft aan te melden.",
-  "They open your link in any browser and the files decrypt right there. No account, no app, nothing to install.":
-    "Die opent je link in een willekeurige browser en de bestanden worden daar ontsleuteld. Geen account, geen app, niets te installeren.",
-  "Send something": "Iets versturen",
-  "Need someone to send you a file? Create a secure upload link. No account required for them.":
-    "Moet iemand jou een bestand sturen? Maak een veilige uploadlink. Die persoon heeft geen account nodig.",
-  "Their browser encrypts each file to a key only you hold. The link can upload, and nothing else: not even read back what it sent.":
-    "Hun browser versleutelt elk bestand voor een sleutel die alleen jij hebt. De link kan uploaden en verder niets: zelfs niet teruglezen wat erdoor is verstuurd.",
-  "Get a drive to request files": "Neem een drive om bestanden op te vragen",
-  "Try it first": "Eerst proberen",
-  "Want to try a drive before you pay for one?": "Wil je een drive proberen voordat je ervoor betaalt?",
-  "Thanks. We'll email you a link to try Coffer.": "Bedankt. We mailen je een link om Coffer te proberen.",
-  "Leave your email and we'll send you a link to a drive you can use for free for a while.":
-    "Laat je e-mailadres achter en we sturen je een link naar een drive die je een tijdje gratis kunt gebruiken.",
-  "you@example.com": "jij@voorbeeld.nl",
-  "Send me a link": "Stuur me een link",
-  "We use your address to send that link, and for nothing else.": "We gebruiken je adres om die link te sturen, en nergens anders voor.",
+  "File requests, no account for your clients": "Bestanden opvragen, zonder account voor je klanten",
+  "Collect documents from clients.": "Verzamel documenten van klanten.",
+  "Only you can open them.": "Alleen jij kunt ze openen.",
+  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
+    "Stuur een link. Je klant uploadt vanuit elke browser, zonder account. Wij kunnen niet lezen wat er binnenkomt.",
+  "Create a request link": "Aanvraaglink maken",
+  "Just need to send a file?": "Wil je alleen een bestand sturen?",
+  "Free to start. No card needed.": "Gratis beginnen. Geen betaalkaart nodig.",
+  "Documents for your tax return": "Documenten voor je belastingaangifte",
+  "Only the owner can open what you send.": "Alleen de eigenaar kan openen wat je stuurt.",
+  "payslip-march.pdf": "loonstrook-maart.pdf",
+  "Three steps. Nothing for your client to install.": "Drie stappen. Niets dat je klant hoeft te installeren.",
+  "Make a link": "Maak een link",
+  "Say what you need and by when. Set how many files, how large, and when the link stops working.":
+    "Geef aan wat je nodig hebt en tegen wanneer. Bepaal hoeveel bestanden, hoe groot, en wanneer de link niet meer werkt.",
+  "Up to 10 files, closes in 7 days": "Maximaal 10 bestanden, sluit over 7 dagen",
+  "Send it to your client": "Stuur hem naar je klant",
+  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
+    "Ze openen hem in elke browser en slepen hun bestanden erin. De link kan alleen uploaden. Hij kan niets lezen, tonen of verwijderen.",
+  "Open them in your drive": "Open ze in je drive",
+  "The files show up in your drive the next time you open it. Only you can read them.":
+    "De bestanden verschijnen in je drive zodra je die opent. Alleen jij kunt ze lezen.",
+  "The paperwork you keep chasing": "De papieren waar je steeds achteraan zit",
+  "Client documents": "Klantdocumenten",
+  "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
+    "Belastingpapieren, identiteitsbewijzen en bonnetjes. Eén link per klant, en alles komt op één plek terecht in plaats van verspreid over mailthreads.",
+  "Coursework with a deadline": "Opdrachten met een deadline",
+  "Set the link to close at the deadline and cap the file size. Students upload without making an account.":
+    "Laat de link op de deadline sluiten en beperk de bestandsgrootte. Studenten uploaden zonder account.",
+  "A contract that burns after one view": "Een contract dat na één keer bekijken verdwijnt",
+  "Send a file with a link that works once or expires tomorrow. Add a password for a second lock.":
+    "Stuur een bestand met een link die één keer werkt of morgen verloopt. Voeg een wachtwoord toe als tweede slot.",
+  "Applications and CVs": "Sollicitaties en cv's",
+  "Put one link in a job post. Candidates upload their documents, and only you can open them.":
+    "Zet één link in de vacature. Kandidaten uploaden hun documenten, en alleen jij kunt ze openen.",
+  "Drop it here and get a link. No account needed. Add a password, an expiry or a view limit if you like.":
+    "Sleep het hier en krijg een link. Geen account nodig. Voeg desgewenst een wachtwoord, vervaldatum of weergavelimiet toe.",
+  "A private place for what comes in.": "Een privé-plek voor alles wat binnenkomt.",
+  "A drive keeps what clients send, with folders, notes and every link you've shared. You can revoke any link at any time.":
+    "Een drive bewaart wat klanten sturen, met mappen, notities en elke link die je hebt gedeeld. Je kunt elke link altijd intrekken.",
+  "File names stay private too": "Ook bestandsnamen blijven privé",
+  "A recovery key, so a forgotten password isn't the end": "Een herstelsleutel, zodat een vergeten wachtwoord niet het einde is",
+  "Tax documents": "Belastingdocumenten",
+  "Rental application": "Huuraanvraag",
+  "We can't read your files.": "Wij kunnen je bestanden niet lezen.",
+  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
+    "Bestanden en hun namen worden in je browser versleuteld voordat ze worden geüpload, dus onze server bewaart alleen wat hij niet kan openen. De code is open source.",
+  "How it works in detail": "Hoe het in detail werkt",
+  "Read the code on GitHub": "Lees de code op GitHub",
 }
 
 export default messages

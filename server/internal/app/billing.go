@@ -21,11 +21,12 @@ import (
 	"coffer/internal/store"
 )
 
-// Subscriptions. With billing on there is no free drive: an account can only
-// add to its drive while a Paddle subscription is in good standing. When one
-// lapses the drive turns read-only (files can still be downloaded and deleted)
-// and its share links pause; after a grace period, and two warnings, the files
-// are deleted.
+// Subscriptions. With billing on, an account without a plan has the free
+// account: a small drive, a couple of request links at a time and share links
+// of a month at most. Nothing is deleted for being on it. A paid plan lifts
+// those limits. When a plan lapses the drive turns read-only (files can still
+// be downloaded and deleted) and its share links pause; after a grace period,
+// and two warnings, the files are deleted, and the account is a free one again.
 //
 // Paddle learns the email and payment details the customer types into its
 // checkout. It never sees keys, file names or contents.
@@ -34,7 +35,17 @@ import (
 type subState struct {
 	store.Standing
 	Offer *offer
+	// Free is set when billing is on and nothing paid or granted covers the
+	// account, and it has not lapsed from a plan: it has the free account.
+	Free      bool
+	freeQuota int64
 }
+
+// The free account's limits besides its size, which is a setting.
+const (
+	freeRequestLinks = 2                   // open at a time
+	freeShareMaxAge  = 30 * 24 * time.Hour // a link from the drive
+)
 
 // offer is a personal price an admin has put to one account, bought through
 // the normal checkout instead of one of the listed plans.
@@ -55,10 +66,16 @@ func (s *subState) comped() bool {
 	return s.CompQuota.Valid && (!s.CompUntil.Valid || s.CompUntil.Int64 > now())
 }
 
-// covered reports whether the drive can be added to: a plan in good standing
-// or a complimentary allowance, and no suspension.
-func (s *subState) covered() bool {
+// paid reports whether a plan in good standing or a complimentary allowance
+// backs the account, which is what lifts the free account's limits.
+func (s *subState) paid() bool {
 	return !s.Suspended && (entitled(s.Status.String) || s.comped())
+}
+
+// covered reports whether the drive can be added to: a paid plan or the free
+// account, and no suspension.
+func (s *subState) covered() bool {
+	return s.paid() || (s.Free && !s.Suspended)
 }
 
 // allowance is how many bytes the account may store right now.
@@ -69,6 +86,9 @@ func (s *subState) allowance() int64 {
 	}
 	if s.comped() {
 		q = max(q, s.CompQuota.Int64)
+	}
+	if s.Free {
+		q = s.freeQuota
 	}
 	return q
 }
@@ -91,6 +111,8 @@ func (a *App) subState(uid string) (*subState, error) {
 			s.Offer = &o
 		}
 	}
+	s.Free = a.billing != nil && !entitled(s.Status.String) && !s.comped() && !s.LapsedAt.Valid
+	s.freeQuota = a.cfg.FreeQuota
 	return &s, nil
 }
 
@@ -118,6 +140,13 @@ func (a *App) writeQuota(uid string) (int64, error) {
 	return s.allowance(), nil
 }
 
+func cmpOr(s, def string) string {
+	if s == "" {
+		return def
+	}
+	return s
+}
+
 func (a *App) billingJSON(s *subState) any {
 	if a.billing == nil {
 		return nil
@@ -125,12 +154,18 @@ func (a *App) billingJSON(s *subState) any {
 	out := map[string]any{
 		"plan":     nil,
 		"status":   nil,
-		"entitled": s.covered(),
+		"entitled": s.paid(),
 		"pending":  s.PendingTxn.Valid,
+	}
+	if s.Free {
+		// What the free account holds, so the app can say so before the server has to refuse.
+		out["free"] = map[string]any{"requestLinks": freeRequestLinks, "shareDays": int(freeShareMaxAge.Hours() / 24)}
 	}
 	if s.Plan.Valid {
 		out["plan"] = s.Plan.String
 		out["status"] = s.Status.String
+		// A subscription Paddle has not told us the cycle of is one from before yearly billing.
+		out["interval"] = cmpOr(s.Interval.String, paddle.Month)
 	}
 	if s.comped() {
 		comp := map[string]any{"quota": s.CompQuota.Int64}
@@ -152,13 +187,14 @@ func (a *App) billingJSON(s *subState) any {
 		out["cancelAt"] = s.CancelAt.Int64
 	}
 	// A lapsed drive is emptied once its grace period is over.
-	if s.LapsedAt.Valid && !s.covered() {
+	if s.LapsedAt.Valid && !s.paid() {
 		out["deleteAt"] = s.LapsedAt.Int64 + int64(a.cfg.LapseGrace.Seconds())
 	}
 	return out
 }
 
-// plansJSON lists the plans that can be bought right now, with Paddle's prices.
+// plansJSON lists the plans that can be bought right now, with Paddle's
+// prices: both intervals where the yearly one has been created.
 func (a *App) plansJSON(ctx context.Context) []map[string]any {
 	out := []map[string]any{}
 	prices, err := a.billing.Catalog(ctx)
@@ -167,16 +203,40 @@ func (a *App) plansJSON(ctx context.Context) []map[string]any {
 		return out
 	}
 	for _, pl := range paddle.Plans {
-		p, ok := prices[pl.ID]
-		if !ok {
+		pp, ok := prices[pl.ID]
+		if !ok || pp.Month == nil {
 			continue
 		}
-		amount, _ := strconv.ParseInt(p.UnitPrice.Amount, 10, 64)
+		amounts := map[string]int64{}
+		for _, interval := range []string{paddle.Month, paddle.Year} {
+			if p, ok := pp.For(interval); ok {
+				amounts[interval], _ = strconv.ParseInt(p.UnitPrice.Amount, 10, 64)
+			}
+		}
 		out = append(out, map[string]any{
-			"id": pl.ID, "name": pl.Name, "quota": pl.Quota, "amount": amount, "currency": p.UnitPrice.Currency,
+			"id": pl.ID, "name": pl.Name, "quota": pl.Quota, "currency": pp.Month.UnitPrice.Currency,
+			"amount": amounts[paddle.Month], // the monthly price, as before
+			"prices": amounts,
 		})
 	}
 	return out
+}
+
+var errBadPlan = errf(http.StatusBadRequest, "this plan is not available")
+
+// listedPrice finds the Paddle price for a listed plan billed monthly or
+// yearly. A personal offer's price is never among them: those are made at
+// checkout and carry no plan tag.
+func listedPrice(catalog map[string]paddle.PlanPrices, plan, interval string) (*paddle.Plan, paddle.Price, error) {
+	pl := paddle.PlanByID(plan)
+	if pl == nil || !paddle.ValidInterval(interval) {
+		return nil, paddle.Price{}, errBadPlan
+	}
+	price, ok := catalog[plan].For(interval)
+	if !ok {
+		return nil, paddle.Price{}, errBadPlan
+	}
+	return pl, price, nil
 }
 
 func (a *App) handleCheckout(w http.ResponseWriter, r *http.Request) error {
@@ -185,7 +245,8 @@ func (a *App) handleCheckout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	var req struct {
-		Plan string `json:"plan"`
+		Plan     string `json:"plan"`
+		Interval string `json:"interval"` // month or year; not used for a personal offer
 	}
 	if err := readJSON(w, r, &req); err != nil {
 		return err
@@ -232,9 +293,9 @@ func (a *App) handleCheckout(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		price, ok := prices[req.Plan]
-		if !ok {
-			return errf(http.StatusBadRequest, "this plan is not available")
+		_, price, err := listedPrice(prices, req.Plan, req.Interval)
+		if err != nil {
+			return err
 		}
 		item["price_id"] = price.ID
 	}
@@ -287,49 +348,72 @@ func (a *App) handleBillingSync(w http.ResponseWriter, r *http.Request) error {
 	return a.writeMe(w, uid)
 }
 
-// handleChangePlan moves a running subscription to another plan. Paddle
-// charges or credits the difference for the rest of the period right away.
+// planChange is what a plan change asks Paddle for, once it has been checked.
+type planChange struct {
+	subID string
+	items []map[string]any
+}
+
+// changeRequest checks a plan change against the account and the catalog.
+func (a *App) changeRequest(r *http.Request, uid, plan, interval string) (*planChange, error) {
+	s, err := a.subState(uid)
+	if err != nil {
+		return nil, err
+	}
+	prices, err := a.billing.Catalog(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	pl, price, err := listedPrice(prices, plan, interval)
+	if err != nil {
+		return nil, err
+	}
+	if !s.SubID.Valid || s.Status.String != "active" {
+		return nil, errf(http.StatusConflict, "there is no active plan to change")
+	}
+	// Subscriptions from before yearly billing have no interval recorded until the migration; they are monthly.
+	if s.Plan.String == pl.ID && (s.Interval.String == interval || (s.Interval.String == "" && interval == paddle.Month)) {
+		return nil, errf(http.StatusConflict, "you are already on this plan")
+	}
+	used, err := a.db.Usage(uid)
+	if err != nil {
+		return nil, err
+	}
+	if used > pl.Quota {
+		return nil, errf(http.StatusConflict, "you are storing more than this plan holds")
+	}
+	return &planChange{subID: s.SubID.String, items: []map[string]any{{"price_id": price.ID, "quantity": 1}}}, nil
+}
+
+// prorationMode is how a plan change is billed: what is unused of the old
+// price is credited and what remains of the new one charged, right away.
+// Paddle accepts this mode for a change of interval as well as of size
+// (prorated_immediately, full_immediately and do_not_bill are the three it
+// takes for an interval change).
+const prorationMode = "prorated_immediately"
+
+// handleChangePlan moves a running subscription to another plan, size or
+// interval. Paddle charges or credits the difference right away.
 func (a *App) handleChangePlan(w http.ResponseWriter, r *http.Request) error {
 	uid, err := a.requireUser(r)
 	if err != nil {
 		return err
 	}
 	var req struct {
-		Plan string `json:"plan"`
+		Plan     string `json:"plan"`
+		Interval string `json:"interval"`
 	}
 	if err := readJSON(w, r, &req); err != nil {
 		return err
 	}
-	s, err := a.subState(uid)
+	ch, err := a.changeRequest(r, uid, req.Plan, req.Interval)
 	if err != nil {
 		return err
-	}
-	pl := paddle.PlanByID(req.Plan)
-	prices, err := a.billing.Catalog(r.Context())
-	if err != nil {
-		return err
-	}
-	price, ok := prices[req.Plan]
-	if pl == nil || !ok {
-		return errf(http.StatusBadRequest, "this plan is not available")
-	}
-	if !s.SubID.Valid || s.Status.String != "active" {
-		return errf(http.StatusConflict, "there is no active plan to change")
-	}
-	if s.Plan.String == pl.ID {
-		return errf(http.StatusConflict, "you are already on this plan")
-	}
-	used, err := a.db.Usage(uid)
-	if err != nil {
-		return err
-	}
-	if used > pl.Quota {
-		return errf(http.StatusConflict, "you are storing more than this plan holds")
 	}
 	var sub paddle.Subscription
-	err = a.billing.Call(r.Context(), http.MethodPatch, "/subscriptions/"+s.SubID.String, map[string]any{
-		"items":                  []map[string]any{{"price_id": price.ID, "quantity": 1}},
-		"proration_billing_mode": "prorated_immediately",
+	err = a.billing.Call(r.Context(), http.MethodPatch, "/subscriptions/"+ch.subID, map[string]any{
+		"items":                  ch.items,
+		"proration_billing_mode": prorationMode,
 	}, &sub)
 	if err != nil {
 		var pe *paddle.Error
@@ -343,6 +427,38 @@ func (a *App) handleChangePlan(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	return a.writeMe(w, uid)
+}
+
+// handlePreviewPlan says what a plan change would cost, without making it.
+// The figures are Paddle's own preview of the update, so what the customer is
+// shown is what the change then does.
+func (a *App) handlePreviewPlan(w http.ResponseWriter, r *http.Request) error {
+	uid, err := a.requireUser(r)
+	if err != nil {
+		return err
+	}
+	var req struct {
+		Plan     string `json:"plan"`
+		Interval string `json:"interval"`
+	}
+	if err := readJSON(w, r, &req); err != nil {
+		return err
+	}
+	ch, err := a.changeRequest(r, uid, req.Plan, req.Interval)
+	if err != nil {
+		return err
+	}
+	var out paddle.UpdatePreview
+	err = a.billing.Call(r.Context(), http.MethodPatch, "/subscriptions/"+ch.subID+"/preview", map[string]any{
+		"items":                  ch.items,
+		"proration_billing_mode": prorationMode,
+	}, &out)
+	if err != nil {
+		log.Printf("billing: preview plan: %v", err)
+		return errf(http.StatusBadGateway, "the change could not be priced, please try again shortly")
+	}
+	writeJSON(w, 200, out.Summary())
+	return nil
 }
 
 // handlePortal sends the customer to Paddle's portal to update their card,
@@ -420,7 +536,7 @@ func (a *App) applySub(ctx context.Context, uid string, sub *paddle.Subscription
 	if len(sub.Items) == 0 {
 		return fmt.Errorf("billing: subscription %s has no items", sub.ID)
 	}
-	pl := a.billing.PlanOfPrice(ctx, sub.Items[0].Price.ID)
+	pl, _ := a.billing.PlanOfPrice(ctx, sub.Items[0].Price.ID)
 	if tag := sub.Items[0].Price.CustomData; pl == nil && tag != nil && tag.Quota > 0 {
 		pl = &paddle.Plan{ID: "custom", Quota: tag.Quota} // a personal price set by an admin
 	}
@@ -430,6 +546,10 @@ func (a *App) applySub(ctx context.Context, uid string, sub *paddle.Subscription
 	snap := store.Subscription{
 		ID: sub.ID, CustomerID: sub.CustomerID, Plan: pl.ID, Status: sub.Status, Quota: pl.Quota,
 		Entitled: entitled(sub.Status), UpdatedAt: sub.UpdatedAt.UnixMicro(),
+	}
+	// What the subscription bills at is what Paddle says it does, whichever price it is on.
+	if c := sub.BillingCycle; c != nil && c.Frequency == 1 && paddle.ValidInterval(c.Interval) {
+		snap.Interval = c.Interval
 	}
 	if sub.CurrentPeriod != nil {
 		end := sub.CurrentPeriod.EndsAt.Unix()

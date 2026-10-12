@@ -15,7 +15,7 @@ func TestPagesDescribeThemselves(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "_shell.html"), []byte(shell), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	h, err := newStaticHandler(dir, func(*http.Request) string { return "https://coffer.test" })
+	h, err := newStaticHandler(dir, func(*http.Request) string { return "https://coffer.test" }, "")
 	if err != nil {
 		t.Fatal(err)
 	}

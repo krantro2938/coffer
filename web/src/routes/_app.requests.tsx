@@ -27,6 +27,7 @@ import { useCopy } from "@/hooks/use-copy"
 import { api, canWrite } from "@/lib/api"
 import { useDrive } from "@/lib/drive"
 import { EXPIRY_OPTIONS, formatBytes, relativeTime } from "@/lib/format"
+import { track } from "@/lib/analytics"
 import { useI18n } from "@/lib/i18n"
 import { createRequest, requestStatus, type DRequest, type RequestStatus } from "@/lib/requests"
 import { useSession } from "@/lib/session"
@@ -65,6 +66,10 @@ function RequestsPage() {
   const [creating, setCreating] = useState(false)
   // The requests behind folder links that take files are managed with those links.
   const requests = (data?.requests ?? []).filter((r) => !r.shareId)
+  // The free account takes a few at a time, folder links that take files included.
+  const free = me?.billing?.free
+  const open = (data?.requests ?? []).filter((r) => !["closed", "expired"].includes(requestStatus(r))).length
+  const full = !!free && open >= free.requestLinks
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
@@ -73,10 +78,20 @@ function RequestsPage() {
           <p className="eyebrow">{t("Upload links")}</p>
           <h1 className="mt-1 text-3xl font-medium">{t("File requests")}</h1>
         </div>
-        <Button onClick={() => setCreating(true)} disabled={!canWrite(me)}>
+        <Button onClick={() => setCreating(true)} disabled={!canWrite(me) || full}>
           <PlusIcon /> {t("New request")}
         </Button>
       </div>
+      {full && free && (
+        <p className="mt-4 rounded-xl bg-muted/50 px-3.5 py-2.5 text-sm text-muted-foreground">
+          {t("Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.", {
+            n: free.requestLinks,
+          })}{" "}
+          <Link to="/settings" search={{ tab: "billing" }} className="font-medium text-foreground underline underline-offset-4">
+            {t("Choose plan")}
+          </Link>
+        </p>
+      )}
       <p className="mt-2 text-sm text-muted-foreground">
         {t(
           "Need someone to send you a file? Give them an upload link. They need no account, their files are encrypted in their browser, and only you can open them."
@@ -105,7 +120,7 @@ function RequestsPage() {
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
               {t("Make one and send its link to whoever has the files. What they upload lands in a folder of its own in your drive.")}
             </p>
-            <Button className="mt-6" onClick={() => setCreating(true)} disabled={!canWrite(me)}>
+            <Button className="mt-6" onClick={() => setCreating(true)} disabled={!canWrite(me) || full}>
               <PlusIcon /> {t("New request")}
             </Button>
           </div>
@@ -273,6 +288,7 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         maxBytes: maxBytes || null,
       })
       setUrl(made.url)
+      track("request-created")
       await qc.invalidateQueries({ queryKey: ["drive"] })
     } catch (e) {
       toast.error((e as Error).message)

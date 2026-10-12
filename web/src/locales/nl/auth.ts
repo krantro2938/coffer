@@ -2,11 +2,7 @@ import type { Messages } from "../types"
 
 /** Signing up, signing in, recovery and the welcome. */
 const messages: Messages = {
-  "Zero-knowledge drive": "Zero-knowledge-drive",
   "Your password is the only key. We never see it.": "Je wachtwoord is de enige sleutel. Wij zien het nooit.",
-  "Stretched with Argon2id in your browser": "In je browser opgerekt met Argon2id",
-  "Unwraps a master key that encrypts everything": "Pakt een hoofdsleutel uit die alles versleutelt",
-  "Server stores only ciphertext and peppered hashes": "De server bewaart alleen versleutelde gegevens en hashes met een servergeheim",
   "Every file, every name, every folder.": "Elk bestand, elke naam, elke map.",
   "Too short": "Te kort",
   Weak: "Zwak",
@@ -69,15 +65,10 @@ const messages: Messages = {
   "Pick as many as you like and we'll lay out your first folders. Your answer stays in this browser; we never see it.":
     "Kies er zoveel als je wilt en we zetten je eerste mappen klaar. Je antwoord blijft in deze browser; wij zien het nooit.",
   Documents: "Documenten",
-  "Passports, contracts, tax papers": "Paspoorten, contracten, belastingpapieren",
   Photos: "Foto's",
-  "The ones that are nobody's business": "Die waar niemand iets mee te maken heeft",
   "Client work": "Werk voor klanten",
-  "Files you are trusted with": "Bestanden die je zijn toevertrouwd",
   "Passwords and codes": "Wachtwoorden en codes",
-  "Recovery keys, PINs, door codes": "Herstelsleutels, pincodes, deurcodes",
   "Things to send": "Dingen om te versturen",
-  "Links that expire or burn": "Links die verlopen of zichzelf vernietigen",
   Skip: "Overslaan",
   "Choose my drive": "Kies mijn drive",
   "Open my drive": "Open mijn drive",
@@ -90,7 +81,7 @@ const messages: Messages = {
   "We hold no copy and no back door, so keep it safe.": "Wij hebben geen kopie en geen achterdeur, dus bewaar hem goed.",
   "This is all we hold of your key:": "Dit is alles wat wij van je sleutel hebben:",
   "Setting the combination…": "De combinatie instellen…",
-  "Your drive is open.": "Je drive is open.",
+  "Your private drive is ready.": "Je privédrive staat klaar.",
   "{size} that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
     "{size} die alleen jij kunt lezen. Wij niet, onze opslagleverancier niet, en niemand die onze schijven in handen krijgt.",
   "Space that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
@@ -109,6 +100,9 @@ const messages: Messages = {
   terms: "voorwaarden",
   "and the": "en het",
   "privacy policy": "privacybeleid",
+  "Your password stays on your device": "Je wachtwoord blijft op je apparaat",
+  "It unlocks the key that protects your files": "Hij ontgrendelt de sleutel die je bestanden beschermt",
+  "Our server only stores what it can't read": "Onze server bewaart alleen wat hij niet kan lezen",
 }
 
 export default messages

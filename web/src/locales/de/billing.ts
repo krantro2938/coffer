@@ -34,21 +34,11 @@ const messages: Messages = {
   "Personal plan": "Persönlicher Tarif",
   "Ended.": "Beendet.",
   Pricing: "Preise",
-  "Private drive": "Privates Laufwerk",
-  "Pay for space, not with your data.": "Zahlen Sie für Platz, nicht mit Ihren Daten.",
-  "Quick shares are free and need no account. A drive is a subscription, because storage that isn't paid for by you is paid for by someone else.":
-    "Schnellfreigaben sind kostenlos und brauchen kein Konto. Ein Laufwerk ist ein Abonnement, denn Speicher, den nicht Sie bezahlen, bezahlt jemand anderes.",
   "Get started": "Loslegen",
   "Choose plan": "Tarif wählen",
   "Your plan": "Ihr Tarif",
   "per month": "pro Monat",
   "{price} a month": "{price} pro Monat",
-  "Personal encrypted storage": "Persönlicher verschlüsselter Speicher",
-  "For everyday cloud storage": "Für den täglichen Cloud-Speicher",
-  "For large private archives": "Für große private Archive",
-  "Encrypted storage": "Verschlüsselter Speicher",
-  "Every plan: end-to-end encryption, a private drive, secure sharing, unlimited folders. No ads, no tracking.":
-    "Jeder Tarif: Ende-zu-Ende-Verschlüsselung, ein privates Laufwerk, sicheres Teilen, unbegrenzt viele Ordner. Keine Werbung, kein Tracking.",
   "Payment is handled by Paddle; we never see your card. Cancel whenever you like.":
     "Die Zahlung wickelt Paddle ab; wir sehen Ihre Karte nie. Kündigen Sie, wann Sie möchten.",
   "Choose the size of your drive": "Wählen Sie die Größe Ihres Laufwerks",
@@ -63,8 +53,8 @@ const messages: Messages = {
   "Your drive is read-only: you can still download and delete, but not add.":
     "Ihr Laufwerk ist schreibgeschützt: Herunterladen und Löschen geht weiterhin, Hinzufügen nicht.",
   Renew: "Verlängern",
-  "Drives start at {price} a month. You choose a plan in the next step.":
-    "Laufwerke gibt es ab {price} pro Monat. Den Tarif wählen Sie im nächsten Schritt.",
+  "Free to start. Plans from {price} a month when you need more space.":
+    "Kostenlos starten. Tarife ab {price} im Monat, wenn Sie mehr Platz brauchen.",
   Plan: "Tarif",
   "Change the size of your drive, update your card or cancel.": "Die Größe Ihres Laufwerks ändern, Ihre Karte aktualisieren oder kündigen.",
   "Manage billing": "Abrechnung verwalten",
@@ -77,15 +67,49 @@ const messages: Messages = {
     "Ihre letzte Zahlung ist fehlgeschlagen. Aktualisieren Sie Ihre Karte unter „Abrechnung verwalten“, damit Ihr Laufwerk offen bleibt.",
   Switch: "Wechseln",
   "Switch plan": "Tarif wechseln",
-  "Switch to {plan}?": "Zu {plan} wechseln?",
   "Too small for your files": "Zu klein für Ihre Dateien",
   "You're now on {plan}": "Sie nutzen jetzt {plan}",
-  "Your card is charged or credited now for the rest of this billing period, then {price} a month.":
-    "Ihre Karte wird jetzt für den Rest dieses Abrechnungszeitraums belastet oder erhält eine Gutschrift, danach {price} pro Monat.",
   "Your plan is cancelled along with it.": "Ihr Tarif wird zusammen damit gekündigt.",
   "Payments stay away from your files": "Zahlungen bleiben fern von Ihren Dateien",
   "A drive is paid for through Paddle, on a bare checkout page kept apart from the app. Paddle learns the email and card you type there and nothing else: no keys, no file names, no contents. The app itself still makes no third-party requests, and storage is rented from a provider that only ever holds ciphertext.":
     "Ein Laufwerk wird über Paddle bezahlt, auf einer schlichten Kassenseite, die von der App getrennt ist. Paddle erfährt die E-Mail-Adresse und die Karte, die Sie dort eingeben, und sonst nichts: keine Schlüssel, keine Dateinamen, keine Inhalte. Die App selbst stellt weiterhin keine Anfragen an Dritte, und der Speicher wird bei einem Anbieter gemietet, der immer nur Geheimtext erhält.",
+  "Start free. Pay when you need more room.": "Kostenlos starten. Zahlen, wenn Sie mehr Platz brauchen.",
+  "The free account is yours to keep, with nothing deleted. Pay only when you need more room.":
+    "Das kostenlose Konto gehört Ihnen dauerhaft, nichts wird gelöscht. Bezahlen Sie nur, wenn Sie mehr Platz brauchen.",
+  Free: "Kostenlos",
+  "For occasional requests": "Für gelegentliche Anfragen",
+  "2 active request links": "2 aktive Anfragelinks",
+  "Share links last up to 30 days": "Freigabelinks gelten bis zu 30 Tage",
+  "Start free": "Kostenlos starten",
+  "Unlimited request links": "Unbegrenzt viele Anfragelinks",
+  "For a few clients": "Für einige Kunden",
+  "For a growing practice": "Für eine wachsende Praxis",
+  "For a whole archive": "Für ein ganzes Archiv",
+  "Every plan: private files and names, secure sharing, unlimited folders. No ads, and no tracking across sites.":
+    "Jeder Tarif: private Dateien und Namen, sicheres Teilen, unbegrenzt viele Ordner. Keine Werbung und kein Tracking über Websites hinweg.",
+  Monthly: "Monatlich",
+  Yearly: "Jährlich",
+  "{n} months free": "{n} Monate gratis",
+  "billed yearly, {price}": "jährlich abgerechnet, {price}",
+  "Next charge of {price} on {date}": "Nächste Abbuchung von {price} am {date}",
+  "Switch to yearly billing": "Auf jährliche Abrechnung wechseln",
+  "Switch to monthly billing": "Auf monatliche Abrechnung wechseln",
+  "Switch to {plan}, billed yearly?": "Zu {plan} wechseln, jährlich abgerechnet?",
+  "Switch to {plan}, billed monthly?": "Zu {plan} wechseln, monatlich abgerechnet?",
+  "Working out the price…": "Preis wird berechnet …",
+  "We couldn't work out the price just now. Paddle will show it before charging.":
+    "Den Preis konnten wir gerade nicht berechnen. Paddle zeigt ihn vor der Abbuchung an.",
+  "You'll pay {amount} now, which already counts the unused part of your current plan. After that, {rate}, with the next payment on {date}.":
+    "Sie zahlen jetzt {amount}; der ungenutzte Teil Ihres aktuellen Tarifs ist dabei schon angerechnet. Danach {rate}, die nächste Zahlung erfolgt am {date}.",
+  "Nothing is charged now. The unused part of your current plan, {amount}, is credited to your next payments. After that, {rate}, with the next payment on {date}.":
+    "Jetzt wird nichts abgebucht. Der ungenutzte Teil Ihres aktuellen Tarifs, {amount}, wird Ihren nächsten Zahlungen gutgeschrieben. Danach {rate}, die nächste Zahlung erfolgt am {date}.",
+  "Nothing is charged now. After that, {rate}, with the next payment on {date}.":
+    "Jetzt wird nichts abgebucht. Danach {rate}, die nächste Zahlung erfolgt am {date}.",
+  "Nothing is charged now: credit you already have pays for it. After that, {rate}, with the next payment on {date}.":
+    "Jetzt wird nichts abgebucht: Ihr vorhandenes Guthaben deckt es ab. Danach {rate}, die nächste Zahlung erfolgt am {date}.",
+  "Free account": "Kostenloses Konto",
+  "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
+    "{n} Anfragelinks gleichzeitig offen und Freigabelinks mit bis zu {days} Tagen Laufzeit. Mit einem Tarif entfallen beide Grenzen.",
 }
 
 export default messages

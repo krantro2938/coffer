@@ -13,6 +13,7 @@ import { api, getConfig } from "@/lib/api"
 import { saveWelcome } from "@/lib/welcome"
 import { formatPrice } from "@/lib/billing"
 import { formatBytes, shortDate } from "@/lib/format"
+import { track } from "@/lib/analytics"
 import { useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { triggerDownload } from "@/lib/transfer"
@@ -75,6 +76,7 @@ function Register() {
 
   const finish = () => {
     saveWelcome({ email, picks: [], stage: "ask" })
+    track("signup-completed")
     navigate({ to: "/welcome" })
   }
 
@@ -175,7 +177,7 @@ function Register() {
             ) : null
           ) : config?.plans?.length ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              {t("Drives start at {price} a month. You choose a plan in the next step.", { price: formatPrice(config.plans[0]) })}
+              {t("Free to start. Plans from {price} a month when you need more space.", { price: formatPrice(config.plans[0]) })}
             </p>
           ) : null}
         </div>

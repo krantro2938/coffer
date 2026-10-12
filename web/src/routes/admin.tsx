@@ -57,7 +57,16 @@ type User = Terms & {
   subscriptionId?: string
   lastSeen?: number
 }
-type Overview = Record<string, number> & { billing: boolean; byPlan: Record<string, number> }
+type Day = {
+  day: string
+  signups: number
+  signupsWithLink: number
+  sharesCreated: number
+  requestsCreated: number
+  filesReceived: number
+  sharesOpened: number
+}
+type Overview = Record<string, number> & { billing: boolean; byPlan: Record<string, number>; daily: Day[] }
 type Invite = Terms & { id: string; email: string; createdAt: number; expiresAt: number; usedAt?: number; note: string }
 type TrialRequest = { email: string; lang: string; createdAt: number; invitedAt: number | null }
 type Report = {
@@ -240,11 +249,61 @@ function OverviewTab({ go }: { go: (tab: string) => void }) {
           </div>
         ))}
       </dl>
+      <DailyTable days={data.daily} />
       <p className="max-w-2xl text-sm text-pretty text-muted-foreground">
         This console shows who has an account, what they pay and how much they store. It cannot show file names or contents: those are
         encrypted in the browser and the keys never reach this server.
       </p>
     </div>
+  )
+}
+
+/** The last 30 days of product activity. Counted from rows that still exist, so older days read low. */
+function DailyTable({ days }: { days: Day[] }) {
+  const cols: [string, (d: Day) => number][] = [
+    ["Sign-ups", (d) => d.signups],
+    ["…with a request link in 24 h", (d) => d.signupsWithLink],
+    ["Share links made", (d) => d.sharesCreated],
+    ["Share links opened", (d) => d.sharesOpened],
+    ["Request links made", (d) => d.requestsCreated],
+    ["Files received", (d) => d.filesReceived],
+  ]
+  const rows = days.slice().sort((a, b) => b.day.localeCompare(a.day))
+  return (
+    <section>
+      <h2 className="text-lg font-medium">Last 30 days</h2>
+      <p className="mt-1 max-w-2xl text-sm text-pretty text-muted-foreground">
+        UTC days. Links opened and links made are counted as they happen, from the day that began, so those are exact. Sign-ups, request
+        links and files received are counted from what is still stored: an account, request or file that was deleted is no longer counted,
+        so older days read low.
+      </p>
+      <div className="mt-4 overflow-x-auto rounded-2xl border">
+        <table className="w-full min-w-[40rem] text-sm tabular-nums">
+          <thead className="bg-muted/50 text-left text-muted-foreground">
+            <tr>
+              <th className="px-4 py-2.5 font-medium">Day</th>
+              {cols.map(([label]) => (
+                <th key={label} className="px-4 py-2.5 text-right font-medium">
+                  {label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((d) => (
+              <tr key={d.day} className="border-t">
+                <td className="px-4 py-2">{d.day}</td>
+                {cols.map(([label, get]) => (
+                  <td key={label} className={cn("px-4 py-2 text-right", get(d) === 0 && "text-muted-foreground/50")}>
+                    {get(d)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 

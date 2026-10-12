@@ -1,6 +1,9 @@
+import { useEffect, useRef, useState } from "react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import {
   ArrowRightIcon,
+  BriefcaseIcon,
+  CalendarClockIcon,
   CheckIcon,
   FlameIcon,
   FolderLockIcon,
@@ -13,12 +16,13 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropComposer } from "@/components/drop-composer"
-import { TrialRequest } from "@/components/trial-request"
 import { PlanFinePrint, PlanGrid, usePlans } from "@/components/plans"
+import { track, trackOnce } from "@/lib/analytics"
 import { useSession } from "@/lib/session"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
 import { formatBytes } from "@/lib/format"
 import { useI18n } from "@/lib/i18n"
+import { GITHUB_URL, SITE_HOST } from "@/lib/contact"
 
 export const Route = createFileRoute("/")({ component: Home })
 
@@ -28,11 +32,11 @@ function Home() {
       <SiteHeader />
       <main className="flex-1">
         <Hero />
-        <SendAndRequest />
-        <Pillars />
         <HowItWorks />
-        <NoiseBand />
+        <UseCases />
+        <SendAFile />
         <DriveCta />
+        <SecurityBand />
         <Pricing />
       </main>
       <SiteFooter />
@@ -42,237 +46,147 @@ function Home() {
 
 function Hero() {
   const { t } = useI18n()
-  return (
-    <section className="relative">
-      {/* Soft warm arc behind the composer, echoing the concentric rings of a lock dial.
-          It fades out rather than stopping at the section edge, so it can drift into the next one. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[22rem] -z-10 flex justify-center [mask-image:linear-gradient(to_bottom,black_35%,transparent_85%)]"
-      >
-        <div className="relative size-[56rem] shrink-0">
-          <div className="absolute inset-0 rounded-full border border-foreground/[0.06]" />
-          <div className="absolute inset-24 rounded-full border border-foreground/[0.06]" />
-          <div className="absolute inset-48 rounded-full bg-[radial-gradient(closest-side,var(--coral-soft),var(--lavender-soft)_60%,transparent)] opacity-90" />
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-6xl px-4 pt-12 pb-28 sm:px-6 sm:pt-20 sm:pb-44">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-            <span className="grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
-              <LockKeyholeIcon className="size-2.5" />
-            </span>
-            {t("Zero-knowledge · keys never leave your device")}
-          </span>
-          <h1 className="mt-6 text-[2.75rem] leading-[1.02] font-medium sm:text-7xl">
-            {t("Share anything.")}
-            <br />
-            <span className="text-muted-foreground/70">{t("Reveal nothing.")}</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg">
-            {t(
-              "Files and notes are encrypted in your browser before they leave it. The link carries the key — our server only ever stores noise."
-            )}
-          </p>
-        </div>
-
-        <div id="top" className="relative mx-auto mt-10 max-w-xl scroll-mt-24 sm:mt-12">
-          <FloatingCards />
-          <DropComposer />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/** The two things Coffer is for, and what neither asks of the other person. */
-function SendAndRequest() {
-  const { t } = useI18n()
   const { status } = useSession()
   const signedIn = status === "locked" || status === "unlocked"
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-28 sm:px-6 sm:pb-44">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="flex flex-col rounded-3xl border bg-card p-6 sm:p-8">
-          <span className="grid size-11 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
-            <SendIcon className="size-5" />
-          </span>
-          <p className="mt-6 eyebrow">{t("Send files")}</p>
-          <h2 className="mt-2 text-2xl font-medium text-balance sm:text-3xl">
-            {t("Share private files without making the other person sign up for anything.")}
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            {t("They open your link in any browser and the files decrypt right there. No account, no app, nothing to install.")}
-          </p>
-          <div className="mt-auto pt-8">
-            <Button size="lg" variant="outline" asChild>
-              <a href="#top">
-                {t("Send something")} <ArrowRightIcon data-icon="inline-end" />
-              </a>
-            </Button>
-          </div>
+    <section className="px-3 pb-3 sm:px-4">
+      <div className="relative mx-auto flex min-h-[min(calc(100svh-5.75rem),60rem)] max-w-[88rem] overflow-hidden rounded-[2rem] bg-hero text-hero-foreground sm:rounded-[2.5rem]">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute top-1/2 -right-40 size-[56rem] -translate-y-1/2 rounded-full border border-white/10" />
+          <div className="absolute top-1/2 -right-16 size-[40rem] -translate-y-1/2 rounded-full border border-white/10" />
+          <div className="absolute top-1/2 right-8 size-[24rem] -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklch,var(--lime)_45%,transparent),transparent)]" />
         </div>
-        <div className="flex flex-col rounded-3xl bg-lavender-soft p-6 sm:p-8">
-          <span className="grid size-11 place-items-center rounded-2xl bg-card text-foreground shadow-soft">
-            <InboxIcon className="size-5" />
-          </span>
-          <p className="mt-6 eyebrow">{t("Request files")}</p>
-          <h2 className="mt-2 text-2xl font-medium text-balance sm:text-3xl">
-            {t("Need someone to send you a file? Create a secure upload link. No account required for them.")}
-          </h2>
-          <p className="mt-3 text-foreground/70">
-            {t(
-              "Their browser encrypts each file to a key only you hold. The link can upload, and nothing else: not even read back what it sent."
-            )}
-          </p>
-          <div className="mt-auto pt-8">
-            <Button size="lg" asChild>
-              <Link to={signedIn ? "/requests" : "/register"}>
-                {signedIn ? t("Request files") : t("Get a drive to request files")} <ArrowRightIcon data-icon="inline-end" />
-              </Link>
-            </Button>
+
+        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-10 sm:py-14 lg:grid-cols-[1.2fr_1fr] lg:gap-10 lg:px-14">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 py-1 pr-3.5 pl-1 text-sm font-medium backdrop-blur">
+              <span className="grid size-6 place-items-center rounded-full bg-lime text-hero">
+                <InboxIcon className="size-3.5" />
+              </span>
+              {t("File requests, no account for your clients")}
+            </span>
+            <h1 className="mt-6 text-[2.25rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3rem] xl:text-[3.5rem]">
+              {t("Collect documents from clients.")} <span className="text-lime">{t("Only you can open them.")}</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-base text-pretty text-hero-foreground/80 sm:text-lg">
+              {t("Send a link. Your client uploads from any browser, no account needed. We can't read what they send.")}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <Button size="lg" asChild className="h-12 bg-lime px-7 text-base text-hero hover:bg-lime/85">
+                <Link to={signedIn ? "/requests" : "/register"} onClick={() => track("hero-request")}>
+                  {t("Create a request link")} <ArrowRightIcon data-icon="inline-end" />
+                </Link>
+              </Button>
+              <a
+                href="#send"
+                onClick={() => track("hero-send")}
+                className="text-sm font-medium text-hero-foreground/85 underline-offset-4 hover:underline"
+              >
+                {t("Just need to send a file?")}
+              </a>
+            </div>
+            <p className="mt-4 text-sm text-hero-foreground/70">{t("Free to start. No card needed.")}</p>
           </div>
+
+          <RequestPageMock />
         </div>
       </div>
     </section>
   )
 }
 
-function FloatingCards() {
+/** What a client sees when they open the link. */
+function RequestPageMock() {
   const { t } = useI18n()
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
-      <div className="absolute top-10 -left-60 w-48 animate-float rounded-2xl border bg-card p-4 shadow-soft">
-        <p className="text-2xl font-medium tracking-tight">256-bit</p>
-        <p className="text-xs text-muted-foreground">{t("AES-GCM per file")}</p>
-        <div className="mt-3 flex h-6 items-end gap-1">
-          {[40, 65, 50, 85, 70, 95, 60, 80].map((h, i) => (
-            <span key={i} className="flex-1 rounded-sm bg-lavender" style={{ height: `${h}%`, opacity: 0.35 + i * 0.08 }} />
-          ))}
+    <div aria-hidden className="relative mx-auto w-full max-w-md text-foreground lg:mx-0 lg:ml-auto">
+      <div className="rotate-1 rounded-[2rem] bg-card p-3 shadow-[0_30px_60px_-20px_oklch(0.2_0.05_158/45%)]">
+        <div className="p-4 sm:p-5">
+          <p className="font-heading text-2xl leading-tight font-semibold text-balance">{t("Documents for your tax return")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Only the owner can open what you send.")}</p>
         </div>
-      </div>
-
-      <div
-        className="absolute top-72 -left-72 w-60 animate-float rounded-2xl border bg-card p-3.5 shadow-soft"
-        style={{ animationDelay: "-2s" }}
-      >
-        <div className="flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-full bg-coral-soft">
-            <KeyRoundIcon className="size-4 text-coral" />
+        <div className="grid place-items-center gap-2 rounded-3xl border-2 border-dashed px-4 py-8 text-center">
+          <span className="grid size-11 place-items-center rounded-full bg-secondary text-secondary-foreground">
+            <InboxIcon className="size-5" />
           </span>
-          <div className="min-w-0">
-            <p className="text-sm font-medium">{t("Password locked")}</p>
-            <p className="font-mono text-[0.6875rem] text-muted-foreground">argon2id · 64 MiB</p>
+          <p className="text-sm font-medium">{t("Drop files or tap to browse")}</p>
+        </div>
+        <div className="mt-3 flex items-center gap-3 rounded-2xl bg-muted px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{t("payslip-march.pdf")}</p>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-card">
+              <div className="h-full w-3/4 rounded-full bg-primary" />
+            </div>
           </div>
+          <span className="text-xs text-muted-foreground">{formatBytes(1.2 * 1024 ** 2)}</span>
         </div>
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-secondary px-2.5 py-1.5 text-xs text-secondary-foreground">
-          <CheckIcon className="size-3.5" /> {t("Key derived on-device")}
-        </div>
-      </div>
-
-      <div
-        className="absolute top-16 -right-64 w-56 animate-float rounded-2xl border bg-card p-4 shadow-soft"
-        style={{ animationDelay: "-4s" }}
-      >
-        <p className="eyebrow">{t("Share link")}</p>
-        <p className="mt-2 font-mono text-sm">
-          /s/<span className="font-semibold text-primary">k7m3xq2</span>
-          <span className="text-muted-foreground">#h4c9…</span>
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-[0.6875rem]">
-          <span className="rounded-md bg-muted py-1">{t("1 day")}</span>
-          <span className="rounded-md bg-coral-soft py-1">{t("1 view")}</span>
-          <span className="rounded-md bg-lavender-soft py-1">{t("pw")}</span>
-        </div>
-      </div>
-
-      <div
-        className="absolute top-80 -right-56 w-52 animate-float rounded-2xl border bg-card p-3.5 shadow-soft"
-        style={{ animationDelay: "-1s" }}
-      >
-        <div className="flex items-center gap-2 text-sm">
-          <FlameIcon className="size-4 text-coral" />
-          <span className="font-medium">{t("Burned after reading")}</span>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">{t("Link opened once, then destroyed.")}</p>
       </div>
     </div>
   )
 }
 
-const pillars = [
-  { icon: LockKeyholeIcon, title: "Encrypted in your browser", body: "AES-256-GCM before a single byte is uploaded." },
-  { icon: LinkIcon, title: "Key lives in the link", body: "After the #, which browsers never send to servers." },
-  { icon: FlameIcon, title: "Burn after reading", body: "Links that expire by time, by views, or both." },
-  { icon: KeyRoundIcon, title: "Optional passwords", body: "Mixed into the key with Argon2id for a second factor." },
-]
-
-function Pillars() {
-  const { t } = useI18n()
+/** A 3D object for a card. Until its image is in /public/3d the card shows a plain icon instead. */
+function Visual({ name, icon: Icon, className }: { name: string; icon: typeof LockKeyholeIcon; className?: string }) {
+  const [missing, setMissing] = useState(false)
+  if (missing)
+    return (
+      <span aria-hidden className={`grid place-items-center rounded-full bg-white/40 ${className ?? ""} !top-8 !right-8 size-28!`}>
+        <Icon className="size-1/3 opacity-60" strokeWidth={1.5} />
+      </span>
+    )
   return (
-    <section className="relative mx-auto max-w-6xl px-4 pb-28 sm:px-6 sm:pb-44">
-      <p className="mx-auto max-w-3xl text-center text-2xl leading-snug font-medium tracking-tight text-balance sm:text-4xl">
-        {t("Private by construction — not by promise. Even the people running this server can't read what you share.")}
-      </p>
-      <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {pillars.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="rounded-2xl border bg-card p-5 transition-shadow hover:shadow-soft">
-            <Icon className="size-5 text-primary" strokeWidth={1.75} />
-            <p className="mt-6 font-medium">{t(title)}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t(body)}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+    <img src={`/3d/${name}.webp`} alt="" loading="lazy" onError={() => setMissing(true)} className={`object-contain ${className ?? ""}`} />
   )
 }
 
 function HowItWorks() {
   const { t } = useI18n()
   return (
-    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-28 sm:px-6 sm:pb-44">
+    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-20 pb-28 sm:px-6 sm:pt-28 sm:pb-44">
       <div className="text-center">
         <p className="eyebrow">{t("How it works")}</p>
-        <h2 className="mt-3 text-3xl font-medium sm:text-5xl">
-          {t("Three steps.")}
-          <br className="sm:hidden" /> {t("Zero trust required.")}
+        <h2 className="mt-3 text-4xl leading-[1.05] font-semibold text-balance sm:text-6xl">
+          {t("Three steps. Nothing for your client to install.")}
         </h2>
       </div>
-      <div className="mt-12 grid gap-4 lg:grid-cols-3">
+      <div className="mt-14 grid items-start gap-3 lg:grid-cols-3">
         <StepCard
-          n="01"
-          title={t("Encrypt locally")}
-          body={t("A fresh 256-bit key is generated for every file. Your file is sealed in 4 MB chunks, right here in the tab.")}
-          className="bg-lavender-soft"
+          n="1"
+          visual="make"
+          icon={LinkIcon}
+          title={t("Make a link")}
+          body={t("Say what you need and by when. Set how many files, how large, and when the link stops working.")}
+          className="bg-lavender-soft [&_.step-body]:text-foreground/70"
         >
-          <div className="grid gap-1.5 font-mono text-[0.6875rem]">
-            <div className="flex items-center justify-between rounded-lg bg-card px-3 py-2 shadow-soft">
-              <span>{t("quarterly-report.pdf")}</span>
-              <span className="text-muted-foreground">{formatBytes(2.4 * 1024 ** 2)}</span>
-            </div>
-            <div className="truncate rounded-lg bg-card/60 px-3 py-2 text-muted-foreground">9f3a c1e0 7b44 d2aa 08fe 51c3 e97d 2b10 …</div>
+          <div className="rounded-2xl bg-card px-3.5 py-2.5 text-sm shadow-soft">
+            <p className="font-medium">{t("Documents for your tax return")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("Up to 10 files, closes in 7 days")}</p>
           </div>
         </StepCard>
         <StepCard
-          n="02"
-          title={t("Share the link")}
-          body={t("The decryption key rides in the URL fragment. Add a password, an expiry or a view limit if you like.")}
-          className="bg-forest text-forest-foreground [&_.step-body]:text-forest-foreground/70"
+          n="2"
+          visual="share"
+          icon={SendIcon}
+          title={t("Send it to your client")}
+          body={t("They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.")}
+          className="bg-forest text-forest-foreground lg:mt-12 [&_.step-body]:text-forest-foreground/70"
         >
-          <div className="rounded-lg bg-white/10 px-3 py-2.5 font-mono text-xs">
-            coffer.app/s/k7m3xq2<span className="rounded bg-mint/30 px-1 text-mint">#h4c9-w2pz-8rtf-6mxn</span>
+          <div className="rounded-2xl bg-white/10 px-3.5 py-2.5 text-sm break-all">
+            {SITE_HOST}/r/k7m3xq2<span className="rounded bg-lime/25 px-1 text-lime">#h4c9w2pz8rtf</span>
           </div>
         </StepCard>
         <StepCard
-          n="03"
-          title={t("Decrypt on arrival")}
-          body={t("Your recipient's browser fetches the ciphertext and unlocks it locally. Burned links vanish for good.")}
-          className="bg-secondary"
+          n="3"
+          visual="inbox"
+          icon={InboxIcon}
+          title={t("Open them in your drive")}
+          body={t("The files show up in your drive the next time you open it. Only you can read them.")}
+          className="bg-secondary [&_.step-body]:text-foreground/70"
         >
-          <div className="flex items-center gap-2 rounded-lg bg-card px-3 py-2.5 text-xs shadow-soft">
-            <ShieldCheckIcon className="size-4 text-primary" />
-            {t("Integrity verified · decrypted in 38 ms")}
+          <div className="flex items-center gap-3 rounded-2xl bg-card px-3.5 py-2.5 text-sm shadow-soft">
+            <ShieldCheckIcon className="size-4 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1 truncate font-medium">{t("payslip-march.pdf")}</span>
+            <span className="text-xs text-muted-foreground">{formatBytes(1.2 * 1024 ** 2)}</span>
           </div>
         </StepCard>
       </div>
@@ -282,65 +196,89 @@ function HowItWorks() {
 
 function StepCard({
   n,
+  visual,
+  icon,
   title,
   body,
   className,
   children,
 }: {
   n: string
+  visual: string
+  icon: typeof LockKeyholeIcon
   title: string
   body: string
   className?: string
   children: React.ReactNode
 }) {
   return (
-    <div className={`flex flex-col justify-between gap-10 rounded-3xl p-6 sm:p-7 ${className ?? ""}`}>
-      <div>
-        <span className="font-mono text-xs opacity-60">{n}</span>
-        <h3 className="mt-3 text-2xl font-medium">{title}</h3>
-        <p className="step-body mt-2 text-sm text-muted-foreground">{body}</p>
+    <div className={`relative flex min-h-[26rem] flex-col overflow-hidden rounded-[2.5rem] p-7 sm:p-9 ${className ?? ""}`}>
+      <Visual name={visual} icon={icon} className="pointer-events-none absolute top-0 right-4 size-52" />
+      <span className="relative font-heading text-7xl leading-none font-semibold opacity-25">{n}</span>
+      <div className="relative mt-auto pt-20">
+        <h3 className="text-2xl leading-tight font-semibold sm:text-3xl">{title}</h3>
+        <p className="step-body mt-2 text-sm">{body}</p>
+        <div className="mt-6">{children}</div>
       </div>
-      {children}
     </div>
   )
 }
 
-const stats = [
-  { value: "0", unit: "bytes", label: "Plaintext stored on the server" },
-  { value: "256", unit: "bit", label: "Unique key for every file" },
-  { value: "80", unit: "bit", label: "Secret in every share link" },
-  { value: "64", unit: "MiB", label: "Argon2id memory per guess" },
+const cases = [
+  {
+    icon: FolderLockIcon,
+    visual: "folder",
+    title: "Client documents",
+    body: "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.",
+    span: "lg:col-span-6",
+    tone: "bg-forest text-forest-foreground [&_.case-body]:text-forest-foreground/70",
+  },
+  {
+    icon: CalendarClockIcon,
+    visual: "calendar",
+    title: "Coursework with a deadline",
+    body: "Set the link to close at the deadline and cap the file size. Students upload without making an account.",
+    span: "lg:col-span-6",
+    tone: "bg-lavender-soft [&_.case-body]:text-foreground/70",
+  },
+  {
+    icon: FlameIcon,
+    visual: "flame",
+    title: "A contract that burns after one view",
+    body: "Send a file with a link that works once or expires tomorrow. Add a password for a second lock.",
+    span: "lg:col-span-6",
+    tone: "bg-coral-soft [&_.case-body]:text-foreground/70",
+  },
+  {
+    icon: BriefcaseIcon,
+    visual: "cv",
+    title: "Applications and CVs",
+    body: "Put one link in a job post. Candidates upload their documents, and only you can open them.",
+    span: "lg:col-span-6",
+    tone: "bg-secondary [&_.case-body]:text-foreground/70",
+  },
 ]
 
-function NoiseBand() {
+function UseCases() {
   const { t } = useI18n()
   return (
-    <section className="bg-forest text-forest-foreground">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 pt-20 sm:px-6 sm:pt-28 lg:grid-cols-[1.2fr_1fr] lg:items-end">
-        <div>
-          <p className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase opacity-60">{t("Built to be breached")}</p>
-          <h2 className="mt-3 text-3xl font-medium sm:text-4xl">
-            {t("If someone steals our disks,")}
-            <br className="hidden sm:block" /> {t("they get very expensive noise.")}
-          </h2>
-        </div>
-        <p className="text-sm opacity-70 lg:pb-1">
-          {t(
-            "No master key on the server. No plaintext file names. Passwords are stretched on your device and never sent. Access tokens are hashed; account hashes are peppered."
-          )}
-        </p>
-      </div>
-      <div className="mx-auto mt-14 grid max-w-6xl grid-cols-2 border-t border-white/10 lg:grid-cols-4">
-        {stats.map((s, i) => (
+    <section id="use-cases" className="relative mx-auto max-w-6xl scroll-mt-20 px-4 pb-28 sm:px-6 sm:pb-44">
+      <h2 className="mx-auto max-w-3xl text-center text-4xl leading-[1.05] font-semibold text-balance sm:text-6xl">
+        {t("The paperwork you keep chasing")}
+      </h2>
+      <div className="mt-14 grid gap-3 lg:grid-cols-12">
+        {cases.map(({ icon, visual, title, body, span, tone }) => (
           <div
-            key={s.label}
-            className={`flex flex-col justify-between gap-10 px-4 py-8 sm:px-6 ${i % 2 === 1 ? "border-l border-white/10" : ""} ${i >= 2 ? "border-t border-white/10 lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}
+            key={title}
+            className={`relative flex min-h-[19rem] flex-col justify-end overflow-hidden rounded-[2.5rem] p-7 sm:p-9 lg:min-h-[17rem] ${span} ${tone}`}
           >
-            <p className="max-w-[12rem] text-xs opacity-60">{t(s.label)}</p>
-            <p className="text-5xl font-light tracking-tight sm:text-6xl">
-              {s.value}
-              <span className="ml-1 text-lg opacity-60">{t(s.unit)}</span>
-            </p>
+            <Visual
+              name={visual}
+              icon={icon}
+              className="pointer-events-none absolute -top-2 -right-3 size-52 sm:right-4 lg:top-1/2 lg:right-8 lg:size-56 lg:-translate-y-1/2"
+            />
+            <h3 className="relative max-w-[15rem] text-2xl leading-tight font-semibold text-balance sm:text-3xl">{t(title)}</h3>
+            <p className="case-body relative mt-2 max-w-[15rem] text-sm">{t(body)}</p>
           </div>
         ))}
       </div>
@@ -348,33 +286,21 @@ function NoiseBand() {
   )
 }
 
-function Pricing() {
+/** The second act: no account, no request, just a link. */
+function SendAFile() {
   const { t } = useI18n()
-  const { status, me } = useSession()
-  const navigate = useNavigate()
-  const plans = usePlans()
-  if (!plans) return null
-  const signedIn = status === "locked" || status === "unlocked"
   return (
-    <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-28 sm:px-6 sm:pb-44">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="eyebrow">{t("Pricing")}</p>
-        <h2 className="mt-3 text-3xl font-medium sm:text-5xl">{t("Pay for space, not with your data.")}</h2>
-        <p className="mt-4 text-pretty text-muted-foreground">
-          {t(
-            "Quick shares are free and need no account. A drive is a subscription, because storage that isn't paid for by you is paid for by someone else."
-          )}
-        </p>
-      </div>
-      <div className="mx-auto mt-12 max-w-4xl">
-        <PlanGrid
-          plans={plans}
-          label={() => (signedIn ? t("Choose plan") : t("Get started"))}
-          onPick={() => navigate({ to: signedIn ? "/drive" : "/register" })}
-        />
-        <PlanFinePrint className="mx-auto mt-6 max-w-xl text-center" />
-        {/* Anyone without a running plan may ask, signed in or not. */}
-        {!me?.billing?.entitled && <TrialRequest key={me?.email} className="mt-10" email={me?.email} />}
+    <section id="send" className="scroll-mt-20 px-3 pb-28 sm:px-4 sm:pb-44">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 rounded-[2.5rem] bg-secondary p-6 sm:p-12 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+        <div>
+          <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("Just need to send a file?")}</h2>
+          <p className="mt-4 max-w-md text-pretty text-foreground/70">
+            {t("Drop it here and get a link. No account needed. Add a password, an expiry or a view limit if you like.")}
+          </p>
+        </div>
+        <div className="mx-auto w-full max-w-xl lg:mx-0">
+          <DropComposer onFilesAdded={() => trackOnce("composer-used")} />
+        </div>
       </div>
     </section>
   )
@@ -382,35 +308,31 @@ function Pricing() {
 
 function DriveCta() {
   const { t } = useI18n()
-  const plans = usePlans()
   return (
-    <section className={`mx-auto max-w-6xl px-4 pt-28 sm:px-6 sm:pt-44 ${plans ? "pb-20 sm:pb-28" : "pb-28 sm:pb-44"}`}>
-      <div className="grid items-center gap-10 overflow-hidden rounded-3xl border bg-card p-6 sm:p-10 lg:grid-cols-2">
+    <section className="mx-auto max-w-[88rem] px-4 pb-28 sm:px-6 sm:pb-44">
+      <div className="grid items-center gap-12 overflow-hidden rounded-[2.5rem] bg-lavender-soft p-6 sm:rounded-[3rem] sm:p-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:p-16">
         <div>
-          <p className="eyebrow">{plans ? t("Private drive") : t("Optional account")}</p>
-          <h2 className="mt-3 text-3xl font-medium sm:text-4xl">{t("A private drive, when you want one.")}</h2>
-          <p className="mt-3 text-muted-foreground">
-            {t(
-              "Sign up with just an email and a password to keep everything in one encrypted place — folders, notes, and every link you've shared, revocable at any time."
-            )}
+          <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("A private place for what comes in.")}</h2>
+          <p className="mt-4 max-w-lg text-pretty text-foreground/70">
+            {t("A drive keeps what clients send, with folders, notes and every link you've shared. You can revoke any link at any time.")}
           </p>
-          <ul className="mt-6 grid gap-2 text-sm">
+          <ul className="mt-6 grid gap-2.5 text-sm">
             {[
-              "Folders and file names are encrypted too",
+              "File names stay private too",
               "Revoke any share link instantly",
-              "Recovery key so a forgotten password isn't fatal",
+              "A recovery key, so a forgotten password isn't the end",
             ].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <span className="grid size-5 place-items-center rounded-full bg-secondary text-secondary-foreground">
+              <li key={item} className="flex items-center gap-2.5">
+                <span className="grid size-5 place-items-center rounded-full bg-hero text-lime">
                   <CheckIcon className="size-3" />
                 </span>
                 {t(item)}
               </li>
             ))}
           </ul>
-          <div className="mt-8 flex flex-wrap gap-2">
+          <div className="mt-8 flex flex-wrap items-center gap-2">
             <Button size="lg" asChild>
-              <Link to="/register">
+              <Link to="/register" onClick={() => track("signup-drive")}>
                 {t("Create your drive")} <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </Button>
@@ -428,33 +350,123 @@ function DriveCta() {
 function DrivePreview() {
   const { t } = useI18n()
   const rows = [
-    { name: t("Contracts"), meta: t("Folder · 12 items"), tone: "bg-secondary text-secondary-foreground", icon: FolderLockIcon },
-    { name: t("passport-scan.jpg"), meta: t("1.8 MB · 2 links"), tone: "bg-coral-soft text-coral", icon: LockKeyholeIcon },
-    { name: t("Wi-Fi & door codes"), meta: t("Note · burned"), tone: "bg-lavender-soft text-accent-foreground", icon: KeyRoundIcon },
+    { name: t("Tax documents"), meta: t("Folder · 12 items"), tone: "bg-secondary text-secondary-foreground", icon: FolderLockIcon },
+    { name: t("passport-scan.jpg"), meta: t("1.8 MB · 2 links"), tone: "bg-coral-soft text-coral", icon: LockKeyholeIcon, active: true },
+    { name: t("Rental application"), meta: t("Note · burned"), tone: "bg-lavender-soft text-accent-foreground", icon: KeyRoundIcon },
   ]
   return (
-    <div aria-hidden className="relative rounded-2xl bg-muted/60 p-3 sm:p-4">
-      <div className="rounded-xl border bg-card p-2 shadow-soft">
-        <div className="flex items-center justify-between px-2 py-1.5">
-          <span className="text-sm font-medium">{t("My drive")}</span>
-          <span className="rounded-full bg-secondary px-2 py-0.5 text-[0.6875rem] text-secondary-foreground">
+    <div aria-hidden className="relative sm:pr-8 sm:pb-9">
+      <div className="rounded-[2rem] bg-card p-3 text-card-foreground shadow-[0_30px_60px_-20px_oklch(0.2_0.05_300/35%)] sm:p-4">
+        <div className="flex items-center justify-between px-2 py-2">
+          <span className="font-medium">{t("My drive")}</span>
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground">
             {t("{used} of {total}", { used: formatBytes(2.1 * 1024 ** 3), total: formatBytes(100 * 1024 ** 3) })}
           </span>
         </div>
-        <ul className="mt-1 grid">
+        <ul className="mt-1 grid gap-1">
           {rows.map((r) => (
-            <li key={r.name} className="flex items-center gap-3 rounded-lg px-2 py-2.5 hover:bg-muted/60">
-              <span className={`grid size-9 place-items-center rounded-lg ${r.tone}`}>
-                <r.icon className="size-4" />
+            <li key={r.name} className={`flex items-center gap-3 rounded-2xl px-2 py-2.5 ${r.active ? "bg-muted" : ""}`}>
+              <span className={`grid size-11 place-items-center rounded-xl ${r.tone}`}>
+                <r.icon className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{r.name}</p>
-                <p className="text-xs text-muted-foreground">{r.meta}</p>
+                <p className="truncate">{r.name}</p>
+                <p className="text-sm text-muted-foreground">{r.meta}</p>
               </div>
             </li>
           ))}
         </ul>
       </div>
+      <div className="relative -mt-5 ml-6 flex items-center gap-3 rounded-3xl bg-hero p-3 pr-4 text-hero-foreground shadow-[0_24px_50px_-18px_oklch(0.2_0.05_158/60%)] sm:absolute sm:right-0 sm:bottom-0 sm:left-auto sm:mt-0 sm:ml-0 sm:w-[22rem]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-lime text-hero">
+          <LinkIcon className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{t("Share link")}</p>
+          <p className="text-xs text-pretty text-hero-foreground/70">{t("Expires in 7 days · 1 view left")}</p>
+        </div>
+        <span className="shrink-0 rounded-full bg-white/12 px-3 py-1.5 text-xs font-medium">{t("Revoke link")}</span>
+      </div>
     </div>
+  )
+}
+
+/** Said once, plainly. The details live on /security. */
+function SecurityBand() {
+  const { t } = useI18n()
+  return (
+    <section className="bg-forest text-forest-foreground">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.3fr_1fr]">
+        <div>
+          <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("We can't read your files.")}</h2>
+          <p className="mt-5 max-w-xl text-pretty text-forest-foreground/75 sm:text-lg">
+            {t(
+              "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source."
+            )}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-2">
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/security">{t("How it works in detail")}</Link>
+            </Button>
+            <Button size="lg" variant="ghost" asChild className="text-forest-foreground hover:bg-white/10 hover:text-forest-foreground">
+              <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+                {t("Read the code on GitHub")}
+              </a>
+            </Button>
+          </div>
+        </div>
+        <div className="flex justify-center lg:justify-end">
+          <Visual name="lock" icon={LockKeyholeIcon} className="size-60 sm:size-72" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Pricing() {
+  const { t } = useI18n()
+  const { status } = useSession()
+  const navigate = useNavigate()
+  const plans = usePlans()
+  const section = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = section.current
+    if (!el || typeof IntersectionObserver === "undefined") return
+    const seen = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && trackOnce("pricing-reached"), {
+      threshold: 0.3,
+    })
+    seen.observe(el)
+    return () => seen.disconnect()
+  }, [plans])
+  if (!plans) return null
+  const signedIn = status === "locked" || status === "unlocked"
+  return (
+    <section ref={section} id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-28 sm:px-6 sm:py-44">
+      <div className="mx-auto max-w-2xl text-center">
+        <p className="eyebrow">{t("Pricing")}</p>
+        <h2 className="mt-3 text-4xl leading-[1.05] font-semibold text-balance sm:text-6xl">
+          {t("Start free. Pay when you need more room.")}
+        </h2>
+        <p className="mt-4 text-pretty text-muted-foreground">
+          {t("The free account is yours to keep, with nothing deleted. Pay only when you need more room.")}
+        </p>
+      </div>
+      <div className="mx-auto mt-12 max-w-6xl">
+        <PlanGrid
+          plans={plans}
+          freeLabel={signedIn ? t("Open drive") : t("Start free")}
+          onPickFree={() => {
+            track("plan-clicked", { plan: "free" })
+            navigate({ to: signedIn ? "/drive" : "/register" })
+          }}
+          label={() => (signedIn ? t("Choose plan") : t("Get started"))}
+          onPick={(plan) => {
+            track("plan-clicked", { plan: plan.id })
+            navigate({ to: signedIn ? "/drive" : "/register" })
+          }}
+        />
+        <PlanFinePrint className="mx-auto mt-6 max-w-xl text-center" />
+      </div>
+    </section>
   )
 }

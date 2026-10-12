@@ -2,62 +2,16 @@ import type { Messages } from "../types"
 
 /** The home page and the quick-share composer on it. */
 const messages: Messages = {
-  "Zero-knowledge · keys never leave your device": "Conocimiento cero · las claves nunca salen de tu dispositivo",
-  "Share anything.": "Comparte lo que sea.",
-  "Reveal nothing.": "No reveles nada.",
-  "Files and notes are encrypted in your browser before they leave it. The link carries the key — our server only ever stores noise.":
-    "Los archivos y las notas se cifran en tu navegador antes de salir de él. El enlace lleva la clave: nuestro servidor solo guarda ruido.",
-  "AES-GCM per file": "AES-GCM por archivo",
-  "Password locked": "Protegido con contraseña",
-  "Key derived on-device": "Clave derivada en el dispositivo",
+  "Expires in 7 days · 1 view left": "Caduca en 7 días · 1 visita restante",
   "Share link": "Enlace para compartir",
   "1 day": "1 día",
-  "1 view": "1 vista",
   pw: "pw",
-  "Burned after reading": "Destruido tras la lectura",
-  "Link opened once, then destroyed.": "Enlace abierto una vez y destruido.",
-  "Private by construction — not by promise. Even the people running this server can't read what you share.":
-    "Privado por diseño, no por promesa. Ni siquiera quienes gestionan este servidor pueden leer lo que compartes.",
-  "Encrypted in your browser": "Cifrado en tu navegador",
-  "AES-256-GCM before a single byte is uploaded.": "AES-256-GCM antes de subir un solo byte.",
-  "Key lives in the link": "La clave vive en el enlace",
-  "After the #, which browsers never send to servers.": "Después del #, que los navegadores nunca envían a los servidores.",
   "Burn after reading": "Destruir tras la lectura",
-  "Links that expire by time, by views, or both.": "Enlaces que caducan por tiempo, por vistas o por ambas cosas.",
-  "Optional passwords": "Contraseñas opcionales",
-  "Mixed into the key with Argon2id for a second factor.": "Mezcladas en la clave con Argon2id como segundo factor.",
   "Three steps.": "Tres pasos.",
-  "Zero trust required.": "Sin necesidad de confiar.",
-  "Encrypt locally": "Cifra en local",
-  "A fresh 256-bit key is generated for every file. Your file is sealed in 4 MB chunks, right here in the tab.":
-    "Se genera una clave nueva de 256 bits para cada archivo. Tu archivo se sella en bloques de 4 MB, aquí mismo, en la pestaña.",
-  "quarterly-report.pdf": "informe-trimestral.pdf",
-  "Share the link": "Comparte el enlace",
-  "The decryption key rides in the URL fragment. Add a password, an expiry or a view limit if you like.":
-    "La clave de descifrado viaja en el fragmento de la URL. Añade una contraseña, una caducidad o un límite de vistas si quieres.",
-  "Decrypt on arrival": "Descifra al llegar",
-  "Your recipient's browser fetches the ciphertext and unlocks it locally. Burned links vanish for good.":
-    "El navegador del destinatario descarga el texto cifrado y lo abre en local. Los enlaces destruidos desaparecen para siempre.",
-  "Integrity verified · decrypted in 38 ms": "Integridad verificada · descifrado en 38 ms",
-  "Built to be breached": "Hecho para resistir una intrusión",
-  "If someone steals our disks,": "Si alguien roba nuestros discos,",
-  "they get very expensive noise.": "se lleva un ruido carísimo.",
-  "No master key on the server. No plaintext file names. Passwords are stretched on your device and never sent. Access tokens are hashed; account hashes are peppered.":
-    "Ninguna clave maestra en el servidor. Ningún nombre de archivo en claro. Las contraseñas se estiran en tu dispositivo y nunca se envían. Los tokens de acceso se guardan como hash, y los hashes de cuenta llevan además un secreto del servidor.",
   bytes: "bytes",
-  "Plaintext stored on the server": "Texto en claro guardado en el servidor",
   bit: "bits",
-  "Unique key for every file": "Clave única para cada archivo",
-  "Secret in every share link": "Secreto en cada enlace",
   MiB: "MiB",
-  "Argon2id memory per guess": "Memoria de Argon2id por intento",
-  "Optional account": "Cuenta opcional",
-  "A private drive, when you want one.": "Una unidad privada, cuando la quieras.",
-  "Sign up with just an email and a password to keep everything in one encrypted place — folders, notes, and every link you've shared, revocable at any time.":
-    "Regístrate solo con un correo y una contraseña para tenerlo todo en un único lugar cifrado: carpetas, notas y cada enlace que hayas compartido, revocable en cualquier momento.",
-  "Folders and file names are encrypted too": "Los nombres de carpetas y archivos también se cifran",
   "Revoke any share link instantly": "Revoca cualquier enlace al instante",
-  "Recovery key so a forgotten password isn't fatal": "Clave de recuperación, para que olvidar la contraseña no sea fatal",
   "Create your drive": "Crea tu unidad",
   "I have an account": "Ya tengo cuenta",
   "My drive": "Mi unidad",
@@ -65,7 +19,6 @@ const messages: Messages = {
   "Folder · 12 items": "Carpeta · 12 elementos",
   "passport-scan.jpg": "pasaporte-escaneado.jpg",
   "1.8 MB · 2 links": "1,8 MB · 2 enlaces",
-  "Wi-Fi & door codes": "Wi-Fi y códigos de la puerta",
   "Note · burned": "Nota · destruida",
   "That file is larger than {size}": "Ese archivo ocupa más de {size}",
   "Create a free drive to share bigger files.": "Crea una unidad gratuita para compartir archivos más grandes.",
@@ -103,24 +56,55 @@ const messages: Messages = {
   "That's more than {size}": "Eso supera {size}",
   "A drive takes files up to {size} each.": "Una unidad admite archivos de hasta {size} cada uno.",
   "Send files": "Enviar archivos",
-  "Share private files without making the other person sign up for anything.":
-    "Comparte archivos privados sin obligar a la otra persona a registrarse en nada.",
-  "They open your link in any browser and the files decrypt right there. No account, no app, nothing to install.":
-    "Abre tu enlace en cualquier navegador y los archivos se descifran allí mismo. Sin cuenta, sin aplicación, sin instalar nada.",
-  "Send something": "Enviar algo",
-  "Need someone to send you a file? Create a secure upload link. No account required for them.":
-    "¿Necesitas que alguien te envíe un archivo? Crea un enlace de subida seguro. No necesita cuenta.",
-  "Their browser encrypts each file to a key only you hold. The link can upload, and nothing else: not even read back what it sent.":
-    "Su navegador cifra cada archivo para una clave que solo tú tienes. El enlace sirve para subir y para nada más: ni siquiera para volver a leer lo enviado.",
-  "Get a drive to request files": "Crea una unidad para pedir archivos",
-  "Try it first": "Pruébalo primero",
-  "Want to try a drive before you pay for one?": "¿Quieres probar una unidad antes de pagar por ella?",
-  "Thanks. We'll email you a link to try Coffer.": "Gracias. Te enviaremos un enlace para probar Coffer.",
-  "Leave your email and we'll send you a link to a drive you can use for free for a while.":
-    "Déjanos tu correo y te enviaremos un enlace a una unidad que podrás usar gratis durante un tiempo.",
-  "you@example.com": "tu@ejemplo.com",
-  "Send me a link": "Envíame un enlace",
-  "We use your address to send that link, and for nothing else.": "Usamos tu dirección para enviarte ese enlace y para nada más.",
+  "File requests, no account for your clients": "Solicitudes de archivos, sin cuenta para tus clientes",
+  "Collect documents from clients.": "Recoge documentos de tus clientes.",
+  "Only you can open them.": "Solo tú puedes abrirlos.",
+  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
+    "Envía un enlace. Tu cliente sube desde cualquier navegador, sin cuenta. Nosotros no podemos leer lo que envía.",
+  "Create a request link": "Crear un enlace de solicitud",
+  "Just need to send a file?": "¿Solo necesitas enviar un archivo?",
+  "Free to start. No card needed.": "Empieza gratis. No hace falta tarjeta.",
+  "Documents for your tax return": "Documentos para tu declaración de la renta",
+  "Only the owner can open what you send.": "Solo el propietario puede abrir lo que envíes.",
+  "payslip-march.pdf": "nomina-marzo.pdf",
+  "Three steps. Nothing for your client to install.": "Tres pasos. Nada que tu cliente tenga que instalar.",
+  "Make a link": "Crea un enlace",
+  "Say what you need and by when. Set how many files, how large, and when the link stops working.":
+    "Di qué necesitas y para cuándo. Define cuántos archivos, de qué tamaño y cuándo deja de funcionar el enlace.",
+  "Up to 10 files, closes in 7 days": "Hasta 10 archivos, se cierra en 7 días",
+  "Send it to your client": "Envíaselo a tu cliente",
+  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
+    "Lo abren en cualquier navegador y sueltan sus archivos. El enlace solo sirve para subir. No puede leer, listar ni borrar nada.",
+  "Open them in your drive": "Ábrelos en tu unidad",
+  "The files show up in your drive the next time you open it. Only you can read them.":
+    "Los archivos aparecen en tu unidad la próxima vez que la abras. Solo tú puedes leerlos.",
+  "The paperwork you keep chasing": "Los papeles que siempre estás persiguiendo",
+  "Client documents": "Documentos de clientes",
+  "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
+    "Papeles de impuestos, documentos de identidad y recibos. Un enlace por cliente, y todo llega a un solo sitio en vez de repartirse en hilos de correo.",
+  "Coursework with a deadline": "Trabajos con fecha límite",
+  "Set the link to close at the deadline and cap the file size. Students upload without making an account.":
+    "Haz que el enlace se cierre en la fecha límite y limita el tamaño de los archivos. Los alumnos suben sin crear cuenta.",
+  "A contract that burns after one view": "Un contrato que se destruye tras verlo una vez",
+  "Send a file with a link that works once or expires tomorrow. Add a password for a second lock.":
+    "Envía un archivo con un enlace que funciona una vez o caduca mañana. Añade una contraseña como segundo candado.",
+  "Applications and CVs": "Candidaturas y currículums",
+  "Put one link in a job post. Candidates upload their documents, and only you can open them.":
+    "Pon un enlace en la oferta de trabajo. Los candidatos suben sus documentos y solo tú puedes abrirlos.",
+  "Drop it here and get a link. No account needed. Add a password, an expiry or a view limit if you like.":
+    "Suéltalo aquí y obtén un enlace. No hace falta cuenta. Si quieres, añade contraseña, caducidad o límite de vistas.",
+  "A private place for what comes in.": "Un lugar privado para lo que llega.",
+  "A drive keeps what clients send, with folders, notes and every link you've shared. You can revoke any link at any time.":
+    "Una unidad guarda lo que envían tus clientes, con carpetas, notas y cada enlace que has compartido. Puedes revocar cualquier enlace cuando quieras.",
+  "File names stay private too": "Los nombres de archivo también son privados",
+  "A recovery key, so a forgotten password isn't the end": "Una clave de recuperación, para que olvidar la contraseña no sea el final",
+  "Tax documents": "Documentos fiscales",
+  "Rental application": "Solicitud de alquiler",
+  "We can't read your files.": "No podemos leer tus archivos.",
+  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
+    "Los archivos y sus nombres se cifran en tu navegador antes de subirse, así que nuestro servidor solo guarda lo que no puede abrir. El código es abierto.",
+  "How it works in detail": "Cómo funciona en detalle",
+  "Read the code on GitHub": "Lee el código en GitHub",
 }
 
 export default messages

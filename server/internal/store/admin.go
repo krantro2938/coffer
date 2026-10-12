@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"strings"
+	"time"
 )
 
 // Queries behind the admin console. An admin sees accounts, sizes and
@@ -59,6 +60,92 @@ func (s *Store) Overview() (*Overview, error) {
 		o.ByPlan[plan] = n
 	}
 	return &o, rows.Err()
+}
+
+// Day is one UTC day of product activity, counted from rows that still exist.
+type Day struct {
+	Day             string `json:"day"` // 2026-10-11
+	Signups         int64  `json:"signups"`
+	SignupsWithLink int64  `json:"signupsWithLink"` // of those, made a request link within 24 hours
+	SharesCreated   int64  `json:"sharesCreated"`
+	RequestsCreated int64  `json:"requestsCreated"`
+	FilesReceived   int64  `json:"filesReceived"`
+	SharesOpened    int64  `json:"sharesOpened"`
+}
+
+// bump adds one to today's total for a kind of event. See migration 00006.
+func bump(tx *sql.Tx, metric string) error {
+	_, err := tx.Exec(`INSERT INTO daily_counts (day, metric, n) VALUES (date('now'), ?, 1)
+		ON CONFLICT (day, metric) DO UPDATE SET n = n + 1`, metric)
+	return err
+}
+
+// Daily counts the last `days` UTC days, oldest first, zeros included.
+//
+// Everything is derived from existing rows, so it only sees what survives:
+// links are deleted when they expire, burn or are revoked, accounts and files
+// when their owner deletes them, and an unconfirmed sign-up after a day. The
+// older the day, the more it undercounts. How often a share link was opened
+// is counted separately, in daily_counts, from the day that table appeared.
+// Aggregates only; nothing per visitor.
+func (s *Store) Daily(days int) ([]Day, error) {
+	today := now() / 86400 * 86400
+	since := today - int64(days-1)*86400
+	out := make([]Day, days)
+	index := map[string]int{}
+	for i := range out {
+		d := time.Unix(since+int64(i)*86400, 0).UTC().Format("2006-01-02")
+		out[i].Day = d
+		index[d] = i
+	}
+	for _, c := range []struct {
+		q   string
+		set func(*Day, int64)
+	}{
+		{`SELECT date(created_at, 'unixepoch'), COUNT(*) FROM users WHERE created_at >= ? GROUP BY 1`,
+			func(d *Day, n int64) { d.Signups = n }},
+		{`SELECT date(u.created_at, 'unixepoch'), COUNT(*) FROM users u WHERE u.created_at >= ? AND EXISTS (
+			SELECT 1 FROM requests r WHERE r.user_id = u.id AND r.share_id IS NULL AND r.created_at <= u.created_at + 86400) GROUP BY 1`,
+			func(d *Day, n int64) { d.SignupsWithLink = n }},
+		{`SELECT date(created_at, 'unixepoch'), COUNT(*) FROM shares WHERE created_at >= ? GROUP BY 1`,
+			func(d *Day, n int64) { d.SharesCreated = max(d.SharesCreated, n) }},
+		// Exact, but only from when it was first recorded; the rows above cover the days before.
+		{`SELECT day, n FROM daily_counts WHERE metric = 'share_created' AND day >= date(?, 'unixepoch')`,
+			func(d *Day, n int64) { d.SharesCreated = max(d.SharesCreated, n) }},
+		{`SELECT day, n FROM daily_counts WHERE metric = 'share_opened' AND day >= date(?, 'unixepoch')`,
+			func(d *Day, n int64) { d.SharesOpened = n }},
+		{`SELECT date(created_at, 'unixepoch'), COUNT(*) FROM requests WHERE share_id IS NULL AND created_at >= ? GROUP BY 1`,
+			func(d *Day, n int64) { d.RequestsCreated = n }},
+		{`SELECT date(i.created_at, 'unixepoch'), COUNT(*) FROM items i JOIN requests r ON r.id = i.request_id
+			WHERE r.share_id IS NULL AND i.ready = 1 AND i.created_at >= ? GROUP BY 1`,
+			func(d *Day, n int64) { d.FilesReceived = n }},
+	} {
+		if err := s.eachDay(c.q, since, func(day string, n int64) {
+			if i, ok := index[day]; ok {
+				c.set(&out[i], n)
+			}
+		}); err != nil {
+			return nil, err
+		}
+	}
+	return out, nil
+}
+
+func (s *Store) eachDay(query string, since int64, f func(day string, n int64)) error {
+	rows, err := s.db.Query(query, since)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var day string
+		var n int64
+		if err := rows.Scan(&day, &n); err != nil {
+			return err
+		}
+		f(day, n)
+	}
+	return rows.Err()
 }
 
 // Account is an account as the admin console shows it.

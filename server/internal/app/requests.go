@@ -29,9 +29,10 @@ const (
 var requestIDRe = regexp.MustCompile(`^[0-9a-hjkmnp-tv-z]{20}$`)
 
 var (
-	errRequestGone   = errf(http.StatusNotFound, "this upload link does not exist")
-	errRequestClosed = errf(http.StatusGone, "this upload link is closed")
-	errRequestPaused = errf(http.StatusGone, "this upload link is not taking files right now")
+	errRequestGone      = errf(http.StatusNotFound, "this upload link does not exist")
+	errRequestClosed    = errf(http.StatusGone, "this upload link is closed")
+	errFreeRequestLinks = errf(http.StatusPaymentRequired, "the free account has two request links open at a time: close one or choose a plan")
+	errRequestPaused    = errf(http.StatusGone, "this upload link is not taking files right now")
 )
 
 func (a *App) handleCreateRequest(w http.ResponseWriter, r *http.Request) error {
@@ -103,11 +104,20 @@ func (a *App) handleCreateRequest(w http.ResponseWriter, r *http.Request) error 
 	if err != nil {
 		return err
 	}
-	own := 0
+	own, open := 0, 0
 	for _, r := range existing {
 		if r.ShareID == nil {
 			own++
 		}
+		if r.Open() {
+			open++
+		}
+	}
+	// The free account takes a couple of links at a time; folder links that take uploads count too.
+	if sub, err := a.subState(uid); err != nil {
+		return err
+	} else if sub.Free && open >= freeRequestLinks {
+		return errFreeRequestLinks
 	}
 	if req.ShareID == nil && own >= maxRequests {
 		return errf(http.StatusConflict, "remove some closed requests before making more")

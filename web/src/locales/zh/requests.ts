@@ -96,6 +96,10 @@ const messages: Messages = {
   "Check your connection and try again.": "请检查网络连接后重试。",
   "About Coffer": "关于 Coffer",
   "{n} files were delivered before that.": "在此之前已送达 {n} 个文件。",
+  "Need files from someone yourself?": "你自己也需要向别人收文件？",
+  "Send your own files the same way. No account needed.": "用同样的方式发送你自己的文件。无需账户。",
+  "Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.":
+    "你的免费账户同时最多开放 {n} 个请求链接。请关闭一个，或选择套餐以不限数量。",
 }
 
 export default messages

@@ -36,9 +36,10 @@ import { FileGlyph } from "@/components/file-glyph"
 import { api } from "@/lib/api"
 import type { DFolder, DItem, DShare, Drive } from "@/lib/drive"
 import { collectFolder, shareFolder } from "@/lib/bundle"
-import { formatBytes, relativeTime } from "@/lib/format"
+import { formatBytes, relativeTime, noteStamp } from "@/lib/format"
 import { t as tr, useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
+import { track } from "@/lib/analytics"
 import { createShare, downloadToBlob, saveDecrypted, storeItem, type CreatedShare } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
 import { cn } from "@/lib/utils"
@@ -226,7 +227,7 @@ export function NoteDialog({
     try {
       await storeItem({
         kind: "text",
-        name: title.trim() || t("Note {date}", { date: new Date().toLocaleString() }),
+        name: title.trim() || t("Note {date}", { date: noteStamp() }),
         type: "text/plain",
         blob: new Blob([body], { type: "text/plain;charset=utf-8" }),
         masterKey,
@@ -277,8 +278,10 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
   const { copy, copied } = useCopy()
   const { t } = useI18n()
 
+  const previewable = !!item && canPreview(item)
+
   useEffect(() => {
-    if (!item) return
+    if (!item || !canPreview(item)) return
     let url: string | undefined
     let cancelled = false
     setState({ progress: 0 })
@@ -312,7 +315,17 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
       className="sm:max-w-3xl"
     >
       <div className="grid gap-4">
-        {!state || (state.url === undefined && state.text === undefined) ? (
+        {!previewable ? (
+          <div className="grid justify-items-center gap-3 rounded-2xl bg-muted/50 px-6 py-14 text-center">
+            <FileGlyph kind={item.kind} type={item.type} name={item.name} className="size-16" />
+            <div className="min-w-0">
+              <p className="max-w-full truncate font-medium">{item.name}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {item.broken ? t("Can't be decrypted") : t("No preview available for this file")}
+              </p>
+            </div>
+          </div>
+        ) : !state || (state.url === undefined && state.text === undefined) ? (
           <div className="grid h-64 place-items-center rounded-2xl bg-muted/50">
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2Icon className="size-4 animate-spin" /> {t("Decrypting…")} {Math.round((state?.progress ?? 0) * 100)}%
@@ -335,7 +348,7 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
               {copied === state.text ? <CheckIcon /> : <CopyIcon />} {t("Copy")}
             </Button>
           )}
-          <Button onClick={() => downloadItem(item)}>
+          <Button onClick={() => downloadItem(item)} disabled={item.broken}>
             <DownloadIcon /> {t("Download")}
           </Button>
         </div>
@@ -362,8 +375,9 @@ export function ShareDialog({
   drive: Drive | undefined
   onOpenChange: (o: boolean) => void
 }) {
-  const { masterKey } = useSession()
+  const { masterKey, me } = useSession()
   const qc = useQueryClient()
+  const maxExpiry = me?.billing?.free ? me.billing.free.shareDays * 86400 : undefined
   const [opts, setOpts] = useState(defaultShareOptions(7 * 86400))
   const [created, setCreated] = useState<CreatedShare | null>(null)
   const [creating, setCreating] = useState(false)
@@ -378,6 +392,7 @@ export function ShareDialog({
     setOpts(defaultShareOptions(7 * 86400))
     setComposing(false)
     setRole(0)
+    if (key) track("share-dialog-opened")
   }, [key])
 
   if (!target) return null
@@ -397,6 +412,7 @@ export function ShareDialog({
         : await createShare(target.item.id, target.item.fileKey!, o, { masterKey })
       setCreated(s)
       setComposing(false)
+      track("share-created")
       qc.invalidateQueries({ queryKey: ["drive"] })
     } catch (e) {
       toast.error((e as Error).message)
@@ -414,7 +430,7 @@ export function ShareDialog({
           {isFolder ? (
             <FileGlyph kind="folder" className="size-9 rounded-lg" />
           ) : (
-            <FileGlyph kind={target.item.kind} type={target.item.type} className="size-9 rounded-lg" />
+            <FileGlyph kind={target.item.kind} type={target.item.type} name={target.item.name} className="size-9 rounded-lg" />
           )}
           <span className="min-w-0">
             <span className="block text-xs font-normal text-muted-foreground">
@@ -446,7 +462,7 @@ export function ShareDialog({
             {isFolder && (
               <OptionPicker label="Anyone with the link" icon={UsersIcon} value={role} options={LINK_ROLES} onChange={setRole} />
             )}
-            <ShareOptionsFields value={opts} onChange={setOpts} />
+            <ShareOptionsFields value={opts} onChange={setOpts} maxExpiry={maxExpiry} />
             <div className="flex justify-end gap-2">
               {shares.length > 0 && (
                 <Button variant="ghost" onClick={() => setComposing(false)}>
@@ -489,45 +505,66 @@ export function ShareList({ shares, names }: { shares: DShare[]; names?: Map<str
 
   return (
     <>
-      <ul className="grid gap-2">
+      <ul className="grid gap-3">
         {shares.map((s) => {
           const item = names?.get(s.itemId)
+          const views =
+            s.maxViews === 1
+              ? t("one view")
+              : s.maxViews
+                ? t("{n} / {max} views", { n: s.views, max: s.maxViews })
+                : tn(s.views, "{n} view", "{n} views")
           return (
-            <li key={s.id} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
-              {item && <FileGlyph kind={item.kind} type={item.type} className="size-9 rounded-lg" />}
+            <li key={s.id} className="flex items-center gap-4 rounded-3xl border bg-card px-4 py-4 sm:px-5">
+              {item && <FileGlyph kind={item.kind} type={item.type} name={item.name} className="size-11" />}
               <div className="min-w-0 flex-1">
-                {item && <p className="truncate text-sm font-medium">{item.name}</p>}
-                <p className={cn("font-mono text-sm", item && "text-xs text-muted-foreground")}>
-                  /s/<span className="font-semibold text-foreground">{s.id}</span>
-                </p>
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  <Chip>{s.expiresAt ? t("expires {when}", { when: relativeTime(s.expiresAt) }) : t("no expiry")}</Chip>
-                  <Chip tone={s.maxViews === 1 ? "coral" : undefined}>
-                    {s.maxViews === 1 ? (
-                      <>
-                        <FlameIcon className="size-3" /> {t("one view")}
-                      </>
-                    ) : s.maxViews ? (
-                      t("{n} / {max} views", { n: s.views, max: s.maxViews })
-                    ) : (
-                      tn(s.views, "{n} view", "{n} views")
-                    )}
-                  </Chip>
+                {item ? (
+                  <>
+                    <p className="truncate font-medium">{item.name}</p>
+                    <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">/s/{s.id}</p>
+                  </>
+                ) : (
+                  <p className="truncate font-mono text-sm font-medium">/s/{s.id}</p>
+                )}
+                <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
+                  <span>{s.expiresAt ? t("expires {when}", { when: relativeTime(s.expiresAt) }) : t("no expiry")}</span>
+                  <span aria-hidden className="size-0.5 rounded-full bg-current opacity-60" />
+                  <span className={cn("inline-flex items-center gap-1", s.maxViews === 1 && "text-coral")}>
+                    {s.maxViews === 1 && <FlameIcon className="size-3" />}
+                    {views}
+                  </span>
                   {s.hasPassword && (
-                    <Chip tone="lavender">
-                      <KeyRoundIcon className="size-3" /> {t("password")}
-                    </Chip>
+                    <>
+                      <span aria-hidden className="size-0.5 rounded-full bg-current opacity-60" />
+                      <span className="inline-flex items-center gap-1">
+                        <KeyRoundIcon className="size-3" /> {t("password")}
+                      </span>
+                    </>
                   )}
-                </div>
+                </p>
               </div>
-              {s.url && (
-                <Button variant="ghost" size="icon-sm" onClick={() => copy(s.url!, t("Link copied"))} aria-label={t("Copy link")}>
-                  {copied === s.url ? <CheckIcon /> : <CopyIcon />}
+              <div className="flex shrink-0 items-center gap-0.5">
+                {s.url && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => copy(s.url!, t("Link copied"))}
+                    aria-label={t("Copy link")}
+                  >
+                    {copied === s.url ? <CheckIcon /> : <CopyIcon />}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setRevoking(s)}
+                  aria-label={t("Revoke link")}
+                >
+                  <Trash2Icon />
                 </Button>
-              )}
-              <Button variant="ghost" size="icon-sm" onClick={() => setRevoking(s)} aria-label={t("Revoke link")}>
-                <Trash2Icon />
-              </Button>
+              </div>
             </li>
           )
         })}
@@ -541,23 +578,6 @@ export function ShareList({ shares, names }: { shares: DShare[]; names?: Map<str
         onConfirm={() => revoke(revoking!)}
       />
     </>
-  )
-}
-
-function Chip({ children, tone }: { children: React.ReactNode; tone?: "coral" | "lavender" }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem]",
-        tone === "coral"
-          ? "bg-coral-soft"
-          : tone === "lavender"
-            ? "bg-lavender-soft text-accent-foreground"
-            : "bg-muted text-muted-foreground"
-      )}
-    >
-      {children}
-    </span>
   )
 }
 

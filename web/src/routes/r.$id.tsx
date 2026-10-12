@@ -17,9 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { FileGlyph } from "@/components/file-glyph"
+import { GrowthNote, RecipientStage } from "@/components/recipient-stage"
 import { SiteHeader } from "@/components/site-header"
 import { ApiError } from "@/lib/api"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { track } from "@/lib/analytics"
 import { useI18n } from "@/lib/i18n"
 import { BadRequestLink, openRequest, uploadToRequest, type OpenRequest } from "@/lib/requests"
 import { cn } from "@/lib/utils"
@@ -100,6 +102,7 @@ function RequestPage() {
   const send = async () => {
     if (!req || busy || queued.length === 0 || overCount) return
     setBusy(true)
+    track("upload-started")
     const sender = { from: from.trim() || undefined, note: note.trim() || undefined }
     for (const entry of queued) {
       patch(entry.key, { state: "sending", progress: 0 })
@@ -137,12 +140,9 @@ function RequestPage() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <main className="relative flex flex-1 items-start justify-center px-4 pt-10 pb-20 sm:items-center sm:pt-0">
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 size-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,var(--mint),transparent)] opacity-50" />
-        </div>
-        <div className="w-full max-w-lg min-w-0">
-          <div className="min-w-0 overflow-hidden rounded-[1.75rem] border bg-card shadow-soft">
+      <RecipientStage>
+        <div>
+          <div className="min-w-0 overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-[0_30px_60px_-20px_oklch(0.2_0.05_158/45%)]">
             {state.s === "loading" && (
               <div className="grid place-items-center py-16">
                 <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
@@ -225,7 +225,7 @@ function RequestPage() {
                   <ul className="grid max-h-[40vh] gap-1 overflow-y-auto">
                     {entries.map((e) => (
                       <li key={e.key} className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1.5">
-                        <FileGlyph kind="file" type={e.file.type} className="size-9 rounded-lg" />
+                        <FileGlyph kind="file" type={e.file.type} name={e.file.name} className="size-9 rounded-lg" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm" title={e.file.name}>
                             {e.file.name}
@@ -296,15 +296,16 @@ function RequestPage() {
               </div>
             )}
           </div>
+          {req && allSent && <GrowthNote text={t("Need files from someone yourself?")} label={t("Create a request link")} to="/register" />}
           {req && (
-            <p className="mt-4 text-center text-xs text-muted-foreground">
-              <Link to="/security" className="underline underline-offset-2 hover:text-foreground">
+            <p className="mt-5 text-center text-xs text-hero-foreground/70">
+              <Link to="/security" className="underline underline-offset-2 hover:text-hero-foreground">
                 {t("How the encryption works")}
               </Link>
             </p>
           )}
         </div>
-      </main>
+      </RecipientStage>
     </div>
   )
 }

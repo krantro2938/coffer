@@ -33,21 +33,11 @@ const messages: Messages = {
   "Personal plan": "专属套餐",
   "Ended.": "已结束。",
   Pricing: "价格",
-  "Private drive": "私密云盘",
-  "Pay for space, not with your data.": "为空间付费，而不是用你的数据付费。",
-  "Quick shares are free and need no account. A drive is a subscription, because storage that isn't paid for by you is paid for by someone else.":
-    "快速分享免费，且无需账户。云盘是订阅制，因为不由你付费的存储，总会有别人来付。",
   "Get started": "开始使用",
   "Choose plan": "选择套餐",
   "Your plan": "你的套餐",
   "per month": "每月",
   "{price} a month": "每月 {price}",
-  "Personal encrypted storage": "个人加密存储",
-  "For everyday cloud storage": "适合日常云存储",
-  "For large private archives": "适合大型私人档案",
-  "Encrypted storage": "加密存储",
-  "Every plan: end-to-end encryption, a private drive, secure sharing, unlimited folders. No ads, no tracking.":
-    "所有套餐均包含：端到端加密、私密云盘、安全分享、无限文件夹。没有广告，没有追踪。",
   "Payment is handled by Paddle; we never see your card. Cancel whenever you like.":
     "付款由 Paddle 处理；我们永远看不到你的卡。可随时取消。",
   "Choose the size of your drive": "选择云盘大小",
@@ -60,7 +50,7 @@ const messages: Messages = {
   "Your plan has ended.": "你的套餐已结束。",
   "Your drive is read-only: you can still download and delete, but not add.": "你的云盘现为只读：仍可下载和删除，但不能添加。",
   Renew: "续订",
-  "Drives start at {price} a month. You choose a plan in the next step.": "云盘每月 {price} 起。下一步选择套餐。",
+  "Free to start. Plans from {price} a month when you need more space.": "免费开始。需要更多空间时，套餐每月 {price} 起。",
   Plan: "套餐",
   "Change the size of your drive, update your card or cancel.": "更改云盘大小、更新银行卡或取消。",
   "Manage billing": "管理账单",
@@ -72,15 +62,47 @@ const messages: Messages = {
     "你上一次付款未成功。请在“管理账单”中更新银行卡，以保持云盘可用。",
   Switch: "切换",
   "Switch plan": "切换套餐",
-  "Switch to {plan}?": "切换到 {plan}？",
   "Too small for your files": "容量不足以存放你的文件",
   "You're now on {plan}": "你现在使用的是 {plan}",
-  "Your card is charged or credited now for the rest of this billing period, then {price} a month.":
-    "本计费周期剩余部分的差额将立即从你的卡中扣除或退还，之后每月 {price}。",
   "Your plan is cancelled along with it.": "你的套餐会随之取消。",
   "Payments stay away from your files": "付款与你的文件相互隔离",
   "A drive is paid for through Paddle, on a bare checkout page kept apart from the app. Paddle learns the email and card you type there and nothing else: no keys, no file names, no contents. The app itself still makes no third-party requests, and storage is rented from a provider that only ever holds ciphertext.":
     "云盘通过 Paddle 付款，使用一个与应用分开的独立结账页面。Paddle 只会知道你在那里填写的邮箱和银行卡，除此之外一无所知：没有密钥，没有文件名，没有内容。应用本身仍然不发起任何第三方请求，存储空间租自一家服务商，它保存的始终只有密文。",
+  "Start free. Pay when you need more room.": "免费开始，需要更多空间时再付费。",
+  "The free account is yours to keep, with nothing deleted. Pay only when you need more room.":
+    "免费账户永久归你，不会删除任何内容。只有在需要更多空间时才需要付费。",
+  Free: "免费",
+  "For occasional requests": "适合偶尔的请求",
+  "2 active request links": "2 个有效的请求链接",
+  "Share links last up to 30 days": "分享链接最长有效 30 天",
+  "Start free": "免费开始",
+  "Unlimited request links": "不限数量的请求链接",
+  "For a few clients": "适合少量客户",
+  "For a growing practice": "适合不断成长的业务",
+  "For a whole archive": "适合完整的档案库",
+  "Every plan: private files and names, secure sharing, unlimited folders. No ads, and no tracking across sites.":
+    "所有方案均包含：私密的文件和名称、安全分享、不限数量的文件夹。没有广告，也不会跨网站追踪。",
+  Monthly: "按月",
+  Yearly: "按年",
+  "{n} months free": "免费 {n} 个月",
+  "billed yearly, {price}": "按年计费，{price}",
+  "Next charge of {price} on {date}": "下次扣款 {price}，日期 {date}",
+  "Switch to yearly billing": "改为按年计费",
+  "Switch to monthly billing": "改为按月计费",
+  "Switch to {plan}, billed yearly?": "切换到按年计费的 {plan}？",
+  "Switch to {plan}, billed monthly?": "切换到按月计费的 {plan}？",
+  "Working out the price…": "正在计算价格…",
+  "We couldn't work out the price just now. Paddle will show it before charging.": "暂时无法计算价格。扣款前 Paddle 会显示金额。",
+  "You'll pay {amount} now, which already counts the unused part of your current plan. After that, {rate}, with the next payment on {date}.":
+    "你现在需支付 {amount}，其中已扣除当前方案未使用的部分。之后为 {rate}，下次付款日期为 {date}。",
+  "Nothing is charged now. The unused part of your current plan, {amount}, is credited to your next payments. After that, {rate}, with the next payment on {date}.":
+    "现在不会扣款。当前方案未使用的部分 {amount} 将抵扣之后的付款。之后为 {rate}，下次付款日期为 {date}。",
+  "Nothing is charged now. After that, {rate}, with the next payment on {date}.": "现在不会扣款。之后为 {rate}，下次付款日期为 {date}。",
+  "Nothing is charged now: credit you already have pays for it. After that, {rate}, with the next payment on {date}.":
+    "现在不会扣款：你已有的余额可以支付。之后为 {rate}，下次付款日期为 {date}。",
+  "Free account": "免费账户",
+  "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
+    "同时最多开放 {n} 个请求链接，分享链接最长保留 {days} 天。选择套餐后两项限制都会取消。",
 }
 
 export default messages

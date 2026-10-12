@@ -9,7 +9,12 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   server: {
     // /pay is the bare checkout page the Go server renders when billing is on.
-    proxy: { "/api": "http://localhost:8080", "/pay": "http://localhost:8080" },
+    // changeOrigin stays off: the server rejects a POST whose Origin differs from its Host,
+    // and the browser's Origin is this dev server's.
+    proxy: {
+      "/api": { target: "http://localhost:8080", changeOrigin: false },
+      "/pay": { target: "http://localhost:8080", changeOrigin: false },
+    },
   },
   plugins: [tailwindcss(), tanstackStart({ spa: { enabled: true } }), viteReact()],
 })

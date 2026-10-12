@@ -156,6 +156,11 @@ func (a *App) handleAdminOverview(w http.ResponseWriter, r *http.Request) error 
 		}
 	}
 	out["listMonthlyCents"] = cents
+	daily, err := a.db.Daily(30)
+	if err != nil {
+		return err
+	}
+	out["daily"] = daily
 	writeJSON(w, 200, out)
 	return nil
 }

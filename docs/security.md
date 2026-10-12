@@ -81,6 +81,37 @@ the link stops uploads through it.
 An account can see the browsers it is signed in on and sign any of them out. For each session the server keeps the
 browser's user-agent string and the times it was created and last used. It does not keep IP addresses.
 
+## Visit counting
+
+A server can optionally count visits and a short list of actions with a self-hosted [Umami](https://umami.is). It is
+off unless `ANALYTICS_URL` and `ANALYTICS_SITE_ID` are both set, and with it off there is no request, no change to the
+content security policy and nothing in the page.
+
+- **One sender.** `web/src/lib/analytics.ts` is the only code that talks to Umami: a small JSON `POST` to
+  `<ANALYTICS_URL>/api/send`, made without credentials and without a `Referer`, whose reply is ignored. It does not
+  read `location` or `document.title`; the page's identity comes from the router.
+- **Public pages** (`/`, `/security`, `/terms`, `/privacy`): the page, the referring site's origin and path (an
+  external one only, with no query or fragment), the browser's language and the screen size. On the home page, named
+  events for a button pressed, a file added (not its name, type or size), the pricing reached, and a plan clicked
+  (the plan id).
+- **Every other page** (sign-in, sign-up, recover, receive, welcome, drive, links, requests, settings, and
+  share and upload links): the route pattern only, such as `/s/:id`, `/r/:id` or `/drive`; never the real path, a
+  query, a fragment, a title or a referrer. Events come from one fixed list (`EVENTS` in `analytics.ts`: sign-up and
+  sign-in completed, share dialog opened, share and request link created, upload started, download started) and carry
+  no id, name, size, count or text. A name not on the list is dropped.
+- **Never:** the admin console, and `/pay`, which is a separate page with its own policy for the payment provider.
+- **What the counting server learns anyway.** Any server sees the IP address and browser string of a request. Umami
+  uses them to derive a country, region and city, the browser, operating system and device type, and an anonymous
+  session hash with a rotating salt (`SALT_ROTATION`); it has no column for the address and does not store it. A
+  reverse proxy in front of it may log addresses; turn those logs off for that host.
+- **No remote code.** Umami's `script.js` is neither loaded nor copied. `script-src` is the same with analytics on
+  as off, and only `connect-src` gains the one configured origin. A compromised analytics server can read what is
+  listed above and nothing more: it cannot run code in the page, and no id, key or file content is in what is sent.
+- **Opt-out.** Nothing is sent when the browser sets Do Not Track or Global Privacy Control.
+
+Accounts, links and files are counted only as totals per day in the admin console, computed on the server and
+carrying nothing per visitor.
+
 ## What it does not protect against
 
 - **A malicious server serving altered code.** The cryptography runs in JavaScript delivered by the server. A

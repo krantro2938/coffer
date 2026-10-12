@@ -2,11 +2,7 @@ import type { Messages } from "../types"
 
 /** Signing up, signing in, recovery and the welcome. */
 const messages: Messages = {
-  "Zero-knowledge drive": "零知识云盘",
   "Your password is the only key. We never see it.": "你的密码是唯一的钥匙。我们永远看不到它。",
-  "Stretched with Argon2id in your browser": "在你的浏览器中用 Argon2id 拉伸",
-  "Unwraps a master key that encrypts everything": "用来解开加密一切的主密钥",
-  "Server stores only ciphertext and peppered hashes": "服务器只保存密文和加了服务器密钥的哈希",
   "Every file, every name, every folder.": "每个文件，每个名称，每个文件夹。",
   "Too short": "太短",
   Weak: "弱",
@@ -65,15 +61,10 @@ const messages: Messages = {
   "Pick as many as you like and we'll lay out your first folders. Your answer stays in this browser; we never see it.":
     "可以多选，我们会为你准备好最初的文件夹。你的选择只留在这个浏览器里，我们看不到。",
   Documents: "文档",
-  "Passports, contracts, tax papers": "护照、合同、税务文件",
   Photos: "照片",
-  "The ones that are nobody's business": "那些与别人无关的照片",
   "Client work": "客户资料",
-  "Files you are trusted with": "别人托付给你的文件",
   "Passwords and codes": "密码和代码",
-  "Recovery keys, PINs, door codes": "恢复密钥、PIN、门禁密码",
   "Things to send": "要发送的东西",
-  "Links that expire or burn": "会过期或自毁的链接",
   Skip: "跳过",
   "Choose my drive": "选择我的云盘",
   "Open my drive": "打开我的云盘",
@@ -86,7 +77,7 @@ const messages: Messages = {
   "We hold no copy and no back door, so keep it safe.": "我们没有副本，也没有后门，所以请妥善保管。",
   "This is all we hold of your key:": "关于你的密钥，我们保存的只有这些：",
   "Setting the combination…": "正在设置密码锁…",
-  "Your drive is open.": "你的云盘已打开。",
+  "Your private drive is ready.": "你的私人云盘已就绪。",
   "{size} that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
     "{size} 的空间，只有你能读取。我们不能，存储服务商不能，拿到我们硬盘的人也不能。",
   "Space that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
@@ -105,6 +96,9 @@ const messages: Messages = {
   terms: "服务条款",
   "and the": "和",
   "privacy policy": "隐私政策",
+  "Your password stays on your device": "你的密码只留在你的设备上",
+  "It unlocks the key that protects your files": "它用来解开保护你文件的密钥",
+  "Our server only stores what it can't read": "我们的服务器只保存它读不了的内容",
 }
 
 export default messages

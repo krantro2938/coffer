@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { FileGlyph } from "@/components/file-glyph"
+import { GrowthNote, RecipientStage } from "@/components/recipient-stage"
 import { SiteHeader } from "@/components/site-header"
 import { api, ApiError, type AddedItem, type ShareInfo, type ShareOpen } from "@/lib/api"
 import {
@@ -35,6 +36,7 @@ import {
   type ItemMeta,
 } from "@/lib/crypto"
 import { formatBytes, relativeTime } from "@/lib/format"
+import { track } from "@/lib/analytics"
 import { useI18n } from "@/lib/i18n"
 import { ReportLink } from "@/components/report-link"
 import { downloadZip, fileBlobOpts, type BundleFile, type Manifest } from "@/lib/bundle"
@@ -150,11 +152,8 @@ function SharePage() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <main className="relative flex flex-1 items-start justify-center px-4 pt-10 pb-20 sm:items-center sm:pt-0">
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 size-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,var(--lavender-soft),transparent)] opacity-70" />
-        </div>
-        <div className="w-full max-w-lg min-w-0">
+      <RecipientStage>
+        <div>
           {state.s === "loading" && (
             <Shell>
               <div className="grid place-items-center py-16">
@@ -275,15 +274,22 @@ function SharePage() {
             ) : (
               <OpenedView id={id} data={state.data} />
             ))}
+          {state.s === "opened" && (
+            <GrowthNote text={t("Send your own files the same way. No account needed.")} label={t("Share something yourself")} to="/" />
+          )}
           {(state.s === "ready" || state.s === "opened") && <ReportLink id={id} secret={normalizeCode(secret)} />}
         </div>
-      </main>
+      </RecipientStage>
     </div>
   )
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="min-w-0 overflow-hidden rounded-[1.75rem] border bg-card shadow-soft">{children}</div>
+  return (
+    <div className="min-w-0 overflow-hidden rounded-[2rem] bg-card text-card-foreground shadow-[0_30px_60px_-20px_oklch(0.2_0.05_158/45%)]">
+      {children}
+    </div>
+  )
 }
 
 function OpenedView({ id, data }: { id: string; data: Opened }) {
@@ -297,6 +303,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
   const cached = useMemo(() => (text !== undefined ? new Blob([text], { type: "text/plain" }) : null), [text])
 
   const save = async () => {
+    track("download-started")
     if (cached) return triggerDownload(cached, meta.name.endsWith(".txt") ? meta.name : `${meta.name}.txt`)
     if (previewUrl) {
       const blob = await fetch(previewUrl).then((r) => r.blob())
@@ -327,7 +334,7 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
       <Shell>
         <div className="grid gap-5 p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <FileGlyph kind={open.kind} type={meta.type} className="size-12" />
+            <FileGlyph kind={open.kind} type={meta.type} name={meta.name} className="size-12" />
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium" title={meta.name}>
                 {open.kind === "text" ? t("Private note") : meta.name}
@@ -377,11 +384,11 @@ function OpenedView({ id, data }: { id: string; data: Opened }) {
             </div>
           ) : (
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button size="lg" onClick={save} className="flex-1">
+              <Button size="lg" onClick={save} className="sm:flex-1">
                 <DownloadIcon /> {open.kind === "text" ? t("Download as .txt") : t("Download")}
               </Button>
               {text !== undefined && (
-                <Button size="lg" variant="outline" onClick={() => copy(text, t("Copied"))} className="flex-1">
+                <Button size="lg" variant="outline" onClick={() => copy(text, t("Copied"))} className="sm:flex-1">
                   <CopyIcon /> {t("Copy text")}
                 </Button>
               )}
@@ -497,6 +504,7 @@ function FolderView({ id, data, manifest: listed }: { id: string; data: Opened; 
   }
 
   const zipAll = async () => {
+    track("download-started")
     try {
       setZipping(0)
       const failed = await downloadZip(id, open.ticket, manifest, setZipping)
@@ -541,7 +549,7 @@ function FolderView({ id, data, manifest: listed }: { id: string; data: Opened; 
               const dir = f.path.includes("/") ? f.path.slice(0, f.path.lastIndexOf("/")) : ""
               return (
                 <li key={f.id} className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 hover:bg-muted/50">
-                  <FileGlyph kind="file" type={f.type} className="size-9 rounded-lg" />
+                  <FileGlyph kind="file" type={f.type} name={f.path} className="size-9 rounded-lg" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm" title={f.path}>
                       {f.name}

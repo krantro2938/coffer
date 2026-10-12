@@ -23,6 +23,7 @@ services:
       ANON_MAX_SHARE_MB: ${ANON_MAX_SHARE_MB:-100}      # per quick share, all its files together
       ANON_MAX_FILES: ${ANON_MAX_FILES:-5}              # files per quick share
       USER_QUOTA_MB: ${USER_QUOTA_MB:-10240}            # drive size per account when billing is off
+      FREE_QUOTA_MB: ${FREE_QUOTA_MB:-300}              # drive size of the free account when billing is on
       ANON_MAX_EXPIRY_HOURS: ${ANON_MAX_EXPIRY_HOURS:-168}
       SESSION_DAYS: ${SESSION_DAYS:-14}
       TRUST_PROXY: ${TRUST_PROXY:-false}                # set true when behind a reverse proxy
@@ -50,6 +51,9 @@ services:
       # Admin console on port 8081, for its own hostname. Off while ADMIN_TOKEN is empty (24+ characters).
       ADMIN_TOKEN: ${ADMIN_TOKEN:-}
       ADMIN_NOTIFY_EMAIL: ${ADMIN_NOTIFY_EMAIL:-}       # hears about new abuse reports
+      # Visit counting through your own Umami (leave both empty for none).
+      ANALYTICS_URL: ${ANALYTICS_URL:-}                 # the Umami origin, e.g. https://stats.example.com
+      ANALYTICS_SITE_ID: ${ANALYTICS_SITE_ID:-}         # the website's ID (a UUID) in Umami
     volumes:
       - coffer-data:/data
     read_only: true

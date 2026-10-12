@@ -2,11 +2,7 @@ import type { Messages } from "../types"
 
 /** Signing up, signing in, recovery and the welcome. */
 const messages: Messages = {
-  "Zero-knowledge drive": "Zero-Knowledge-Laufwerk",
   "Your password is the only key. We never see it.": "Ihr Passwort ist der einzige Schlüssel. Wir sehen es nie.",
-  "Stretched with Argon2id in your browser": "In Ihrem Browser mit Argon2id gestreckt",
-  "Unwraps a master key that encrypts everything": "Entpackt einen Hauptschlüssel, der alles verschlüsselt",
-  "Server stores only ciphertext and peppered hashes": "Der Server speichert nur Geheimtext und gepfefferte Hashes",
   "Every file, every name, every folder.": "Jede Datei, jeder Name, jeder Ordner.",
   "Too short": "Zu kurz",
   Weak: "Schwach",
@@ -68,15 +64,10 @@ const messages: Messages = {
   "Pick as many as you like and we'll lay out your first folders. Your answer stays in this browser; we never see it.":
     "Wählen Sie beliebig viele aus, und wir legen Ihre ersten Ordner an. Ihre Antwort bleibt in diesem Browser; wir sehen sie nie.",
   Documents: "Dokumente",
-  "Passports, contracts, tax papers": "Pässe, Verträge, Steuerunterlagen",
   Photos: "Fotos",
-  "The ones that are nobody's business": "Die, die niemanden etwas angehen",
   "Client work": "Kundenarbeit",
-  "Files you are trusted with": "Dateien, die man Ihnen anvertraut",
   "Passwords and codes": "Passwörter und Codes",
-  "Recovery keys, PINs, door codes": "Wiederherstellungsschlüssel, PINs, Türcodes",
   "Things to send": "Dinge zum Versenden",
-  "Links that expire or burn": "Links, die ablaufen oder sich vernichten",
   Skip: "Überspringen",
   "Choose my drive": "Mein Laufwerk wählen",
   "Open my drive": "Mein Laufwerk öffnen",
@@ -89,7 +80,7 @@ const messages: Messages = {
   "We hold no copy and no back door, so keep it safe.": "Wir haben keine Kopie und keine Hintertür, bewahren Sie ihn also gut auf.",
   "This is all we hold of your key:": "Das ist alles, was wir von Ihrem Schlüssel haben:",
   "Setting the combination…": "Die Kombination wird eingestellt…",
-  "Your drive is open.": "Ihr Laufwerk ist offen.",
+  "Your private drive is ready.": "Ihr privates Laufwerk ist bereit.",
   "{size} that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
     "{size}, die nur Sie lesen können. Nicht wir, nicht unser Speicheranbieter, niemand, der an unsere Festplatten kommt.",
   "Space that only you can read. Not us, not our storage provider, not anyone who gets hold of our disks.":
@@ -108,6 +99,9 @@ const messages: Messages = {
   terms: "Bedingungen",
   "and the": "und der",
   "privacy policy": "Datenschutzerklärung zu",
+  "Your password stays on your device": "Ihr Passwort bleibt auf Ihrem Gerät",
+  "It unlocks the key that protects your files": "Es öffnet den Schlüssel, der Ihre Dateien schützt",
+  "Our server only stores what it can't read": "Unser Server speichert nur, was er nicht lesen kann",
 }
 
 export default messages

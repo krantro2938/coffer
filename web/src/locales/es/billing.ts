@@ -33,21 +33,11 @@ const messages: Messages = {
   "Personal plan": "Plan personal",
   "Ended.": "Finalizado.",
   Pricing: "Precios",
-  "Private drive": "Unidad privada",
-  "Pay for space, not with your data.": "Paga por espacio, no con tus datos.",
-  "Quick shares are free and need no account. A drive is a subscription, because storage that isn't paid for by you is paid for by someone else.":
-    "Los envíos rápidos son gratuitos y no necesitan cuenta. Una unidad es una suscripción, porque el almacenamiento que no pagas tú lo paga otro.",
   "Get started": "Empezar",
   "Choose plan": "Elegir plan",
   "Your plan": "Tu plan",
   "per month": "al mes",
   "{price} a month": "{price} al mes",
-  "Personal encrypted storage": "Almacenamiento cifrado personal",
-  "For everyday cloud storage": "Para el almacenamiento en la nube de cada día",
-  "For large private archives": "Para grandes archivos privados",
-  "Encrypted storage": "Almacenamiento cifrado",
-  "Every plan: end-to-end encryption, a private drive, secure sharing, unlimited folders. No ads, no tracking.":
-    "Todos los planes: cifrado de extremo a extremo, una unidad privada, compartir seguro y carpetas ilimitadas. Sin anuncios ni rastreo.",
   "Payment is handled by Paddle; we never see your card. Cancel whenever you like.":
     "El pago lo gestiona Paddle; nunca vemos tu tarjeta. Cancela cuando quieras.",
   "Choose the size of your drive": "Elige el tamaño de tu unidad",
@@ -62,8 +52,8 @@ const messages: Messages = {
   "Your drive is read-only: you can still download and delete, but not add.":
     "Tu unidad es de solo lectura: puedes descargar y eliminar, pero no añadir.",
   Renew: "Renovar",
-  "Drives start at {price} a month. You choose a plan in the next step.":
-    "Las unidades empiezan en {price} al mes. Eliges el plan en el siguiente paso.",
+  "Free to start. Plans from {price} a month when you need more space.":
+    "Empieza gratis. Planes desde {price} al mes si necesitas más espacio.",
   Plan: "Plan",
   "Change the size of your drive, update your card or cancel.": "Cambia el tamaño de tu unidad, actualiza tu tarjeta o cancela.",
   "Manage billing": "Gestionar facturación",
@@ -76,15 +66,49 @@ const messages: Messages = {
     "Tu último pago no se pudo cobrar. Actualiza tu tarjeta en «Gestionar facturación» para mantener abierta tu unidad.",
   Switch: "Cambiar",
   "Switch plan": "Cambiar de plan",
-  "Switch to {plan}?": "¿Cambiar a {plan}?",
   "Too small for your files": "Demasiado pequeño para tus archivos",
   "You're now on {plan}": "Ahora estás en {plan}",
-  "Your card is charged or credited now for the rest of this billing period, then {price} a month.":
-    "Se hace ahora un cargo o un abono en tu tarjeta por el resto de este periodo de facturación; después, {price} al mes.",
   "Your plan is cancelled along with it.": "Tu plan se cancela junto con ella.",
   "Payments stay away from your files": "Los pagos se quedan lejos de tus archivos",
   "A drive is paid for through Paddle, on a bare checkout page kept apart from the app. Paddle learns the email and card you type there and nothing else: no keys, no file names, no contents. The app itself still makes no third-party requests, and storage is rented from a provider that only ever holds ciphertext.":
     "Una unidad se paga a través de Paddle, en una página de pago sencilla y separada de la aplicación. Paddle conoce el correo y la tarjeta que escribes allí y nada más: ni claves, ni nombres de archivo, ni contenidos. La aplicación sigue sin hacer peticiones a terceros, y el almacenamiento se alquila a un proveedor que solo guarda texto cifrado.",
+  "Start free. Pay when you need more room.": "Empieza gratis. Paga cuando necesites más espacio.",
+  "The free account is yours to keep, with nothing deleted. Pay only when you need more room.":
+    "La cuenta gratuita es tuya para siempre y no se borra nada. Paga solo cuando necesites más espacio.",
+  Free: "Gratis",
+  "For occasional requests": "Para solicitudes ocasionales",
+  "2 active request links": "2 enlaces de solicitud activos",
+  "Share links last up to 30 days": "Los enlaces compartidos duran hasta 30 días",
+  "Start free": "Empezar gratis",
+  "Unlimited request links": "Enlaces de solicitud ilimitados",
+  "For a few clients": "Para unos pocos clientes",
+  "For a growing practice": "Para un despacho en crecimiento",
+  "For a whole archive": "Para un archivo entero",
+  "Every plan: private files and names, secure sharing, unlimited folders. No ads, and no tracking across sites.":
+    "Todos los planes: archivos y nombres privados, uso compartido seguro, carpetas ilimitadas. Sin anuncios y sin seguimiento entre sitios.",
+  Monthly: "Mensual",
+  Yearly: "Anual",
+  "{n} months free": "{n} meses gratis",
+  "billed yearly, {price}": "facturado anualmente, {price}",
+  "Next charge of {price} on {date}": "Próximo cobro de {price} el {date}",
+  "Switch to yearly billing": "Cambiar a facturación anual",
+  "Switch to monthly billing": "Cambiar a facturación mensual",
+  "Switch to {plan}, billed yearly?": "¿Cambiar a {plan}, facturado anualmente?",
+  "Switch to {plan}, billed monthly?": "¿Cambiar a {plan}, facturado mensualmente?",
+  "Working out the price…": "Calculando el precio…",
+  "We couldn't work out the price just now. Paddle will show it before charging.":
+    "No pudimos calcular el precio ahora. Paddle lo mostrará antes de cobrar.",
+  "You'll pay {amount} now, which already counts the unused part of your current plan. After that, {rate}, with the next payment on {date}.":
+    "Pagarás {amount} ahora, importe en el que ya se descuenta la parte no usada de tu plan actual. Después, {rate}, y el siguiente pago será el {date}.",
+  "Nothing is charged now. The unused part of your current plan, {amount}, is credited to your next payments. After that, {rate}, with the next payment on {date}.":
+    "Ahora no se cobra nada. La parte no usada de tu plan actual, {amount}, se abonará a tus próximos pagos. Después, {rate}, y el siguiente pago será el {date}.",
+  "Nothing is charged now. After that, {rate}, with the next payment on {date}.":
+    "Ahora no se cobra nada. Después, {rate}, y el siguiente pago será el {date}.",
+  "Nothing is charged now: credit you already have pays for it. After that, {rate}, with the next payment on {date}.":
+    "Ahora no se cobra nada: el saldo a favor que ya tienes lo cubre. Después, {rate}, y el siguiente pago será el {date}.",
+  "Free account": "Cuenta gratuita",
+  "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
+    "{n} enlaces de solicitud abiertos a la vez y enlaces compartidos de hasta {days} días. Con un plan desaparecen ambos límites.",
 }
 
 export default messages

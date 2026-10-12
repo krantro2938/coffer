@@ -55,7 +55,7 @@ export function ReportLink({ id, secret }: { id: string; secret: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mx-auto mt-6 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        className="mx-auto mt-6 flex items-center gap-1.5 text-xs text-hero-foreground/70 hover:text-hero-foreground"
       >
         <FlagIcon className="size-3.5" /> {t("Report this link")}
       </button>

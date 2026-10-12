@@ -51,10 +51,16 @@ func (a *App) handleCreateShare(w http.ResponseWriter, r *http.Request) error {
 	if !it.Ready {
 		return errf(http.StatusConflict, "upload is not finished")
 	}
+	var free bool
 	if uid != "" {
 		if _, err := a.writeQuota(uid); err != nil {
 			return err
 		}
+		sub, err := a.subState(uid)
+		if err != nil {
+			return err
+		}
+		free = sub.Free
 	}
 	if len(req.WrappedKey) < 60 || len(req.WrappedKey) > 256 || len(req.AccessHash) != 32 {
 		return errf(http.StatusBadRequest, "invalid key material")
@@ -94,6 +100,12 @@ func (a *App) handleCreateShare(w http.ResponseWriter, r *http.Request) error {
 		}
 		e := time.Now().Unix() + *req.ExpiresIn
 		expires = &e
+	}
+	// A link from the free account lasts a month at most, and one without an expiry gets that month.
+	if free {
+		if limit := time.Now().Add(freeShareMaxAge).Unix(); expires == nil || *expires > limit {
+			expires = &limit
+		}
 	}
 	// A link can never outlive an expiring (anonymous) item.
 	if it.ExpiresAt.Valid && (expires == nil || *expires > it.ExpiresAt.Int64) {

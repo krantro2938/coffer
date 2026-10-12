@@ -41,17 +41,22 @@ function Terms() {
       <Clause title="Plans and payment">
         <ul>
           <li>
-            A drive is a subscription. Prices and storage sizes are shown before you pay, and prices include the taxes shown at checkout.
+            A drive is a subscription, billed monthly or yearly as you choose. Prices and storage sizes are shown before you pay, and prices
+            include the taxes shown at checkout.
           </li>
           <li>
             Our order process is conducted by our online reseller <strong>Paddle.com</strong>, the merchant of record for all orders. Paddle
             handles payment, invoices, tax and payment-related questions.
           </li>
           <li>
-            A plan renews automatically each period until you cancel. You can cancel at any time in Settings; your drive then stays open
-            until the end of the period you have paid for.
+            A plan renews automatically each period, a month or a year, until you cancel. You can cancel at any time in Settings; your drive
+            then stays open until the end of the period you have paid for.
           </li>
           <li>If you move to a different plan, the difference for the rest of the period is charged or credited at once.</li>
+          <li>
+            If you switch between monthly and yearly billing, what is unused of the period you have paid for is credited against the new
+            one, which starts at once. The amount is shown before you confirm.
+          </li>
           <li>
             If we change the price of your plan we will tell you by email at least 7 days ahead. The new price applies from your first
             renewal after that notice, never to a period you have already paid for, so you can always cancel first.
@@ -66,8 +71,9 @@ function Terms() {
       <Clause title="Refunds">
         <p>
           You can cancel within 14 days of your first payment and get it back in full: write to <Mail /> or ask Paddle directly. This is the
-          withdrawal period consumer law gives you and that Paddle, as the seller of record, applies to every order. Renewals and periods
-          already begun are not refunded, except where the law gives you that right. Refunds are issued through Paddle.
+          withdrawal period consumer law gives you and that Paddle, as the seller of record, applies to every order, and it applies to a
+          yearly payment in the same way. Renewals and periods already begun are not refunded, except where the law gives you that right.
+          Refunds are issued through Paddle.
         </p>
       </Clause>
 

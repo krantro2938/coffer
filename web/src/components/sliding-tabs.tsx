@@ -11,11 +11,15 @@ export function SlidingTabs<T extends string>({
   onChange,
   tabs,
   className,
+  fill,
 }: {
   value: T
   onChange: (value: T) => void
-  tabs: readonly { value: T; label: string }[]
+  /** A `badge` is a small note beside the label, e.g. what a choice saves. */
+  tabs: readonly { value: T; label: string; badge?: string }[]
   className?: string
+  /** Stretch the tabs to share the width of the bar equally. */
+  fill?: boolean
 }) {
   const list = useRef<HTMLDivElement>(null)
   const [pill, setPill] = useState<{ left: number; width: number } | null>(null)
@@ -60,7 +64,8 @@ export function SlidingTabs<T extends string>({
         <span
           aria-hidden
           className={cn(
-            "absolute inset-y-1 rounded-full bg-background shadow-sm",
+            "absolute inset-y-1 rounded-full shadow-sm",
+            fill ? "bg-card ring-1 ring-border dark:bg-foreground/15" : "bg-background",
             settled && "transition-[left,width] duration-300 ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
           )}
           style={{ left: pill.left, width: pill.width }}
@@ -80,10 +85,21 @@ export function SlidingTabs<T extends string>({
             onKeyDown={move}
             className={cn(
               "relative z-10 inline-flex h-full cursor-pointer items-center rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+              fill && "flex-1 justify-center gap-2",
               active ? "text-foreground" : "text-foreground/60 hover:text-foreground"
             )}
           >
             {tab.label}
+            {tab.badge && (
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-semibold transition-colors duration-200",
+                  active ? "bg-muted text-foreground" : "bg-foreground/10 text-foreground"
+                )}
+              >
+                {tab.badge}
+              </span>
+            )}
           </button>
         )
       })}

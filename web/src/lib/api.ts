@@ -50,7 +50,18 @@ export async function api<T = unknown>(path: string, opts: Opts = {}): Promise<T
 
 // ------------------------------------------------------------------ shapes
 
-export type Plan = { id: string; name: string; quota: number; amount: number; currency: string }
+export type Interval = "month" | "year"
+
+export type Plan = {
+  id: string
+  name: string
+  quota: number
+  /** The monthly price in minor units. */
+  amount: number
+  currency: string
+  /** The price per billing interval; `year` is missing until the server has one. */
+  prices: { month: number; year?: number }
+}
 
 export type ServerConfig = {
   allowRegistration: boolean
@@ -62,15 +73,23 @@ export type ServerConfig = {
   anonMaxExpiry: number
   /** Paid drive sizes; null on servers where drives are free. */
   plans: Plan[] | null
+  /** Size of the free account in bytes, when billing is on. */
+  freeQuota?: number
   /** Whether "Continue with Google" is offered. */
   google: boolean
+  /** Present only when the operator turned on visit counting for the public pages. */
+  analytics?: { url: string; site: string }
 }
 
 export type Billing = {
   plan: string | null
+  /** How the plan bills. */
+  interval?: Interval
   status: "active" | "trialing" | "past_due" | "paused" | "canceled" | null
-  /** Whether the drive can be added to. A lapsed drive is read-only. */
+  /** Whether a plan or an admin's allowance covers the drive. False on the free account and on a lapsed drive. */
   entitled: boolean
+  /** Set on the free account: its limits besides the size of the drive. */
+  free?: { requestLinks: number; shareDays: number }
   /** A checkout was started and has not been confirmed yet. */
   pending: boolean
   periodEnd?: number
@@ -80,7 +99,7 @@ export type Billing = {
   /** Storage granted by an admin at no charge, until `until` if set. */
   comp?: { quota: number; until?: number }
   /** A personal price an admin has set for this account. */
-  offer?: { amount: number; currency: string; interval: "month" | "year"; trialDays: number; quota: number }
+  offer?: { amount: number; currency: string; interval: Interval; trialDays: number; quota: number }
 }
 
 export type Me = {
@@ -97,7 +116,7 @@ export type Me = {
 }
 
 /** Whether this account's drive accepts new files. */
-export const canWrite = (me: Me | null) => !!me && (!me.billing || me.billing.entitled)
+export const canWrite = (me: Me | null) => !!me && (!me.billing || me.billing.entitled || !!me.billing.free)
 
 export type FolderRow = { id: string; parentId: string | null; encName: string; createdAt: number }
 

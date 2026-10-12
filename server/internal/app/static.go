@@ -19,14 +19,25 @@ type staticHandler struct {
 	dir   string
 	shell []byte
 	csp   string
-	files http.Handler
+	// cspCounted is csp with the analytics server also in connect-src. Empty when
+	// analytics is off.
+	cspCounted string
+	files      http.Handler
 	// origin is the site's own address as this request reached it.
 	origin func(*http.Request) string
 }
 
 var inlineScriptRe = regexp.MustCompile(`(?s)<script(?:\s[^>]*)?>(.*?)</script>`)
 
-func newStaticHandler(dir string, origin func(*http.Request) string) (*staticHandler, error) {
+// uncounted reports whether a page never reports to the analytics server, so
+// its policy does not name it: the admin console. (/pay is not served here.)
+// Keep in step with web/src/lib/analytics.ts.
+func uncounted(p string) bool { return p == "/admin" || strings.HasPrefix(p, "/admin/") }
+
+// newStaticHandler serves dir. analytics is the origin of the visit-counting
+// server, or "" for none; with it set, only connect-src changes, and not on
+// the admin console.
+func newStaticHandler(dir string, origin func(*http.Request) string, analytics string) (*staticHandler, error) {
 	shell, err := os.ReadFile(filepath.Join(dir, "_shell.html"))
 	if err != nil {
 		return nil, err
@@ -45,21 +56,27 @@ func newStaticHandler(dir string, origin func(*http.Request) string) (*staticHan
 		sum := sha256.Sum256(m[1])
 		hashes = append(hashes, fmt.Sprintf("'sha256-%s'", base64.StdEncoding.EncodeToString(sum[:])))
 	}
-	csp := strings.Join([]string{
-		"default-src 'self'",
-		"script-src 'self' 'wasm-unsafe-eval' " + strings.Join(hashes, " "),
-		"style-src 'self' 'unsafe-inline'",
-		"img-src 'self' blob: data:",
-		"media-src 'self' blob:",
-		"font-src 'self' data:",
-		"connect-src 'self'",
-		"worker-src 'self' blob:",
-		"object-src 'none'",
-		"base-uri 'none'",
-		"form-action 'self'",
-		"frame-ancestors 'none'",
-	}, "; ")
-	return &staticHandler{dir: dir, shell: shell, csp: csp, files: http.FileServer(http.Dir(dir)), origin: origin}, nil
+	policy := func(connect string) string {
+		return strings.Join([]string{
+			"default-src 'self'",
+			"script-src 'self' 'wasm-unsafe-eval' " + strings.Join(hashes, " "),
+			"style-src 'self' 'unsafe-inline'",
+			"img-src 'self' blob: data:",
+			"media-src 'self' blob:",
+			"font-src 'self' data:",
+			"connect-src " + connect,
+			"worker-src 'self' blob:",
+			"object-src 'none'",
+			"base-uri 'none'",
+			"form-action 'self'",
+			"frame-ancestors 'none'",
+		}, "; ")
+	}
+	h := &staticHandler{dir: dir, shell: shell, csp: policy("'self'"), files: http.FileServer(http.Dir(dir)), origin: origin}
+	if analytics != "" {
+		h.cspCounted = policy("'self' " + analytics)
+	}
+	return h, nil
 }
 
 func (s *staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +111,11 @@ func (s *staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "no-cache")
-	h.Set("Content-Security-Policy", s.csp)
+	if s.cspCounted != "" && !uncounted(p) {
+		h.Set("Content-Security-Policy", s.cspCounted)
+	} else {
+		h.Set("Content-Security-Policy", s.csp)
+	}
 	if _, public := publicPages[p]; !public {
 		h.Set("X-Robots-Tag", "noindex, nofollow")
 	}

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
-import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router"
+import { HeadContent, Link, Outlet, Scripts, createRootRoute, useRouterState } from "@tanstack/react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
+import { getConfig } from "@/lib/api"
+import { configureAnalytics, routePattern, setPage } from "@/lib/analytics"
 import { SessionProvider } from "@/lib/session"
 import { ThemeProvider, themeInitScript } from "@/lib/theme"
 import { I18nProvider, useI18n } from "@/lib/i18n"
@@ -43,6 +45,7 @@ function App() {
   // keeps hydration trivially consistent however fast route chunks load.
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+  usePageViews()
   if (!mounted) return null
   return (
     <QueryClientProvider client={qc}>
@@ -58,6 +61,27 @@ function App() {
       </ThemeProvider>
     </QueryClientProvider>
   )
+}
+
+/** Tells the counter which page is showing, by route pattern, when the operator has turned counting on. See lib/analytics.ts. */
+function usePageViews() {
+  // The matched route's own path ("/s/$id"), never the address: ids and #keys stay out of reach.
+  const route = useRouterState({ select: (s) => s.matches[s.matches.length - 1]?.fullPath })
+  const pattern = routePattern(route)
+  useEffect(() => {
+    if (!pattern) return setPage(null)
+    let live = true
+    getConfig()
+      .then((c) => {
+        if (!live) return
+        configureAnalytics(c.analytics)
+        setPage(pattern)
+      })
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [pattern])
 }
 
 function NotFound() {

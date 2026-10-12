@@ -198,8 +198,14 @@ func TestSharesPauseWithTheirOwner(t *testing.T) {
 	if !opens(false) {
 		t.Error("a link from a free drive should open")
 	}
+	if !opens(true) {
+		t.Error("with billing on, a link from the free account should open")
+	}
+	if err := s.SetLapsedAt("u1", now()-1); err != nil {
+		t.Fatal(err)
+	}
 	if opens(true) {
-		t.Error("with billing on, a link from a drive without a plan should not open")
+		t.Error("with billing on, a link from a lapsed drive should not open")
 	}
 	quota := int64(1 << 30)
 	if err := s.SetTerms("u1", Terms{CompQuota: &quota}); err != nil {

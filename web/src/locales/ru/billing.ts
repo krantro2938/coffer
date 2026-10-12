@@ -34,21 +34,11 @@ const messages: Messages = {
   "Personal plan": "Личный тариф",
   "Ended.": "Закончился.",
   Pricing: "Цены",
-  "Private drive": "Личный диск",
-  "Pay for space, not with your data.": "Платите за место, а не своими данными.",
-  "Quick shares are free and need no account. A drive is a subscription, because storage that isn't paid for by you is paid for by someone else.":
-    "Быстрая отправка бесплатна и не требует аккаунта. Диск — это подписка: если за хранилище платите не вы, значит, за него платит кто-то другой.",
   "Get started": "Начать",
   "Choose plan": "Выбрать тариф",
   "Your plan": "Ваш тариф",
   "per month": "в месяц",
   "{price} a month": "{price} в месяц",
-  "Personal encrypted storage": "Личное зашифрованное хранилище",
-  "For everyday cloud storage": "Для повседневного облачного хранения",
-  "For large private archives": "Для больших личных архивов",
-  "Encrypted storage": "Зашифрованное хранилище",
-  "Every plan: end-to-end encryption, a private drive, secure sharing, unlimited folders. No ads, no tracking.":
-    "В каждом тарифе: сквозное шифрование, личный диск, защищённые ссылки, сколько угодно папок. Без рекламы и слежки.",
   "Payment is handled by Paddle; we never see your card. Cancel whenever you like.":
     "Оплату проводит Paddle — данные карты до нас не доходят. Отменить можно в любой момент.",
   "Choose the size of your drive": "Выберите размер диска",
@@ -62,7 +52,8 @@ const messages: Messages = {
   "Your drive is read-only: you can still download and delete, but not add.":
     "Диск доступен только для чтения: скачивать и удалять можно, добавлять — нет.",
   Renew: "Продлить",
-  "Drives start at {price} a month. You choose a plan in the next step.": "Диск — от {price} в месяц. Тариф выбирается на следующем шаге.",
+  "Free to start. Plans from {price} a month when you need more space.":
+    "Начать можно бесплатно. Тарифы от {price} в месяц, если понадобится больше места.",
   Plan: "Тариф",
   "Change the size of your drive, update your card or cancel.": "Смените размер диска, обновите карту или отмените подписку.",
   "Manage billing": "Управление оплатой",
@@ -75,15 +66,49 @@ const messages: Messages = {
     "Последний платёж не прошёл. Обновите карту в разделе «Управление оплатой», чтобы диск остался открыт.",
   Switch: "Перейти",
   "Switch plan": "Сменить тариф",
-  "Switch to {plan}?": "Перейти на {plan}?",
   "Too small for your files": "Мало места для ваших файлов",
   "You're now on {plan}": "Теперь у вас тариф {plan}",
-  "Your card is charged or credited now for the rest of this billing period, then {price} a month.":
-    "Разница за остаток оплаченного периода спишется или вернётся на карту сразу, дальше — {price} в месяц.",
   "Your plan is cancelled along with it.": "Подписка будет отменена вместе с ним.",
   "Payments stay away from your files": "Платежи отделены от ваших файлов",
   "A drive is paid for through Paddle, on a bare checkout page kept apart from the app. Paddle learns the email and card you type there and nothing else: no keys, no file names, no contents. The app itself still makes no third-party requests, and storage is rented from a provider that only ever holds ciphertext.":
     "Диск оплачивается через Paddle на отдельной странице, изолированной от приложения. Paddle узнаёт только почту и карту, которые вы там вводите: ни ключей, ни имён файлов, ни содержимого. Само приложение по-прежнему не делает сторонних запросов, а место арендуется у провайдера, у которого лежит только шифртекст.",
+  "Start free. Pay when you need more room.": "Начните бесплатно. Платите, когда понадобится больше места.",
+  "The free account is yours to keep, with nothing deleted. Pay only when you need more room.":
+    "Бесплатный аккаунт остаётся с вами навсегда, ничего не удаляется. Платите, только когда понадобится больше места.",
+  Free: "Бесплатно",
+  "For occasional requests": "Для редких запросов",
+  "2 active request links": "2 активные ссылки для запроса",
+  "Share links last up to 30 days": "Ссылки для отправки действуют до 30 дней",
+  "Start free": "Начать бесплатно",
+  "Unlimited request links": "Неограниченное число ссылок для запроса",
+  "For a few clients": "Для нескольких клиентов",
+  "For a growing practice": "Для растущей практики",
+  "For a whole archive": "Для целого архива",
+  "Every plan: private files and names, secure sharing, unlimited folders. No ads, and no tracking across sites.":
+    "Любой тариф: закрытые файлы и названия, безопасная отправка, неограниченное число папок. Без рекламы и без слежки между сайтами.",
+  Monthly: "Ежемесячно",
+  Yearly: "Ежегодно",
+  "{n} months free": "{n} мес. бесплатно",
+  "billed yearly, {price}": "оплата раз в год, {price}",
+  "Next charge of {price} on {date}": "Следующее списание {price}: {date}",
+  "Switch to yearly billing": "Перейти на оплату раз в год",
+  "Switch to monthly billing": "Перейти на помесячную оплату",
+  "Switch to {plan}, billed yearly?": "Перейти на {plan} с оплатой раз в год?",
+  "Switch to {plan}, billed monthly?": "Перейти на {plan} с помесячной оплатой?",
+  "Working out the price…": "Считаем стоимость…",
+  "We couldn't work out the price just now. Paddle will show it before charging.":
+    "Сейчас не удалось рассчитать стоимость. Paddle покажет её перед списанием.",
+  "You'll pay {amount} now, which already counts the unused part of your current plan. After that, {rate}, with the next payment on {date}.":
+    "Сейчас вы заплатите {amount}; неиспользованная часть текущего тарифа уже учтена. Дальше — {rate}, следующий платёж {date}.",
+  "Nothing is charged now. The unused part of your current plan, {amount}, is credited to your next payments. After that, {rate}, with the next payment on {date}.":
+    "Сейчас ничего не списывается. Неиспользованная часть текущего тарифа, {amount}, будет зачтена в следующих платежах. Дальше — {rate}, следующий платёж {date}.",
+  "Nothing is charged now. After that, {rate}, with the next payment on {date}.":
+    "Сейчас ничего не списывается. Дальше — {rate}, следующий платёж {date}.",
+  "Nothing is charged now: credit you already have pays for it. After that, {rate}, with the next payment on {date}.":
+    "Сейчас ничего не списывается: уже имеющийся у вас остаток покрывает платёж. Дальше — {rate}, следующий платёж {date}.",
+  "Free account": "Бесплатный аккаунт",
+  "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
+    "Открытых ссылок для запроса одновременно — не больше {n}; ссылки для отправки действуют до {days} дней. С тарифом оба ограничения снимаются.",
 }
 
 export default messages

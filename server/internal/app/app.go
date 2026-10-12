@@ -98,7 +98,7 @@ func New(cfg config.Config, db *store.Store, blobs storage.Store, secret []byte)
 			log.Print("billing: PADDLE_WEBHOOK_SECRET is not set, subscriptions are polled instead of pushed")
 		}
 	}
-	if sh, err := newStaticHandler(cfg.StaticDir, a.origin); err != nil {
+	if sh, err := newStaticHandler(cfg.StaticDir, a.origin, cfg.AnalyticsURL); err != nil {
 		log.Printf("static: %v (API only)", err)
 	} else {
 		a.static = sh
@@ -220,6 +220,7 @@ func (a *App) routes() http.Handler {
 		h("POST /api/billing/checkout", a.handleCheckout)
 		h("POST /api/billing/sync", a.handleBillingSync)
 		h("POST /api/billing/plan", a.handleChangePlan)
+		h("POST /api/billing/plan/preview", a.handlePreviewPlan)
 		h("POST /api/billing/portal", a.handlePortal)
 		h("POST "+paddle.WebhookPath, a.handleWebhook)
 		h("GET /pay", a.handlePayPage)
@@ -246,6 +247,10 @@ func (a *App) handleConfig(w http.ResponseWriter, r *http.Request) error {
 	}
 	if a.billing != nil {
 		cfg["plans"] = a.plansJSON(r.Context())
+		cfg["freeQuota"] = a.cfg.FreeQuota
+	}
+	if a.cfg.AnalyticsURL != "" && a.cfg.AnalyticsSiteID != "" {
+		cfg["analytics"] = map[string]string{"url": a.cfg.AnalyticsURL, "site": a.cfg.AnalyticsSiteID}
 	}
 	writeJSON(w, 200, cfg)
 	return nil

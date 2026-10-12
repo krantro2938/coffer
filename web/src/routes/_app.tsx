@@ -8,22 +8,19 @@ import {
   MonitorIcon,
   MoonIcon,
   SunIcon,
-  HardDriveIcon,
-  HomeIcon,
-  InboxIcon,
-  Link2Icon,
   Loader2Icon,
   LogOutIcon,
   LockKeyholeIcon,
   LanguagesIcon,
-  SettingsIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "lucide-react"
 import { Brand, LogoMark } from "@/components/brand"
-import { LangToggle } from "@/components/lang-toggle"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { DriveIcon, LinksIcon, QuickShareIcon, RequestsIcon, SettingsIcon } from "@/components/nav-icons"
+import { PreferencesMenu } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { UsageBar } from "@/components/usage-bar"
+import { SegmentedUsage, percentOf } from "@/components/usage-bar"
 import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
@@ -57,11 +54,36 @@ import { cn } from "@/lib/utils"
 export const Route = createFileRoute("/_app")({ component: AppLayout })
 
 const nav = [
-  { to: "/drive", label: "My drive", icon: HardDriveIcon },
-  { to: "/links", label: "Shared links", icon: Link2Icon },
-  { to: "/requests", label: "File requests", icon: InboxIcon },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
+  { to: "/drive", label: "My drive", icon: DriveIcon },
+  { to: "/share", label: "Quick share", icon: QuickShareIcon },
+  { to: "/links", label: "Shared links", icon: LinksIcon },
+  { to: "/requests", label: "File requests", icon: RequestsIcon },
 ] as const
+
+const settingsNav = { to: "/settings", label: "Settings", icon: SettingsIcon } as const
+
+const COLLAPSED_KEY = "coffer.sidebar.collapsed"
+
+/** Whether the sidebar is folded to its icons. Remembered per browser; the page works without it. */
+function useCollapsed(): [boolean, () => void] {
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(COLLAPSED_KEY) === "1"
+    } catch {
+      return false
+    }
+  })
+  const toggle = () =>
+    setCollapsed((c) => {
+      try {
+        localStorage.setItem(COLLAPSED_KEY, c ? "0" : "1")
+      } catch {
+        /* not remembered */
+      }
+      return !c
+    })
+  return [collapsed, toggle]
+}
 
 /**
  * Coming back from the checkout: Paddle confirms a payment a moment after it
@@ -116,6 +138,7 @@ function AppLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const confirming = useCheckoutReturn()
+  const [collapsed, toggleCollapsed] = useCollapsed()
   useDriveSync()
   // A new account that has not seen its drive open yet.
   const [welcome, setWelcome] = useState(() => readWelcome(me?.email))
@@ -148,8 +171,6 @@ function AppLayout() {
   }
   if (resumeWelcome) return null
   if (confirming) return <PlanScreen confirming />
-  // No plan yet: there is no drive to show. Settings stay reachable.
-  if (me?.billing && !me.billing.plan && !me.billing.entitled && !me.billing.deleteAt && pathname !== "/settings") return <PlanScreen />
   if (status === "locked") return <UnlockScreen />
   if (welcome?.stage === "unbox" && canWrite(me)) {
     return (
@@ -165,8 +186,13 @@ function AppLayout() {
   }
 
   return (
-    <div className="min-h-svh md:grid md:grid-cols-[16rem_1fr]">
-      <Sidebar />
+    <div
+      className={cn(
+        "min-h-svh md:grid md:transition-[grid-template-columns] md:duration-300 md:ease-[cubic-bezier(0.32,0.72,0,1)]",
+        collapsed ? "md:grid-cols-[6rem_1fr]" : "md:grid-cols-[17.5rem_1fr]"
+      )}
+    >
+      <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
       <div className="flex min-h-svh min-w-0 flex-col">
         <MobileTopBar />
         <main className="flex-1 pb-24 md:pb-0">
@@ -179,97 +205,186 @@ function AppLayout() {
   )
 }
 
-function Sidebar() {
+/** Text that folds away with the sidebar: it stays in place and is clipped, so nothing jumps. */
+function Fold({ collapsed, className, children }: { collapsed: boolean; className?: string; children: React.ReactNode }) {
+  return (
+    <span
+      className={cn(
+        "min-w-0 whitespace-nowrap transition-opacity duration-200",
+        collapsed ? "opacity-0" : "opacity-100 delay-100",
+        className
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+function NavItem({
+  to,
+  label,
+  icon: Icon,
+  collapsed,
+}: {
+  to: string
+  label: string
+  icon: (props: { className?: string }) => React.ReactNode
+  collapsed: boolean
+}) {
+  return (
+    <Link
+      to={to}
+      title={collapsed ? label : undefined}
+      aria-label={label}
+      // The icon sits in the same place whatever the width: only the label and the pill change.
+      className="group flex h-11 items-center gap-3 overflow-hidden rounded-2xl px-3 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+      activeProps={{ className: "bg-foreground/[0.07] !text-foreground font-medium hover:bg-foreground/[0.07]" }}
+    >
+      {/* Quiet until it is the page you are on or the one under the pointer. */}
+      <Icon className="size-6 opacity-60 grayscale transition-[opacity,filter] duration-200 group-hover:opacity-100 group-hover:grayscale-0 group-data-[status=active]:opacity-100 group-data-[status=active]:grayscale-0" />
+      <Fold collapsed={collapsed}>{label}</Fold>
+    </Link>
+  )
+}
+
+function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { me, logout } = useSession()
   const { theme, setTheme } = useTheme()
   const { t, lang, setLang } = useI18n()
   const { data } = useDrive()
   const usage = data?.usage ?? (me ? { used: me.used, quota: me.quota } : null)
+  const toggleLabel = collapsed ? t("Expand sidebar") : t("Collapse sidebar")
+  const Toggle = collapsed ? ChevronRightIcon : ChevronLeftIcon
+  const handle = me?.email.split("@")[0] ?? ""
+  const used = usage ? t("{used} of {total}", { used: formatBytes(usage.used), total: formatBytes(usage.quota) }) : ""
   return (
-    <aside className="sticky top-0 hidden h-svh min-w-0 flex-col overflow-hidden border-r bg-sidebar p-4 md:flex">
-      <Brand to="/drive" className="px-2 py-1.5" />
-      <nav className="mt-8 grid gap-1">
-        {nav.map(({ to, label, icon: Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-            activeProps={{ className: "bg-sidebar-accent !text-foreground font-medium" }}
-          >
-            <Icon className="size-4" /> {t(label)}
-          </Link>
-        ))}
-        <Link
-          to="/"
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-        >
-          <HomeIcon className="size-4" /> {t("Quick share")}
+    <aside className="sticky top-0 hidden h-svh min-w-0 p-3 md:block">
+      <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-sidebar p-3">
+        <Link to="/drive" aria-label="Coffer" className="flex h-12 items-center gap-2.5 overflow-hidden px-1.5 font-medium tracking-tight">
+          <LogoMark className="size-9 shrink-0" />
+          <Fold collapsed={collapsed} className="text-[1.0625rem]">
+            Coffer
+          </Fold>
         </Link>
-      </nav>
 
-      <div className="mt-auto grid min-w-0 gap-3">
-        {usage && usage.quota > 0 && (
-          <div className="grid gap-2 rounded-xl border bg-card px-3 py-2.5">
-            <div className="flex items-baseline justify-between gap-2 text-xs">
-              <span className="font-medium">{t("Storage")}</span>
-              <span className="truncate text-muted-foreground tabular-nums">
-                {t("{used} of {total}", { used: formatBytes(usage.used), total: formatBytes(usage.quota) })}
-              </span>
-            </div>
-            <UsageBar used={usage.used} quota={usage.quota} />
-          </div>
-        )}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex min-w-0 items-center gap-2.5 rounded-xl p-1.5 text-left transition-colors hover:bg-sidebar-accent">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground uppercase">
-                {me?.email[0]}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{me?.email}</span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <LockKeyholeOpenIcon className="size-3" /> {t("Unlocked")}
+        <nav className="mt-6 grid gap-0.5">
+          {nav.map((item) => (
+            <NavItem key={item.to} {...item} label={t(item.label)} collapsed={collapsed} />
+          ))}
+        </nav>
+
+        <div className="mt-auto grid min-w-0 gap-1">
+          {usage && usage.quota > 0 && (
+            <div
+              title={collapsed ? used : undefined}
+              className={cn(
+                "mb-2 grid h-[4.75rem] content-center overflow-hidden rounded-xl border px-3 transition-colors duration-300",
+                collapsed ? "border-transparent" : "bg-muted/40"
+              )}
+            >
+              {collapsed ? (
+                <span className="text-center text-xs font-medium text-muted-foreground tabular-nums">
+                  {percentOf(usage.used, usage.quota)}%
                 </span>
-              </span>
-              <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top" className="w-(--radix-dropdown-menu-trigger-width) min-w-52">
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{t("Theme")}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-              <DropdownMenuRadioItem value="light">
-                <SunIcon /> {t("Light")}
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">
-                <MoonIcon /> {t("Dark")}
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="system">
-                <MonitorIcon /> {t("System")}
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <LanguagesIcon /> {t("Language")}
-                <span className="ml-auto text-xs text-muted-foreground">{LANGS.find((l) => l.value === lang)?.label}</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup value={lang} onValueChange={(v) => setLang(v as Lang)}>
-                  {LANGS.map((l) => (
-                    <DropdownMenuRadioItem key={l.value} value={l.value}>
-                      {l.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()} variant="destructive">
-              <LogOutIcon /> {t("Sign out")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between gap-2 text-xs whitespace-nowrap">
+                    <span className="font-medium">{t("Storage")}</span>
+                    <span className="rounded-full bg-card px-1.5 py-px font-medium tabular-nums ring-1 ring-border">
+                      {percentOf(usage.used, usage.quota)}%
+                    </span>
+                  </div>
+                  <SegmentedUsage used={usage.used} quota={usage.quota} segments={22} className="mt-2 h-3" />
+                  <p className="mt-1.5 truncate text-[0.6875rem] text-muted-foreground tabular-nums">{used}</p>
+                </>
+              )}
+            </div>
+          )}
+          <div className="grid gap-1 border-t pt-2">
+            <NavItem {...settingsNav} label={t(settingsNav.label)} collapsed={collapsed} />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label={me?.email}
+                title={me?.email}
+                className="flex h-14 min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-2xl px-2 text-left transition-colors hover:bg-foreground/[0.05]"
+              >
+                <span className="relative grid size-9 shrink-0 place-items-center rounded-full bg-forest text-sm font-medium text-lime uppercase">
+                  {me?.email[0]}
+                  <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
+                </span>
+                <Fold collapsed={collapsed} className="flex-1">
+                  <span className="block truncate text-sm font-medium">{handle}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{t("Unlocked")}</span>
+                </Fold>
+                <Fold collapsed={collapsed}>
+                  <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
+                </Fold>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align={collapsed ? "end" : "start"}
+              side={collapsed ? "right" : "top"}
+              className={cn("min-w-52", !collapsed && "w-(--radix-dropdown-menu-trigger-width)")}
+            >
+              <div className="flex items-center gap-3 px-2 py-2">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-forest text-sm font-medium text-lime uppercase">
+                  {me?.email[0]}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{me?.email}</p>
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <LockKeyholeOpenIcon className="size-3" /> {t("Unlocked")}
+                  </p>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{t("Theme")}</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
+                <DropdownMenuRadioItem value="light">
+                  <SunIcon /> {t("Light")}
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dark">
+                  <MoonIcon /> {t("Dark")}
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="system">
+                  <MonitorIcon /> {t("System")}
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <LanguagesIcon /> {t("Language")}
+                  <span className="ml-auto text-xs text-muted-foreground">{LANGS.find((l) => l.value === lang)?.label}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup value={lang} onValueChange={(v) => setLang(v as Lang)}>
+                    {LANGS.map((l) => (
+                      <DropdownMenuRadioItem key={l.value} value={l.value}>
+                        {l.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => logout()} variant="destructive">
+                <LogOutIcon /> {t("Sign out")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        title={toggleLabel}
+        aria-label={toggleLabel}
+        className="absolute top-[3.6rem] right-3 z-20 grid size-6 translate-x-1/2 cursor-pointer place-items-center rounded-full border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+      >
+        <Toggle className="size-3.5" />
+      </button>
     </aside>
   )
 }
@@ -281,8 +396,7 @@ function MobileTopBar() {
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-xl md:hidden">
       <Brand to="/drive" />
       <div className="flex items-center gap-1">
-        <LangToggle />
-        <ThemeToggle />
+        <PreferencesMenu />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label={t("Account")}>
@@ -294,11 +408,6 @@ function MobileTopBar() {
           <DropdownMenuContent align="end" className="min-w-52">
             <DropdownMenuLabel className="truncate font-normal text-muted-foreground">{me?.email}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/">
-                <HomeIcon /> {t("Quick share")}
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => logout()} variant="destructive">
               <LogOutIcon /> {t("Sign out")}
             </DropdownMenuItem>
@@ -313,8 +422,8 @@ function MobileTabBar() {
   const { t } = useI18n()
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-      <div className="grid grid-cols-4">
-        {nav.map(({ to, label, icon: Icon }) => (
+      <div className="grid grid-cols-5">
+        {[...nav, settingsNav].map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
@@ -329,9 +438,9 @@ function MobileTabBar() {
                     isActive && "bg-secondary text-secondary-foreground"
                   )}
                 >
-                  <Icon className="size-4.5" />
+                  <Icon className="size-6" />
                 </span>
-                {t(label)}
+                <span className="max-w-full truncate px-0.5">{t(label)}</span>
               </>
             )}
           </Link>
@@ -398,7 +507,7 @@ function PlanScreen({ confirming }: { confirming?: boolean }) {
           <PlanFinePrint className="mx-auto max-w-xl text-center" />
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="truncate">{me?.email}</span>
-            <Link to="/" className="hover:text-foreground">
+            <Link to="/share" className="hover:text-foreground">
               {t("Quick share")}
             </Link>
             <Link to="/settings" className="hover:text-foreground">

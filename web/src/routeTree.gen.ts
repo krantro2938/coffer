@@ -24,6 +24,7 @@ import { Route as AppDriveRouteImport } from './routes/_app.drive'
 import { Route as AppLinksRouteImport } from './routes/_app.links'
 import { Route as AppRequestsRouteImport } from './routes/_app.requests'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppShareRouteImport } from './routes/_app.share'
 import { Route as RIdRouteImport } from './routes/r.$id'
 import { Route as SIdRouteImport } from './routes/s.$id'
 
@@ -101,6 +102,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppShareRoute = AppShareRouteImport.update({
+  id: '/share',
+  path: '/share',
+  getParentRoute: () => AppRoute,
+} as any)
 const RIdRoute = RIdRouteImport.update({
   id: '/r/$id',
   path: '/r/$id',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/links': typeof AppLinksRoute
   '/requests': typeof AppRequestsRoute
   '/settings': typeof AppSettingsRoute
+  '/share': typeof AppShareRoute
   '/r/$id': typeof RIdRoute
   '/s/$id': typeof SIdRoute
 }
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/links': typeof AppLinksRoute
   '/requests': typeof AppRequestsRoute
   '/settings': typeof AppSettingsRoute
+  '/share': typeof AppShareRoute
   '/r/$id': typeof RIdRoute
   '/s/$id': typeof SIdRoute
 }
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/_app/links': typeof AppLinksRoute
   '/_app/requests': typeof AppRequestsRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/share': typeof AppShareRoute
   '/r/$id': typeof RIdRoute
   '/s/$id': typeof SIdRoute
 }
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/links'
     | '/requests'
     | '/settings'
+    | '/share'
     | '/r/$id'
     | '/s/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/links'
     | '/requests'
     | '/settings'
+    | '/share'
     | '/r/$id'
     | '/s/$id'
   id:
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/_app/links'
     | '/_app/requests'
     | '/_app/settings'
+    | '/_app/share'
     | '/r/$id'
     | '/s/$id'
   fileRoutesById: FileRoutesById
@@ -349,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/share': {
+      id: '/_app/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof AppShareRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/r/$id': {
       id: '/r/$id'
       path: '/r/$id'
@@ -371,6 +390,7 @@ interface AppRouteChildren {
   AppLinksRoute: typeof AppLinksRoute
   AppRequestsRoute: typeof AppRequestsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppShareRoute: typeof AppShareRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -378,6 +398,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLinksRoute: AppLinksRoute,
   AppRequestsRoute: AppRequestsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppShareRoute: AppShareRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

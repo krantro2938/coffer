@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { toast } from "sonner"
@@ -8,12 +8,15 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { FileGlyph } from "@/components/file-glyph"
+import { ShareList } from "@/components/drive-dialogs"
 import { ShareOptionsFields, defaultShareOptions, toShareOptions } from "@/components/share-options"
 import { ShareResult } from "@/components/share-result"
+import { track } from "@/lib/analytics"
 import { canWrite, getConfig } from "@/lib/api"
 import { shareFiles } from "@/lib/bundle"
 import { loadDrops, pruneDrops, revokeDrop, saveDrops, type Drop } from "@/lib/drops"
-import { formatBytes, relativeTime } from "@/lib/format"
+import { formatBytes, relativeTime, noteStamp } from "@/lib/format"
+import { useDrive } from "@/lib/drive"
 import { useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { createShare, storeItem, type CreatedShare } from "@/lib/transfer"
@@ -24,7 +27,8 @@ type Phase = { step: "idle" } | { step: "working"; label: string; progress: numb
 
 const QUICK_SHARE_MAX = 7 * 86400
 
-export function DropComposer() {
+/** onFilesAdded only says that a file was added: nothing about it. */
+export function DropComposer({ onFilesAdded }: { onFilesAdded?: () => void } = {}) {
   const { status, masterKey, me } = useSession()
   const qc = useQueryClient()
   const { t, tn } = useI18n()
@@ -47,6 +51,15 @@ export function DropComposer() {
   const [dragging, setDragging] = useState(false)
   const [drops, setDrops] = useState<Drop[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // A drive keeps what was shared: show the latest here, so a link made a minute ago is not lost
+  // the moment "Share something else" clears the form.
+  const { data: drive } = useDrive()
+  const recent = useMemo(() => {
+    if (!toDrive || !drive) return []
+    return [...drive.shares].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4)
+  }, [toDrive, drive])
+  const names = useMemo(() => new Map([...(drive?.items ?? []), ...(drive?.bundles ?? [])].map((i) => [i.id, i])), [drive])
 
   useEffect(() => {
     let live = true
@@ -88,6 +101,7 @@ export function DropComposer() {
       return
     }
     setFiles(next)
+    onFilesAdded?.()
   }
 
   const remember = (d: Drop) => {
@@ -121,7 +135,7 @@ export function DropComposer() {
         })
       } else {
         const file = files[0]
-        const name = mode === "file" ? file.name : t("Note {date}", { date: new Date().toLocaleString() })
+        const name = mode === "file" ? file.name : t("Note {date}", { date: noteStamp() })
         const stored = await storeItem({
           kind: mode,
           name,
@@ -150,6 +164,7 @@ export function DropComposer() {
         }
       }
       if (toDrive) qc.invalidateQueries({ queryKey: ["drive"] })
+      track("share-created")
       setPhase({ step: "done", share })
     } catch (e) {
       setPhase({ step: "idle" })
@@ -191,8 +206,8 @@ export function DropComposer() {
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="relative rounded-[1.75rem] border bg-card/90 p-2 shadow-soft backdrop-blur-sm">
+    <div className="grid gap-14">
+      <div className="relative rounded-[2rem] border bg-card p-2 shadow-[0_30px_60px_-20px_oklch(0.2_0.05_158/45%)]">
         {phase.step === "done" ? (
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
@@ -250,7 +265,7 @@ export function DropComposer() {
                 >
                   {files.map((f, i) => (
                     <div key={`${f.name}-${i}`} className="flex items-center gap-3 rounded-xl p-1.5">
-                      <FileGlyph kind="file" type={f.type} />
+                      <FileGlyph kind="file" type={f.type} name={f.name} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{f.name}</p>
                         <p className="text-xs text-muted-foreground">{formatBytes(f.size)}</p>
@@ -365,13 +380,25 @@ export function DropComposer() {
         )}
       </div>
 
+      {recent.length > 0 && (
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between gap-3 px-1">
+            <p className="eyebrow">{t("Your recent shares")}</p>
+            <Link to="/links" className="text-sm text-muted-foreground hover:text-foreground">
+              {t("Shared links")}
+            </Link>
+          </div>
+          <ShareList shares={recent} names={names} />
+        </div>
+      )}
+
       {drops.length > 0 && !toDrive && (
         <div className="rounded-2xl border bg-card/70 p-4 text-left">
           <p className="mb-3 eyebrow">{t("Your recent drops · this device only")}</p>
           <ul className="grid gap-2">
             {drops.slice(0, 5).map((d) => (
               <li key={d.itemId} className="flex items-center gap-3 text-sm">
-                <FileGlyph kind={d.kind} className="size-8 rounded-lg" />
+                <FileGlyph kind={d.kind} name={d.name} className="size-8 rounded-lg" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate">{d.kind === "bundle" ? tn(d.files, "{n} file", "{n} files") : d.name}</p>
                   <p className="text-xs text-muted-foreground">
