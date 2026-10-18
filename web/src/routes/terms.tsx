@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Clause, LegalPage, Mail } from "@/components/legal"
+import { OPERATOR } from "@/lib/contact"
 
 // The server sends the same title and description with the page (server/internal/app/seo.go).
 export const Route = createFileRoute("/terms")({
@@ -18,12 +19,13 @@ function Terms() {
   return (
     <LegalPage
       title="Terms of service"
-      intro="These are the terms for using Coffer: end-to-end encrypted file sharing, and paid private drives. By using it you agree to them."
+      intro="These are the terms for using Coffer: end-to-end encrypted file sharing, upload links and private drives. By using it you agree to them."
     >
       <Clause title="The service">
         <p>
-          Coffer lets you share files and notes through links (a "quick share", which needs no account) and keep them in a private drive
-          (which needs an account and a plan). Everything is encrypted in your browser; see{" "}
+          Coffer is run by {OPERATOR}. It lets you share files and notes through links (a "quick share", which needs no account), ask others
+          for files with upload links, and keep them in a private drive (which needs an account; every account comes with a free drive).
+          Everything is encrypted in your browser; see{" "}
           <Link to="/security" className="underline underline-offset-4">
             how the encryption works
           </Link>
@@ -44,6 +46,7 @@ function Terms() {
       </Clause>
 
       <Clause title="Plans and payment">
+        <p>Paid plans are not on sale yet: every drive is free for now. This section applies once they are.</p>
         <ul>
           <li>
             A drive is a subscription, billed monthly or yearly as you choose. Prices and storage sizes are shown before you pay, and prices
@@ -158,7 +161,7 @@ function Terms() {
 
       <Clause title="Contact">
         <p>
-          For support, privacy requests and reports: <Mail />.
+          Coffer is run by {OPERATOR}. For support, privacy requests and reports: <Mail />.
         </p>
       </Clause>
     </LegalPage>

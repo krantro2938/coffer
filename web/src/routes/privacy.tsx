@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { Clause, LegalPage, Mail } from "@/components/legal"
+import { OPERATOR } from "@/lib/contact"
 
 // The server sends the same title and description with the page (server/internal/app/seo.go).
 export const Route = createFileRoute("/privacy")({
@@ -18,6 +19,13 @@ function Privacy() {
       title="Privacy policy"
       intro="Coffer is built so that we cannot read what you store or share. This page says what we do hold, why, who else touches it and how long it is kept."
     >
+      <Clause title="Who is responsible">
+        <p>
+          Coffer is run by {OPERATOR}, who is responsible for the personal data described on this page (the controller, in the words of the
+          GDPR). Write to <Mail /> for anything on this page, including the requests under "Your rights".
+        </p>
+      </Clause>
+
       <Clause title="What we cannot see">
         <p>
           Files, notes, file names, folder names and the keys that unlock them are encrypted in your browser before they reach us. We store

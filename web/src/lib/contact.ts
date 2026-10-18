@@ -1,6 +1,9 @@
 /** Where people reach the operator: support, privacy requests and abuse reports. */
 export const SUPPORT_EMAIL = "support@coffer.rest"
 
+/** Who runs Coffer: named in the terms and as the controller in the privacy policy. */
+export const OPERATOR = "Alex Fuermo"
+
 /** The address the marketing shows in its examples. */
 export const SITE_HOST = "coffer.rest"
 
