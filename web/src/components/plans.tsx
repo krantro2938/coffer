@@ -125,7 +125,7 @@ export function PlanGrid({
                 "flex flex-col rounded-3xl border p-6 text-left transition-shadow",
                 on ? "border-transparent bg-forest text-forest-foreground" : "bg-card",
                 // Not on sale yet: still readable, but quieter than the free card beside it.
-                open ? "hover:shadow-soft" : "opacity-70"
+                open ? "hover:shadow-soft" : "opacity-50"
               )}
             >
               <div className="flex h-5 items-center justify-between gap-2">
@@ -162,7 +162,8 @@ export function PlanGrid({
                 )}
               </div>
               <Button
-                className="mt-8 w-full"
+                // The card is already dimmed while plans are not on sale; the button is not faded a second time.
+                className={cn("mt-8 w-full", !open && "disabled:opacity-100")}
                 variant={on ? "secondary" : "outline"}
                 disabled={mine || !open || !!busy || disabled?.(p)}
                 onClick={() => onPick(p, shown)}
