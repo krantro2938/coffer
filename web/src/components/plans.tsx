@@ -122,8 +122,10 @@ export function PlanGrid({
             <div
               key={p.id}
               className={cn(
-                "flex flex-col rounded-3xl border p-6 text-left transition-shadow hover:shadow-soft",
-                on ? "border-transparent bg-forest text-forest-foreground" : "bg-card"
+                "flex flex-col rounded-3xl border p-6 text-left transition-shadow",
+                on ? "border-transparent bg-forest text-forest-foreground" : "bg-card",
+                // Not on sale yet: still readable, but quieter than the free card beside it.
+                open ? "hover:shadow-soft" : "opacity-70"
               )}
             >
               <div className="flex h-5 items-center justify-between gap-2">
