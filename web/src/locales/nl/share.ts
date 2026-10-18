@@ -97,6 +97,8 @@ const messages: Messages = {
   "Adding {name}…": "{name} toevoegen…",
   "This link lets you add files to the folder. They are encrypted here first, and everyone with the link will see them.":
     "Met deze link kun je bestanden aan de map toevoegen. Ze worden eerst hier versleuteld, en iedereen met de link ziet ze.",
+  "The key stays in your browser. It decrypts the share here, and never reaches our server.":
+    "De sleutel blijft in je browser. Hij ontsleutelt de share hier en bereikt nooit onze server.",
 }
 
 export default messages

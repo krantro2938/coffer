@@ -97,6 +97,8 @@ const messages: Messages = {
   "Adding {name}…": "Добавление {name}…",
   "This link lets you add files to the folder. They are encrypted here first, and everyone with the link will see them.":
     "По этой ссылке можно добавлять файлы в папку. Они сначала шифруются здесь, и их увидят все, у кого есть ссылка.",
+  "The key stays in your browser. It decrypts the share here, and never reaches our server.":
+    "Ключ остаётся в вашем браузере. Он расшифровывает файлы здесь и никогда не попадает на наш сервер.",
 }
 
 export default messages

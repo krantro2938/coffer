@@ -96,6 +96,8 @@ const messages: Messages = {
   "Adding {name}…": "Añadiendo {name}…",
   "This link lets you add files to the folder. They are encrypted here first, and everyone with the link will see them.":
     "Este enlace te permite añadir archivos a la carpeta. Primero se cifran aquí, y los verán todos los que tengan el enlace.",
+  "The key stays in your browser. It decrypts the share here, and never reaches our server.":
+    "La clave se queda en tu navegador. Descifra lo compartido aquí y nunca llega a nuestro servidor.",
 }
 
 export default messages

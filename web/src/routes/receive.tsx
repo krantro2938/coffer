@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
-import { ArrowRightIcon, InboxIcon } from "lucide-react"
+import { ArrowRightIcon, InboxIcon, LockKeyholeIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { GrowthNote, RecipientStage } from "@/components/recipient-stage"
 import { SiteHeader } from "@/components/site-header"
 import { normalizeCode } from "@/lib/crypto"
 import { useI18n } from "@/lib/i18n"
@@ -55,21 +56,21 @@ function Receive() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <main className="flex flex-1 items-start justify-center px-4 pt-10 pb-20 sm:items-center sm:pt-0">
+      <RecipientStage>
         <form
           onSubmit={(e) => {
             e.preventDefault()
             go()
           }}
-          className="grid w-full max-w-md gap-6 rounded-[1.75rem] border bg-card p-6 shadow-soft sm:p-8"
+          className="grid min-w-0 gap-5 overflow-hidden rounded-[2rem] bg-card p-6 text-card-foreground shadow-[0_30px_60px_-20px_oklch(0.2_0.05_158/45%)] sm:p-8"
         >
-          <div className="grid gap-4">
-            <span className="grid size-12 place-items-center rounded-2xl bg-lavender-soft text-accent-foreground">
-              <InboxIcon className="size-5" />
+          <div className="grid gap-4 text-center">
+            <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
+              <InboxIcon className="size-6" />
             </span>
             <div>
               <h1 className="text-2xl font-medium">{t("Receive a share")}</h1>
-              <p className="mt-1.5 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm text-pretty text-muted-foreground">
                 {t(
                   "Type the short code you were given, or paste the full link. Letters are case-insensitive and look-alikes like O/0 are forgiven."
                 )}
@@ -78,7 +79,7 @@ function Receive() {
           </div>
           <div className="grid gap-3">
             <div className="grid gap-1.5">
-              <label htmlFor="code" className="eyebrow">
+              <label htmlFor="code" className="text-sm font-medium">
                 {t("Code or link")}
               </label>
               <Input
@@ -95,7 +96,7 @@ function Receive() {
             </div>
             {!id.includes("#") && !/\s\S/.test(id.trim()) && (
               <div className="grid gap-1.5">
-                <label htmlFor="key" className="eyebrow">
+                <label htmlFor="key" className="text-sm font-medium">
                   {t("Key")}
                 </label>
                 <Input
@@ -114,8 +115,13 @@ function Receive() {
           <Button size="lg" type="submit" disabled={!id.trim()}>
             {t("Continue")} <ArrowRightIcon data-icon="inline-end" />
           </Button>
+          <p className="text-center text-xs text-pretty text-muted-foreground">
+            <LockKeyholeIcon className="mr-1.5 inline size-3.5 -translate-y-px" />
+            {t("The key stays in your browser. It decrypts the share here, and never reaches our server.")}
+          </p>
         </form>
-      </main>
+        <GrowthNote text={t("Send your own files the same way. No account needed.")} label={t("Share something yourself")} to="/" />
+      </RecipientStage>
     </div>
   )
 }
