@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Clause, LegalPage, Mail } from "@/components/legal"
 
@@ -10,6 +11,10 @@ export const Route = createFileRoute("/terms")({
 })
 
 function Terms() {
+  // The page draws after the router has tried to scroll, so a link to a clause (the footer's "Refunds") is followed here.
+  useEffect(() => {
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView()
+  }, [])
   return (
     <LegalPage
       title="Terms of service"
@@ -68,7 +73,7 @@ function Terms() {
         </ul>
       </Clause>
 
-      <Clause title="Refunds">
+      <Clause id="refunds" title="Refunds">
         <p>
           You can cancel within 14 days of your first payment and get it back in full: write to <Mail /> or ask Paddle directly. This is the
           withdrawal period consumer law gives you and that Paddle, as the seller of record, applies to every order, and it applies to a

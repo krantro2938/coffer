@@ -33,11 +33,23 @@ export async function startCheckout(plan: string, interval: Interval) {
   location.assign(url)
 }
 
-/** Paddle's customer portal: payment method, invoices, cancelling. */
+/** Paddle's customer portal in a new tab: payment method, invoices, cancelling. */
 export async function openPortal() {
-  const { url } = await api<{ url: string }>("/api/billing/portal", { method: "POST" })
-  location.assign(url)
+  // Opened before the request, while the click still counts, so it is not blocked as a pop-up.
+  const tab = window.open("", "_blank")
+  try {
+    const { url } = await api<{ url: string }>("/api/billing/portal", { method: "POST" })
+    if (!tab) return location.assign(url)
+    tab.opener = null
+    tab.location.href = url
+  } catch (e) {
+    tab?.close()
+    throw e
+  }
 }
+
+/** Takes back a cancellation that has not happened yet: the plan renews as before. */
+export const resumePlan = () => api<Me>("/api/billing/resume", { method: "POST" })
 
 export const changePlan = (plan: string, interval: Interval) => api<Me>("/api/billing/plan", { body: { plan, interval } })
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"html"
 	"net/http"
 	"regexp"
@@ -22,8 +23,8 @@ type pageMeta struct{ title, description string }
 // link or someone's drive, and is marked as not to be indexed.
 var publicPages = map[string]pageMeta{
 	"/": {
-		"Coffer — send and request private files, no account needed",
-		"Share private files without making the other person sign up for anything. End-to-end encrypted file sharing and upload links: your keys never leave your browser.",
+		homeTitle,
+		homeDescription,
 	},
 	"/security": {
 		"Security model — Coffer",
@@ -34,8 +35,8 @@ var publicPages = map[string]pageMeta{
 		"Open something that was shared with you through Coffer by typing its short code. It is decrypted in your browser.",
 	},
 	"/register": {
-		"Create your drive — Coffer",
-		"An end-to-end encrypted drive for files, notes, share links and upload links. Your password never leaves your device.",
+		"Create your free drive — Coffer",
+		"A free end-to-end encrypted drive for collecting and sending documents: upload links for your clients, share links that expire. Your password never leaves your device.",
 	},
 	"/login": {
 		"Sign in — Coffer",
@@ -51,20 +52,34 @@ var publicPages = map[string]pageMeta{
 	},
 }
 
+// The home page's title and description, also the shell's default (web/src/routes/__root.tsx).
+const (
+	homeTitle       = "Coffer — collect documents from clients, end-to-end encrypted"
+	homeDescription = "Send a link and your clients upload documents from any browser, no account needed. Files are encrypted before they leave, so only you can open them. Free to start."
+)
+
+// structuredData tells search engines what Coffer is, for the home page.
+const structuredData = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[` +
+	`{"@type":"WebSite","name":"Coffer","url":"ORIGIN/"},` +
+	`{"@type":"SoftwareApplication","name":"Coffer","url":"ORIGIN/","applicationCategory":"BusinessApplication","operatingSystem":"Any (web browser)",` +
+	`"description":"DESCRIPTION","image":"ORIGIN/og.png","isAccessibleForFree":true,` +
+	`"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Free account: 300 MB, upload links and share links"},` +
+	`"license":"https://www.gnu.org/licenses/agpl-3.0.html","codeRepository":"https://github.com/krantro2938/coffer"}]}</script>`
+
 // sitemapOrder lists the public pages in the order a sitemap should give them.
 var sitemapOrder = []string{"/", "/security", "/receive", "/register", "/login", "/terms", "/privacy"}
 
 // noscriptHome is the home page in plain words, for readers that do not run
 // JavaScript: some crawlers, and every link-preview scraper.
 const noscriptHome = `<noscript><main style="max-width:40rem;margin:3rem auto;padding:0 1rem;font-family:system-ui,sans-serif;line-height:1.6">
-<h1>Coffer: share private files without making the other person sign up for anything</h1>
-<p>Coffer is end-to-end encrypted file and note sharing with an optional private drive. Files are encrypted in your browser with AES-256-GCM before they are uploaded, and the key travels in the part of the link after the #, which browsers never send to a server. The server stores only ciphertext: it cannot read a single file name.</p>
-<h2>Send files</h2>
-<p>Drop files or paste a note and get a link. Whoever opens it needs no account and installs nothing: the file is decrypted in their browser. Links can expire, burn after a number of views, carry a password, and be revoked.</p>
+<h1>Collect documents from clients. Only you can open them.</h1>
+<p>Coffer is an end-to-end encrypted way to request, send and keep files. Send a link, and your client uploads from any browser with no account. Files are encrypted in their browser with AES-256-GCM before they leave it, so the server stores only ciphertext: it cannot read a file or its name.</p>
 <h2>Request files</h2>
-<p>Need someone to send you a file? Create a secure upload link. They upload without an account, their browser encrypts each file so that only you can open it, and the link can do nothing else.</p>
+<p>Make an upload link, say what you need and by when, and set how many files it takes and when it closes. Your client opens it and drops their files in. The link can only upload: it cannot read, list or delete anything. For accountants collecting statements and IDs, lawyers collecting case documents, recruiters collecting CVs, landlords collecting applications, and teachers collecting coursework by a deadline.</p>
+<h2>Send files</h2>
+<p>Drop files or paste a note and get a link. Whoever opens it needs no account and installs nothing. Links can expire, burn after a number of views, carry a password, and be revoked.</p>
 <h2>Keep a drive</h2>
-<p>Sign up with an email and a password for encrypted folders, notes and a list of every link you have shared. Folder links follow the folder as it changes, and can let the people you send them to add files of their own.</p>
+<p>Encrypted folders and notes, and a list of every link you have shared. Start free with 300 MB; paid plans from 100 GB.</p>
 <h2>Open source</h2>
 <p>Coffer is free software under the AGPL and runs as a single container. <a href="https://github.com/krantro2938/coffer">Source on GitHub</a>. Read the <a href="/security">security model</a>, the <a href="/terms">terms</a> and the <a href="/privacy">privacy policy</a>.</p>
 <p>Coffer needs JavaScript to encrypt and decrypt in your browser.</p>
@@ -89,14 +104,19 @@ func (s *staticHandler) page(path, origin string) []byte {
 		out = titleRe.ReplaceAllLiteral(out, []byte("<title>"+t+"</title>"))
 		out = descRe.ReplaceAllLiteral(out, []byte(`<meta name="description" content="`+d+`"/>`))
 		head.WriteString(`<link rel="canonical" href="` + url + `"/>`)
-		head.WriteString(`<meta property="og:type" content="website"/><meta property="og:site_name" content="Coffer"/>`)
+		head.WriteString(`<meta property="og:type" content="website"/><meta property="og:site_name" content="Coffer"/><meta property="og:locale" content="en_US"/>`)
 		head.WriteString(`<meta property="og:title" content="` + t + `"/><meta property="og:description" content="` + d + `"/>`)
 		head.WriteString(`<meta property="og:url" content="` + url + `"/>`)
 		head.WriteString(`<meta property="og:image" content="` + html.EscapeString(origin) + `/og.png"/>`)
 		head.WriteString(`<meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>`)
+		head.WriteString(`<meta property="og:image:alt" content="Coffer: collect documents from clients. Only you can open them."/>`)
 		head.WriteString(`<meta name="twitter:card" content="summary_large_image"/>`)
 		head.WriteString(`<meta name="twitter:title" content="` + t + `"/><meta name="twitter:description" content="` + d + `"/>`)
 		head.WriteString(`<meta name="twitter:image" content="` + html.EscapeString(origin) + `/og.png"/>`)
+		if path == "/" {
+			ld := strings.NewReplacer("ORIGIN", jsonString(origin), "DESCRIPTION", jsonString(meta.description)).Replace(structuredData)
+			head.WriteString(ld)
+		}
 	} else {
 		head.WriteString(`<meta name="robots" content="noindex, nofollow"/>`)
 	}
@@ -142,4 +162,10 @@ func (s *staticHandler) sitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	_, _ = w.Write([]byte(b.String()))
+}
+
+// jsonString is s as it may stand inside a JSON string in a script element.
+func jsonString(s string) string {
+	b, _ := json.Marshal(s)
+	return strings.ReplaceAll(string(b[1:len(b)-1]), "</", `<\/`)
 }

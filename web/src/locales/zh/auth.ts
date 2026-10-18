@@ -90,6 +90,7 @@ const messages: Messages = {
     "你的云盘现为只读，链接已暂停：仍可下载和删除，但不能添加。",
   "Unless you renew, your files are deleted on {date}.": "如不续订，你的文件将于 {date} 删除。",
   Terms: "条款",
+  Refunds: "退款",
   Privacy: "隐私",
   Contact: "联系我们",
   "By creating a drive you agree to the": "创建云盘即表示你同意",

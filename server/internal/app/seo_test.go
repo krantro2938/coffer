@@ -27,7 +27,9 @@ func TestPagesDescribeThemselves(t *testing.T) {
 
 	_, home := get("/")
 	for _, want := range []string{
-		"<title>Coffer — send and request private files, no account needed</title>",
+		"<title>Coffer — collect documents from clients, end-to-end encrypted</title>",
+		`<script type="application/ld+json">{"@context":"https://schema.org"`,
+		`"url":"https://coffer.test/"`,
 		`<link rel="canonical" href="https://coffer.test/"/>`,
 		`<meta property="og:image" content="https://coffer.test/og.png"/>`,
 		`<meta name="twitter:card" content="summary_large_image"/>`,

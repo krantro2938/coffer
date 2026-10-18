@@ -23,10 +23,11 @@ import { useCopy } from "@/hooks/use-copy"
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Create your drive — Coffer" },
+      { title: "Create your free drive — Coffer" },
       {
         name: "description",
-        content: "An end-to-end encrypted drive for files, notes, share links and upload links. Your password never leaves your device.",
+        content:
+          "A free end-to-end encrypted drive for collecting and sending documents: upload links for your clients, share links that expire. Your password never leaves your device.",
       },
     ],
   }),

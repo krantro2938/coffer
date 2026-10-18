@@ -33,9 +33,9 @@ export function LegalPage({ title, intro, children }: { title: string; intro: Re
   )
 }
 
-export function Clause({ title, children }: { title: string; children: React.ReactNode }) {
+export function Clause({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
-    <section>
+    <section id={id} className="scroll-mt-24">
       <h2 className="text-xl font-medium">{title}</h2>
       <div className="mt-3 grid gap-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground [&_li]:ml-5 [&_li]:list-disc [&_strong]:font-medium [&_strong]:text-foreground [&_ul]:grid [&_ul]:gap-1.5">
         {children}

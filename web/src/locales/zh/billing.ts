@@ -103,6 +103,8 @@ const messages: Messages = {
   "Free account": "免费账户",
   "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
     "同时最多开放 {n} 个请求链接，分享链接最长保留 {days} 天。选择套餐后两项限制都会取消。",
+  "Keep my plan": "保留我的套餐",
+  "Your plan will renew as before": "你的套餐将照常续订",
 }
 
 export default messages

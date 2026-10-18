@@ -324,7 +324,7 @@ func (a *App) admitUpload(r *http.Request, id string, sealedKey []byte, size, pl
 		return nil, nil, errf(http.StatusRequestEntityTooLarge, "file exceeds the maximum size")
 	case rq.MaxFiles != nil && rq.Uploads >= *rq.MaxFiles:
 		return nil, nil, errf(http.StatusRequestEntityTooLarge, "this upload link has all the files it asked for")
-	case rq.MaxBytes != nil && rq.Bytes+size > *rq.MaxBytes:
+	case rq.MaxBytes != nil && rq.Bytes+plain > *rq.MaxBytes:
 		return nil, nil, errf(http.StatusRequestEntityTooLarge, "that is more than this upload link can still take")
 	}
 	quota, err := a.writeQuota(rq.UserID)

@@ -94,6 +94,7 @@ const messages: Messages = {
     "Je drive is alleen-lezen en de links zijn gepauzeerd: downloaden en verwijderen kan nog, toevoegen niet.",
   "Unless you renew, your files are deleted on {date}.": "Als je niet verlengt, worden je bestanden op {date} verwijderd.",
   Terms: "Voorwaarden",
+  Refunds: "Terugbetalingen",
   Privacy: "Privacy",
   Contact: "Contact",
   "By creating a drive you agree to the": "Door een drive te maken ga je akkoord met de",

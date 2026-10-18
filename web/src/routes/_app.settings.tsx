@@ -15,13 +15,14 @@ import {
   MonitorIcon,
   MoonIcon,
   PaletteIcon,
+  RotateCcwIcon,
   ShieldCheckIcon,
   SunIcon,
   UserRoundIcon,
 } from "lucide-react"
 import { OfferCard, PlanFinePrint, PlanGrid, usePlans } from "@/components/plans"
 import { api, type Interval, type Plan } from "@/lib/api"
-import { changePlan, formatAmount, openPortal, previewPlan, priceFor, startCheckout, type ChangePreview } from "@/lib/billing"
+import { changePlan, formatAmount, openPortal, previewPlan, priceFor, resumePlan, startCheckout, type ChangePreview } from "@/lib/billing"
 import { PasswordStrength, strength } from "@/components/auth-layout"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { SlidingTabs } from "@/components/sliding-tabs"
@@ -428,12 +429,24 @@ function Sessions() {
 }
 
 function PlanSettings() {
-  const { me, updateMe, holdKey } = useSession()
+  const { me, updateMe, holdKey, refresh } = useSession()
   const { t } = useI18n()
   const qc = useQueryClient()
   const { data } = useDrive()
   const plans = usePlans()
   const [busy, setBusy] = useState<string | null>(null)
+  // The billing portal opens in another tab; coming back here, pick up what was changed there.
+  const [inPortal, setInPortal] = useState(false)
+  useEffect(() => {
+    if (!inPortal) return
+    const back = () => {
+      if (document.visibilityState !== "visible") return
+      setInPortal(false)
+      void refresh()
+    }
+    document.addEventListener("visibilitychange", back)
+    return () => document.removeEventListener("visibilitychange", back)
+  }, [inPortal, refresh])
   // Back from the checkout or the billing portal: see PlanCheckout.
   useEffect(() => {
     const restored = (e: PageTransitionEvent) => e.persisted && setBusy(null)
@@ -578,7 +591,21 @@ function PlanSettings() {
                 {other === "year" ? t("Switch to yearly billing") : t("Switch to monthly billing")}
               </Button>
             )}
-            <Button variant="outline" onClick={() => run("portal", async () => (await holdKey(), openPortal()))} disabled={!!busy}>
+            {running && billing.cancelAt && (
+              <Button
+                variant="outline"
+                onClick={() =>
+                  run("resume", async () => {
+                    updateMe(await resumePlan())
+                    toast.success(t("Your plan will renew as before"))
+                  })
+                }
+                disabled={!!busy}
+              >
+                {busy === "resume" ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />} {t("Keep my plan")}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => run("portal", async () => (await openPortal(), setInPortal(true)))} disabled={!!busy}>
               {busy === "portal" ? <Loader2Icon className="animate-spin" /> : <CreditCardIcon />} {t("Manage billing")}
             </Button>
           </div>

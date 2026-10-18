@@ -27,6 +27,7 @@ type fakePaddle struct {
 	previewed   []map[string]any
 	subInterval string // what the subscription bills at, as Paddle would report it
 	subPrice    string
+	cancelAt    time.Time // a cancellation Paddle has scheduled, zero for none
 }
 
 func newFakePaddle(t *testing.T) *fakePaddle {
@@ -66,11 +67,15 @@ func newFakePaddle(t *testing.T) *fakePaddle {
 		json.NewDecoder(r.Body).Decode(&body)
 		f.mu.Lock()
 		f.patched = append(f.patched, body)
-		item := body["items"].([]any)[0].(map[string]any)
-		f.subPrice = item["price_id"].(string)
-		f.subInterval = "month"
-		if strings.HasPrefix(f.subPrice, "pri_y_") {
-			f.subInterval = "year"
+		if change, ok := body["scheduled_change"]; ok && change == nil {
+			f.cancelAt = time.Time{}
+		}
+		if items, ok := body["items"].([]any); ok {
+			f.subPrice = items[0].(map[string]any)["price_id"].(string)
+			f.subInterval = "month"
+			if strings.HasPrefix(f.subPrice, "pri_y_") {
+				f.subInterval = "year"
+			}
 		}
 		reply(w, f.subscription(time.Now()))
 		f.mu.Unlock()
@@ -96,13 +101,17 @@ func newFakePaddle(t *testing.T) *fakePaddle {
 
 // subscription is the subscription as Paddle would send it: a webhook's data or a reply.
 func (f *fakePaddle) subscription(updated time.Time) map[string]any {
-	return map[string]any{
+	sub := map[string]any{
 		"id": "sub_1", "status": "active", "customer_id": "ctm_1", "updated_at": updated.Format(time.RFC3339Nano),
 		"custom_data":            map[string]string{"user_id": "UID"},
 		"billing_cycle":          map[string]any{"interval": f.subInterval, "frequency": 1},
 		"current_billing_period": map[string]string{"ends_at": updated.AddDate(1, 0, 0).Format(time.RFC3339)},
 		"items":                  []any{map[string]any{"price": map[string]any{"id": f.subPrice}}},
 	}
+	if !f.cancelAt.IsZero() {
+		sub["scheduled_change"] = map[string]string{"action": "cancel", "effective_at": f.cancelAt.Format(time.RFC3339)}
+	}
+	return sub
 }
 
 func billingServer(t *testing.T) (*server, *fakePaddle) {
@@ -140,6 +149,7 @@ type billingView struct {
 	Status    *string `json:"status"`
 	Entitled  bool    `json:"entitled"`
 	PeriodEnd int64   `json:"periodEnd"`
+	CancelAt  int64   `json:"cancelAt"`
 }
 
 func (c *client) billing(t *testing.T) (billingView, int64) {
@@ -302,6 +312,44 @@ func TestChangingPlanAndInterval(t *testing.T) {
 	c.must(200, "POST", "/api/billing/plan/preview", map[string]any{"plan": "starter", "interval": "year"}, &sum)
 	if sum.Action != "credit" || sum.Amount != 638 || sum.Currency != "EUR" || len(f.patched) != patched || len(f.previewed) != 1 {
 		t.Errorf("preview: %+v patched %d previewed %d", sum, len(f.patched), len(f.previewed))
+	}
+}
+
+func TestTakingBackACancellation(t *testing.T) {
+	s, f := billingServer(t)
+	c := s.browser()
+	c.mustRegister("ann@example.com")
+	uid := mustUserID(t, s)
+
+	resume := func() int { return c.do("POST", "/api/billing/resume", nil, nil) }
+	if status := resume(); status != http.StatusConflict {
+		t.Errorf("with no plan: %d; want 409", status)
+	}
+	sub := f.subscription(time.Now().Add(-time.Hour))
+	sub["custom_data"] = map[string]string{"user_id": uid}
+	s.webhook(t, "subscription.created", sub)
+	if status := resume(); status != http.StatusConflict {
+		t.Errorf("with nothing cancelled: %d; want 409", status)
+	}
+
+	// Cancelled in Paddle's portal, to end with the period.
+	f.cancelAt = time.Now().AddDate(0, 1, 0).Truncate(time.Second)
+	sub = f.subscription(time.Now().Add(-time.Minute))
+	sub["custom_data"] = map[string]string{"user_id": uid}
+	s.webhook(t, "subscription.updated", sub)
+	if b, _ := c.billing(t); b.CancelAt != f.cancelAt.Unix() {
+		t.Fatalf("cancelAt %d; want %d", b.CancelAt, f.cancelAt.Unix())
+	}
+
+	if status := resume(); status != 200 {
+		t.Fatalf("resume: %d", status)
+	}
+	last := f.patched[len(f.patched)-1]
+	if change, ok := last["scheduled_change"]; !ok || change != nil || len(last) != 1 {
+		t.Errorf("asked Paddle for %v; want only scheduled_change: null", last)
+	}
+	if b, _ := c.billing(t); b.CancelAt != 0 || !b.Entitled || *b.Plan != "starter" {
+		t.Errorf("after resuming: %+v", b)
 	}
 }
 

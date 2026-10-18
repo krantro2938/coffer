@@ -60,7 +60,7 @@ export function PlanGrid({
   const featured = plans.length === 3 ? plans[1].id : null
   // Yearly unless a plan has no yearly price yet (the server was not set up for it).
   const yearly = plans.length > 0 && plans.every((p) => p.prices.year)
-  const [interval, setInterval] = useState<Interval>("year")
+  const [interval, setInterval] = useState<Interval>(currentInterval ?? "year")
   const shown: Interval = yearly ? interval : "month"
   const free = monthsFree(plans)
   return (

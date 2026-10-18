@@ -98,6 +98,9 @@ const messages: Messages = {
   "invalid limits": "Ongeldige limieten",
   "use sign out to end this session": "Gebruik Uitloggen om deze sessie te beëindigen",
   "the server is busy, try again shortly": "De server is druk, probeer het zo opnieuw",
+  "there is no cancellation to take back": "Er is geen opzegging om terug te draaien",
+  "the cancellation could not be taken back, try again under Manage billing":
+    "De opzegging kon niet worden teruggedraaid, probeer het via Betaling beheren",
 }
 
 export default messages

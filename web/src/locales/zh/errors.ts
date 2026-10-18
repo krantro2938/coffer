@@ -95,6 +95,8 @@ const messages: Messages = {
   "invalid limits": "限制无效",
   "use sign out to end this session": "请使用“退出登录”来结束当前会话",
   "the server is busy, try again shortly": "服务器繁忙，请稍后再试",
+  "there is no cancellation to take back": "没有可撤回的取消",
+  "the cancellation could not be taken back, try again under Manage billing": "无法撤回取消，请在“管理账单”中重试",
 }
 
 export default messages

@@ -48,7 +48,8 @@ type Request struct {
 	// The folder link this request stands behind, if it is not one of its own.
 	ShareID *string `json:"shareId,omitempty"`
 	// Uploads and Bytes count what has arrived and what is on its way: an
-	// upload holds its place from the moment it starts.
+	// upload holds its place from the moment it starts. Bytes is the size of
+	// the files as sent, without the encryption's tag on each chunk.
 	Uploads int64 `json:"uploads"`
 	Bytes   int64 `json:"bytes"`
 	// Received counts finished uploads only.
@@ -63,7 +64,7 @@ func (r *Request) Open() bool {
 const requestSQL = `SELECT r.id, r.user_id, r.folder_id, r.access_hash, r.enc_info, r.enc_secret, r.enc_private,
 	r.max_files, r.max_bytes, r.max_file_size, r.expires_at, r.revoked_at, r.created_at, r.share_id,
 	(SELECT COUNT(*) FROM items i WHERE i.request_id = r.id),
-	(SELECT COALESCE(SUM(size), 0) FROM items i WHERE i.request_id = r.id),
+	(SELECT COALESCE(SUM(size - 16 * chunk_count), 0) FROM items i WHERE i.request_id = r.id),
 	(SELECT COUNT(*) FROM items i WHERE i.request_id = r.id AND i.ready = 1)
 	FROM requests r`
 

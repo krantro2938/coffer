@@ -640,7 +640,8 @@ func TestFileRequest(t *testing.T) {
 		len(drive.Items[0].SealedKey) != 125 || drive.Usage.Used != 200 {
 		t.Fatalf("the owner's drive after an upload: %+v, %d bytes used", drive.Items, drive.Usage.Used)
 	}
-	if len(drive.Requests) != 1 || drive.Requests[0].Received != 1 || drive.Requests[0].Bytes != 200 {
+	// The request counts the file as it was sent: its one chunk less the 16-byte tag.
+	if len(drive.Requests) != 1 || drive.Requests[0].Received != 1 || drive.Requests[0].Bytes != 184 {
 		t.Errorf("the request after an upload: %+v", drive.Requests)
 	}
 	var got []byte

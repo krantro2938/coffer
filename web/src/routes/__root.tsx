@@ -18,11 +18,11 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       // Also the home page's; the server sends each public page its own (server/internal/app/seo.go).
-      { title: "Coffer — send and request private files, no account needed" },
+      { title: "Coffer — collect documents from clients, end-to-end encrypted" },
       {
         name: "description",
         content:
-          "Share private files without making the other person sign up for anything. End-to-end encrypted file sharing and upload links: your keys never leave your browser.",
+          "Send a link and your clients upload documents from any browser, no account needed. Files are encrypted before they leave, so only you can open them. Free to start.",
       },
       { name: "referrer", content: "no-referrer" },
       { name: "theme-color", content: "#fbfbf9" },

@@ -5,7 +5,7 @@
 Please report security problems privately, not in a public issue or discussion:
 
 - through GitHub: [report a vulnerability](https://github.com/krantro2938/coffer/security/advisories/new), or
-- by email to coffer-support@aansl.com.
+- by email to support@coffer.rest.
 
 Say what you found and how to reproduce it. You will get a reply within a few days. Please give us a reasonable
 chance to fix the problem before you publish it; we will credit you in the fix unless you would rather not be named.

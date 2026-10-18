@@ -429,6 +429,38 @@ func (a *App) handleChangePlan(w http.ResponseWriter, r *http.Request) error {
 	return a.writeMe(w, uid)
 }
 
+// handleResume takes back a cancellation that has not happened yet, so the
+// plan renews as before. Paddle drops the scheduled change; nothing is charged.
+func (a *App) handleResume(w http.ResponseWriter, r *http.Request) error {
+	uid, err := a.requireUser(r)
+	if err != nil {
+		return err
+	}
+	s, err := a.subState(uid)
+	if err != nil {
+		return err
+	}
+	if !s.SubID.Valid || s.Status.String != "active" || !s.CancelAt.Valid {
+		return errf(http.StatusConflict, "there is no cancellation to take back")
+	}
+	var sub paddle.Subscription
+	err = a.billing.Call(r.Context(), http.MethodPatch, "/subscriptions/"+s.SubID.String, map[string]any{
+		"scheduled_change": nil,
+	}, &sub)
+	if err != nil {
+		var pe *paddle.Error
+		if errors.As(err, &pe) && pe.Status < 500 {
+			log.Printf("billing: resume: %v", err)
+			return errf(http.StatusConflict, "the cancellation could not be taken back, try again under Manage billing")
+		}
+		return err
+	}
+	if err := a.applySub(r.Context(), uid, &sub); err != nil {
+		return err
+	}
+	return a.writeMe(w, uid)
+}
+
 // handlePreviewPlan says what a plan change would cost, without making it.
 // The figures are Paddle's own preview of the update, so what the customer is
 // shown is what the change then does.

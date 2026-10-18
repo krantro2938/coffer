@@ -99,6 +99,9 @@ const messages: Messages = {
   "invalid limits": "Ungültige Limits",
   "use sign out to end this session": "Nutzen Sie „Abmelden“, um diese Sitzung zu beenden",
   "the server is busy, try again shortly": "Der Server ist ausgelastet, versuchen Sie es gleich noch einmal",
+  "there is no cancellation to take back": "Es gibt keine Kündigung zum Zurücknehmen",
+  "the cancellation could not be taken back, try again under Manage billing":
+    "Die Kündigung konnte nicht zurückgenommen werden, versuchen Sie es unter „Abrechnung verwalten“",
 }
 
 export default messages

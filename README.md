@@ -2,25 +2,25 @@
 
 # Coffer
 
-**Share private files without making the other person sign up for anything.**
+**Collect documents from clients. They need no account, and only you can open what they send.**
 
-End-to-end encrypted file and note sharing, with an optional private drive.
+End-to-end encrypted upload links, share links and a private drive.
 The server stores only ciphertext: it cannot read a single file name.
 
-[Self-hosting](docs/self-hosting.md) · [Security model](docs/security.md) · [Development](docs/development.md)
+[coffer.rest](https://coffer.rest) · [Self-hosting](docs/self-hosting.md) · [Security model](docs/security.md) · [Development](docs/development.md)
 
 <br>
 
-<img src="docs/screenshot.png" alt="Coffer's home page: drop a file, choose when the link expires, get a link" width="820">
+<img src="docs/screenshot.png" alt="Coffer's home page: collect documents from clients, only you can open them" width="820">
 
 </div>
 
 ## What it does
 
+- **Request files.** Make an upload link and send it to a client. They upload from any browser without an
+  account; their browser encrypts each file so that only you can open it. The link can only upload.
 - **Send files.** Drop files or paste a note and get a link. Whoever opens it needs no account and installs
   nothing: the file is decrypted in their browser.
-- **Request files.** Make an upload link and send it to someone. They upload without an account; their browser
-  encrypts each file so that only you can open it.
 - **Keep a drive.** Sign up with an email and a password for encrypted folders, notes and a list of every link
   you have shared, each revocable at any time.
 

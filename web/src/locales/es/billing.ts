@@ -109,6 +109,8 @@ const messages: Messages = {
   "Free account": "Cuenta gratuita",
   "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
     "{n} enlaces de solicitud abiertos a la vez y enlaces compartidos de hasta {days} días. Con un plan desaparecen ambos límites.",
+  "Keep my plan": "Mantener mi plan",
+  "Your plan will renew as before": "Tu plan se renovará como antes",
 }
 
 export default messages

@@ -269,6 +269,9 @@ export function SiteFooter() {
           <Link to="/privacy" className="hover:text-foreground">
             {t("Privacy")}
           </Link>
+          <Link to="/terms" hash="refunds" className="hover:text-foreground">
+            {t("Refunds")}
+          </Link>
           <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-foreground">
             {t("Contact")}
           </a>

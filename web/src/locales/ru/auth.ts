@@ -92,6 +92,7 @@ const messages: Messages = {
     "Диск доступен только для чтения, ссылки приостановлены: скачивать и удалять можно, добавлять — нет.",
   "Unless you renew, your files are deleted on {date}.": "Если не продлить тариф, {date} файлы будут удалены.",
   Terms: "Условия",
+  Refunds: "Возврат средств",
   Privacy: "Конфиденциальность",
   Contact: "Связаться",
   "By creating a drive you agree to the": "Создавая диск, вы принимаете",

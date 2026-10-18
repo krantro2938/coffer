@@ -221,6 +221,7 @@ func (a *App) routes() http.Handler {
 		h("POST /api/billing/sync", a.handleBillingSync)
 		h("POST /api/billing/plan", a.handleChangePlan)
 		h("POST /api/billing/plan/preview", a.handlePreviewPlan)
+		h("POST /api/billing/resume", a.handleResume)
 		h("POST /api/billing/portal", a.handlePortal)
 		h("POST "+paddle.WebhookPath, a.handleWebhook)
 		h("GET /pay", a.handlePayPage)

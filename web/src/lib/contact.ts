@@ -1,5 +1,5 @@
 /** Where people reach the operator: support, privacy requests and abuse reports. */
-export const SUPPORT_EMAIL = "coffer-support@aansl.com"
+export const SUPPORT_EMAIL = "support@coffer.rest"
 
 /** The address the marketing shows in its examples. */
 export const SITE_HOST = "coffer.rest"
@@ -12,4 +12,4 @@ export const X_URL = ""
 export const YOUTUBE_URL = ""
 
 /** When the terms and the privacy policy were last changed. */
-export const LEGAL_UPDATED = "8 October 2026"
+export const LEGAL_UPDATED = "18 October 2026"

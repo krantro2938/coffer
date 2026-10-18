@@ -98,6 +98,9 @@ const messages: Messages = {
   "invalid limits": "Недопустимые ограничения",
   "use sign out to end this session": "Чтобы завершить этот сеанс, используйте «Выйти»",
   "the server is busy, try again shortly": "Сервер занят, попробуйте чуть позже",
+  "there is no cancellation to take back": "Тариф не отменён, возвращать нечего",
+  "the cancellation could not be taken back, try again under Manage billing":
+    "Не удалось возобновить тариф — попробуйте в разделе «Управление оплатой»",
 }
 
 export default messages

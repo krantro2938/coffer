@@ -93,6 +93,7 @@ const messages: Messages = {
     "Ihr Laufwerk ist schreibgeschützt und seine Links sind pausiert: Herunterladen und Löschen geht weiterhin, Hinzufügen nicht.",
   "Unless you renew, your files are deleted on {date}.": "Ohne Verlängerung werden Ihre Dateien am {date} gelöscht.",
   Terms: "Bedingungen",
+  Refunds: "Rückerstattung",
   Privacy: "Datenschutz",
   Contact: "Kontakt",
   "By creating a drive you agree to the": "Mit dem Anlegen eines Laufwerks stimmen Sie den",

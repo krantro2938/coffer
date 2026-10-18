@@ -109,6 +109,8 @@ const messages: Messages = {
   "Free account": "Бесплатный аккаунт",
   "{n} request links open at a time and share links that last up to {days} days. A plan lifts both.":
     "Открытых ссылок для запроса одновременно — не больше {n}; ссылки для отправки действуют до {days} дней. С тарифом оба ограничения снимаются.",
+  "Keep my plan": "Оставить тариф",
+  "Your plan will renew as before": "Тариф будет продлеваться, как раньше",
 }
 
 export default messages

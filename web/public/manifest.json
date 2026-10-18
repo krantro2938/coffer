@@ -1,6 +1,7 @@
 {
   "short_name": "Coffer",
-  "name": "Coffer — encrypted sharing",
+  "name": "Coffer — encrypted document collection",
+  "description": "Collect documents from clients. They need no account, and only you can open what they send.",
   "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }],
   "start_url": "/",
   "display": "standalone",

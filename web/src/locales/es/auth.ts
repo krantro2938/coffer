@@ -93,6 +93,7 @@ const messages: Messages = {
     "Tu unidad es de solo lectura y sus enlaces están en pausa: puedes descargar y eliminar, pero no añadir.",
   "Unless you renew, your files are deleted on {date}.": "Si no renuevas, tus archivos se eliminarán el {date}.",
   Terms: "Condiciones",
+  Refunds: "Reembolsos",
   Privacy: "Privacidad",
   Contact: "Contacto",
   "By creating a drive you agree to the": "Al crear una unidad aceptas las",
