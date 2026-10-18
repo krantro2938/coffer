@@ -135,7 +135,7 @@ function StorageCard({ usage }: { usage: { used: number; quota: number } }) {
             </span>
           )}
         </div>
-        <SegmentedUsage glow used={usage.used} quota={usage.quota} segments={52} className="mt-6 h-7" />
+        <SegmentedUsage glow charge used={usage.used} quota={usage.quota} segments={52} className="mt-6 h-7" />
         <div className="mt-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <p className="flex items-center gap-2">
             <span className="tabular-nums">

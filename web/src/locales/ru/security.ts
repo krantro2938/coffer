@@ -2,6 +2,14 @@ import type { Messages } from "../types"
 
 /** The security page. */
 const messages: Messages = {
+  "What you see": "Что видите вы",
+  "What our server stores": "Что хранит наш сервер",
+  "Taxes 2024": "Налоги 2024",
+  "12 files": "12 файлов",
+  "Door code for the new flat": "Код от двери новой квартиры",
+  Note: "Заметка",
+  "Encrypted name and contents": "Имя и содержимое зашифрованы",
+  "The same drive, twice. Only one side holds the key.": "Один и тот же диск дважды. Ключ есть только у одной стороны.",
   "Security model": "Модель безопасности",
   "How Coffer keeps your data unreadable.": "Как Coffer делает ваши данные нечитаемыми.",
   "Coffer is designed so that a complete compromise of the server — database, disks and code on disk — reveals nothing about what you've stored or shared.":

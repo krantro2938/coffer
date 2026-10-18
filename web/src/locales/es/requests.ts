@@ -2,6 +2,8 @@ import type { Messages } from "../types"
 
 /** File requests: the owner's list and the page behind an upload link. */
 const messages: Messages = {
+  "More options": "Más opciones",
+  "Fewer options": "Menos opciones",
   "File requests": "Peticiones de archivos",
   "Upload links": "Enlaces de subida",
   "New request": "Nueva petición",

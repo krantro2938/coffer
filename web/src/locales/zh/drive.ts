@@ -41,6 +41,7 @@ const messages: Messages = {
   Dismiss: "关闭",
   "Decrypting {name}…": "正在解密 {name}…",
   "Download ready": "下载已就绪",
+  "Download as .zip": "下载为 .zip",
   "Move to…": "移动到…",
   "Note encrypted and saved": "笔记已加密并保存",
   "New private note": "新建私密笔记",

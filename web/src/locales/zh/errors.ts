@@ -4,6 +4,7 @@ import type { Messages } from "../types"
 const messages: Messages = {
   "Decryption failed — wrong key or tampered data": "解密失败——密钥错误或数据被篡改",
   "This folder has no files to share yet": "这个文件夹里还没有可分享的文件",
+  "This folder has no files to download yet": "这个文件夹里还没有可下载的文件",
   "Download of {path} was interrupted": "{path} 的下载被中断",
   "Request failed": "请求失败",
   "Download failed": "下载失败",

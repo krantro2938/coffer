@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   CheckIcon,
+  ChevronDownIcon,
   CopyIcon,
   FilesIcon,
   FolderIcon,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react"
 import { OptionPicker } from "@/components/option-picker"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -76,7 +78,7 @@ function RequestsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="eyebrow">{t("Upload links")}</p>
-          <h1 className="mt-1 text-3xl font-medium">{t("File requests")}</h1>
+          <h1 className="mt-1.5 text-4xl font-semibold tracking-tight">{t("File requests")}</h1>
         </div>
         <Button onClick={() => setCreating(true)} disabled={!canWrite(me) || full}>
           <PlusIcon /> {t("New request")}
@@ -112,18 +114,17 @@ function RequestsPage() {
             ))}
           </ul>
         ) : (
-          <div className="grid place-items-center rounded-3xl border border-dashed bg-card/40 px-6 py-16 text-center">
-            <span className="grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
-              <InboxIcon className="size-6" />
-            </span>
-            <p className="mt-5 font-medium">{t("No file requests yet")}</p>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              {t("Make one and send its link to whoever has the files. What they upload lands in a folder of its own in your drive.")}
-            </p>
-            <Button className="mt-6" onClick={() => setCreating(true)} disabled={!canWrite(me) || full}>
-              <PlusIcon /> {t("New request")}
-            </Button>
-          </div>
+          <EmptyState
+            image="inbox"
+            title={t("No file requests yet")}
+            actions={
+              <Button size="lg" onClick={() => setCreating(true)} disabled={!canWrite(me) || full}>
+                <PlusIcon /> {t("New request")}
+              </Button>
+            }
+          >
+            {t("Make one and send its link to whoever has the files. What they upload lands in a folder of its own in your drive.")}
+          </EmptyState>
         )}
       </div>
 
@@ -260,6 +261,9 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [maxFiles, setMaxFiles] = useState(0)
   const [maxFileSize, setMaxFileSize] = useState(0)
   const [maxBytes, setMaxBytes] = useState(0)
+  // Size limits are seldom wanted, so they wait behind "More options"; a limit already set keeps them in view.
+  const [moreOpen, setMoreOpen] = useState(false)
+  const more = moreOpen || maxFileSize > 0 || maxBytes > 0
   const [busy, setBusy] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
 
@@ -271,6 +275,7 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         setTitle("")
         setNote("")
         setUrl(null)
+        setMoreOpen(false)
       }, 300)
     }
   }
@@ -363,9 +368,24 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         <div className="grid grid-cols-2 gap-3">
           <OptionPicker label="Expires" icon={TimerIcon} value={expiresIn} options={EXPIRY_OPTIONS} onChange={setExpiresIn} />
           <OptionPicker label="Files" icon={FilesIcon} value={maxFiles} options={FILE_COUNT_OPTIONS} onChange={setMaxFiles} />
-          <OptionPicker label="Per file" icon={FolderIcon} value={maxFileSize} options={FILE_SIZE_OPTIONS} onChange={setMaxFileSize} />
-          <OptionPicker label="In all" icon={HardDriveIcon} value={maxBytes} options={TOTAL_OPTIONS} onChange={setMaxBytes} />
+          {more && (
+            <>
+              <OptionPicker label="Per file" icon={FolderIcon} value={maxFileSize} options={FILE_SIZE_OPTIONS} onChange={setMaxFileSize} />
+              <OptionPicker label="In all" icon={HardDriveIcon} value={maxBytes} options={TOTAL_OPTIONS} onChange={setMaxBytes} />
+            </>
+          )}
         </div>
+        {!(maxFileSize > 0 || maxBytes > 0) && (
+          <button
+            type="button"
+            onClick={() => setMoreOpen((o) => !o)}
+            aria-expanded={more}
+            className="my-1 flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {more ? t("Fewer options") : t("More options")}
+            <ChevronDownIcon className={cn("size-4 transition-transform duration-200", more && "rotate-180")} />
+          </button>
+        )}
         <p className="text-xs text-muted-foreground">
           {t("The title and note are encrypted with the link's key. What comes in counts against the space in your drive.")}
         </p>

@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   DownloadIcon,
   EyeIcon,
+  FileArchiveIcon,
   FolderInputIcon,
   FolderPlusIcon,
   Link2Icon,
@@ -34,6 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { EmptyState as EmptyHero } from "@/components/empty-state"
 import { FileGlyph } from "@/components/file-glyph"
 import {
   ConfirmDialog,
@@ -47,6 +49,7 @@ import {
   downloadItem,
 } from "@/components/drive-dialogs"
 import { api, getConfig } from "@/lib/api"
+import { downloadFolderZip } from "@/lib/bundle"
 import { itemKeys, sealMeta, sealName, toB64 } from "@/lib/crypto"
 import { useDrive, type DFolder, type DItem } from "@/lib/drive"
 import { formatBytes } from "@/lib/format"
@@ -223,6 +226,44 @@ function DrivePage() {
     }
   }
 
+  const zipping = useRef(new Set<string>())
+  const zipFolder = async (f: DFolder) => {
+    if (!data || zipping.current.has(f.id)) return
+    zipping.current.add(f.id)
+    const label = tr("Decrypting {name}…", { name: f.name })
+    const id = toast.loading(label)
+    try {
+      const failed = await downloadFolderZip(data, f, (p) => toast.loading(`${label} ${Math.round(p * 100)}%`, { id }))
+      if (failed.length) toast.warning(tn(failed.length, "{n} file was no longer available", "{n} files were no longer available"), { id })
+      else toast.success(tr("Download ready"), { id })
+    } catch (e) {
+      toast.error((e as Error).message, { id })
+    } finally {
+      zipping.current.delete(f.id)
+    }
+  }
+
+  const folderMenu = (f: DFolder) => (
+    <>
+      <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
+        <Link2Icon /> {t("Share folder")}
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => zipFolder(f)}>
+        <FileArchiveIcon /> {t("Download as .zip")}
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
+        <PencilIcon /> {t("Rename")}
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
+        <FolderInputIcon /> {t("Move")}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
+        <Trash2Icon /> {t("Delete")}
+      </DropdownMenuItem>
+    </>
+  )
+
   const openItem = (i: DItem) => {
     if (i.broken) return toast.error(t("This item can't be decrypted with your key"))
     setPreview(i)
@@ -291,6 +332,18 @@ function DrivePage() {
             <h1 className="truncate text-4xl leading-tight font-semibold tracking-tight">
               {q ? t("Search") : (current?.name ?? t("My drive"))}
             </h1>
+            {current && !q && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="shrink-0 rounded-full" aria-label={t("More actions")}>
+                    <MoreHorizontalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-48">
+                  {folderMenu(current)}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -364,23 +417,7 @@ function DrivePage() {
                           navigate({ to: "/drive", search: { folder: f.id } })
                         }}
                         onShare={() => setSharing({ type: "folder", folder: f })}
-                        menu={
-                          <>
-                            <DropdownMenuItem onClick={() => setSharing({ type: "folder", folder: f })}>
-                              <Link2Icon /> {t("Share folder")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDialog({ t: "renameFolder", f })}>
-                              <PencilIcon /> {t("Rename")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDialog({ t: "moveFolder", f })}>
-                              <FolderInputIcon /> {t("Move")}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem variant="destructive" onClick={() => setDialog({ t: "deleteFolder", f })}>
-                              <Trash2Icon /> {t("Delete")}
-                            </DropdownMenuItem>
-                          </>
-                        }
+                        menu={folderMenu(f)}
                       />
                     )
                   })}
@@ -524,7 +561,11 @@ function DrivePage() {
         description={t("The folder, everything inside it and all their share links will be permanently destroyed.")}
         cta={t("Delete folder")}
         onConfirm={() => {
-          if (dialog?.t === "deleteFolder") return del(`/api/folders/${dialog.f.id}`, dialog.f.name)
+          if (dialog?.t !== "deleteFolder") return
+          const f = dialog.f
+          // Deleting the open folder (from its own menu) leaves nothing to show: step out to its parent.
+          if (crumbs.some((c) => c.id === f.id)) navigate({ to: "/drive", search: f.parentId ? { folder: f.parentId } : {} })
+          return del(`/api/folders/${f.id}`, f.name)
         }}
       />
       <ConfirmDialog
@@ -741,28 +782,23 @@ function EmptyState({ searching, onUpload, onNote }: { searching: boolean; onUpl
     )
   }
   return (
-    <div className="grid place-items-center rounded-3xl border border-dashed bg-card/40 px-6 py-20 text-center">
-      <div className="relative">
-        <span className="grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
-          <UploadCloudIcon className="size-7" />
-        </span>
-        <span className="absolute -top-2 -right-3 grid size-7 place-items-center rounded-lg bg-lavender-soft text-accent-foreground">
-          <StickyNoteIcon className="size-3.5" />
-        </span>
-      </div>
-      <p className="mt-6 text-lg font-medium">{t("Nothing here yet")}</p>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-        {t("Drag files anywhere on this page, or start with a note. Everything is encrypted before it leaves your device.")}
-      </p>
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Button onClick={onUpload}>
-          <UploadIcon /> {t("Upload files")}
-        </Button>
-        <Button variant="outline" onClick={onNote}>
-          <StickyNoteIcon /> {t("Write a note")}
-        </Button>
-      </div>
-    </div>
+    <EmptyHero
+      image="folder"
+      title={t("Nothing here yet")}
+      dashed
+      actions={
+        <>
+          <Button size="lg" onClick={onUpload}>
+            <UploadIcon /> {t("Upload files")}
+          </Button>
+          <Button size="lg" variant="outline" onClick={onNote}>
+            <StickyNoteIcon /> {t("Write a note")}
+          </Button>
+        </>
+      }
+    >
+      {t("Drag files anywhere on this page, or start with a note. Everything is encrypted before it leaves your device.")}
+    </EmptyHero>
   )
 }
 

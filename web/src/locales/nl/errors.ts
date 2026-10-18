@@ -4,6 +4,7 @@ import type { Messages } from "../types"
 const messages: Messages = {
   "Decryption failed — wrong key or tampered data": "Ontsleutelen mislukt — verkeerde sleutel of gemanipuleerde gegevens",
   "This folder has no files to share yet": "Deze map heeft nog geen bestanden om te delen",
+  "This folder has no files to download yet": "Deze map heeft nog geen bestanden om te downloaden",
   "Download of {path} was interrupted": "De download van {path} is onderbroken",
   "Request failed": "Verzoek mislukt",
   "Download failed": "Download mislukt",

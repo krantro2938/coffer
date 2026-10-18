@@ -42,6 +42,7 @@ const messages: Messages = {
   Dismiss: "Закрыть",
   "Decrypting {name}…": "Расшифровка «{name}»…",
   "Download ready": "Файл готов",
+  "Download as .zip": "Скачать архивом .zip",
   "Move to…": "Переместить в…",
   "Note encrypted and saved": "Заметка зашифрована и сохранена",
   "New private note": "Новая личная заметка",

@@ -44,7 +44,8 @@ type Session = {
   /** Keeps the drive unlocked across one trip to another page and back (the checkout). */
   holdKey: () => Promise<void>
   login: (email: string, password: string, remember: boolean) => Promise<void>
-  unlock: (password: string, remember: boolean) => Promise<void>
+  /** `onVerified` runs once the password is known to be right, before the drive opens: room for a moment of feedback. */
+  unlock: (password: string, remember: boolean, onVerified?: () => Promise<void>) => Promise<void>
   lock: () => Promise<void>
   logout: () => Promise<void>
   changePassword: (current: string, next: string) => Promise<void>
@@ -173,9 +174,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, [me, masterKey])
 
   const unlock = useCallback(
-    async (password: string, remember: boolean) => {
+    async (password: string, remember: boolean, onVerified?: () => Promise<void>) => {
       if (!me) throw new ApiError(401, "Not signed in")
       const { raw } = await unwrapWithPassword(me, password)
+      await onVerified?.()
       await adopt(me, raw, remember)
     },
     [me, adopt]

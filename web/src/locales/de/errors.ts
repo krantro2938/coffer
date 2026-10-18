@@ -4,6 +4,7 @@ import type { Messages } from "../types"
 const messages: Messages = {
   "Decryption failed — wrong key or tampered data": "Entschlüsselung fehlgeschlagen — falscher Schlüssel oder manipulierte Daten",
   "This folder has no files to share yet": "Dieser Ordner enthält noch keine Dateien zum Teilen",
+  "This folder has no files to download yet": "Dieser Ordner enthält noch keine Dateien zum Herunterladen",
   "Download of {path} was interrupted": "Der Download von {path} wurde unterbrochen",
   "Request failed": "Anfrage fehlgeschlagen",
   "Download failed": "Download fehlgeschlagen",

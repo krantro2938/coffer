@@ -269,15 +269,42 @@ type SavePicker = (o: { suggestedName: string }) => Promise<{ createWritable(): 
  * API to write straight to disk for large folders when available.
  * Returns the paths that could not be downloaded (e.g. deleted since sharing).
  */
-export async function downloadZip(
+export function downloadZip(
   shareId: string,
   ticket: string,
   manifest: Manifest,
   onProgress?: (fraction: number) => void
 ): Promise<string[]> {
-  const total = manifest.files.reduce((n, f) => n + f.cipherSize, 0) || 1
+  return zipFiles(manifest.name || "shared-folder", manifest.files, (f) => fileBlobOpts(shareId, ticket, f), onProgress)
+}
+
+/** Zips a folder of the owner's own drive, decrypting it with their file keys. */
+export function downloadFolderZip(drive: Drive, folder: DFolder, onProgress?: (fraction: number) => void): Promise<string[]> {
+  const files = collectFolder(drive, folder)
+  if (files.length === 0) throw new Error(t("This folder has no files to download yet"))
+  return zipFiles(
+    folder.name || "folder",
+    files,
+    (f) => ({
+      url: `/api/items/${f.id}/blob`,
+      fileKey: fromB64(f.key),
+      chunkSize: f.chunkSize,
+      chunkCount: f.chunkCount,
+      size: f.cipherSize,
+    }),
+    onProgress
+  )
+}
+
+async function zipFiles(
+  name: string,
+  files: BundleFile[],
+  blobOpts: (f: BundleFile) => Omit<Parameters<typeof downloadDecrypted>[0], "sink" | "onProgress">,
+  onProgress?: (fraction: number) => void
+): Promise<string[]> {
+  const total = files.reduce((n, f) => n + f.cipherSize, 0) || 1
   const picker = (window as unknown as { showSaveFilePicker?: SavePicker }).showSaveFilePicker
-  const zipName = `${safeFileName(manifest.name || "shared-folder")}.zip`
+  const zipName = `${safeFileName(name)}.zip`
 
   let writable: Writable | null = null
   if (picker && total > 256 * 1024 * 1024) {
@@ -309,7 +336,7 @@ export async function downloadZip(
   const used = new Set<string>()
   let doneBytes = 0
   try {
-    for (const f of manifest.files) {
+    for (const f of files) {
       // Paths come from file names, which a stranger may have chosen: none may climb out of the archive.
       const clean = safePath(f.path)
       let path = clean
@@ -319,7 +346,7 @@ export async function downloadZip(
       let started = false
       try {
         await downloadDecrypted({
-          ...fileBlobOpts(shareId, ticket, f),
+          ...blobOpts(f),
           sink: (p) => {
             if (!started) {
               zip.add(entry)

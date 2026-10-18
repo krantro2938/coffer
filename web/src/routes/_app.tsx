@@ -20,7 +20,7 @@ import { DriveIcon, LinksIcon, QuickShareIcon, RequestsIcon, SettingsIcon } from
 import { PreferencesMenu } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SegmentedUsage, percentOf } from "@/components/usage-bar"
+import { SegmentedUsage, UsageRing, percentOf } from "@/components/usage-bar"
 import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
@@ -237,7 +237,7 @@ function NavItem({
       title={collapsed ? label : undefined}
       aria-label={label}
       // The icon sits in the same place whatever the width: only the label and the pill change.
-      className="group flex h-11 items-center gap-3 overflow-hidden rounded-2xl px-3 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+      className="group flex h-11 items-center gap-[1.125rem] overflow-hidden rounded-2xl px-[0.6875rem] text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
       activeProps={{ className: "bg-foreground/[0.07] !text-foreground font-medium hover:bg-foreground/[0.07]" }}
     >
       {/* Quiet until it is the page you are on or the one under the pointer. */}
@@ -260,7 +260,11 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
   return (
     <aside className="sticky top-0 hidden h-svh min-w-0 p-3 md:block">
       <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-sidebar p-3">
-        <Link to="/drive" aria-label="Coffer" className="flex h-12 items-center gap-2.5 overflow-hidden px-1.5 font-medium tracking-tight">
+        <Link
+          to="/drive"
+          aria-label="Coffer"
+          className="flex h-12 items-center gap-3 overflow-hidden px-[0.3125rem] font-medium tracking-tight"
+        >
           <LogoMark className="size-9 shrink-0" />
           <Fold collapsed={collapsed} className="text-[1.0625rem]">
             Coffer
@@ -278,14 +282,12 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
             <div
               title={collapsed ? used : undefined}
               className={cn(
-                "mb-2 grid h-[4.75rem] content-center overflow-hidden rounded-xl border px-3 transition-colors duration-300",
-                collapsed ? "border-transparent" : "bg-muted/40"
+                "mb-2 grid h-[4.75rem] content-center overflow-hidden rounded-xl border transition-colors duration-300",
+                collapsed ? "border-transparent px-0" : "bg-muted/40 px-3"
               )}
             >
               {collapsed ? (
-                <span className="text-center text-xs font-medium text-muted-foreground tabular-nums">
-                  {percentOf(usage.used, usage.quota)}%
-                </span>
+                <UsageRing used={usage.used} quota={usage.quota} className="justify-self-center" />
               ) : (
                 <>
                   <div className="flex items-center justify-between gap-2 text-xs whitespace-nowrap">
@@ -308,11 +310,14 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
               <button
                 aria-label={me?.email}
                 title={me?.email}
-                className="flex h-14 min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-2xl px-2 text-left transition-colors hover:bg-foreground/[0.05]"
+                className="group flex h-12 min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-2xl px-[0.3125rem] text-left transition-colors hover:bg-foreground/[0.04] data-[state=open]:bg-foreground/[0.07]"
               >
-                <span className="relative grid size-9 shrink-0 place-items-center rounded-full bg-forest text-sm font-medium text-lime uppercase">
-                  {me?.email[0]}
-                  <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
+                <span className="relative size-9 shrink-0">
+                  {/* The gap around the status dot is cut out of the avatar, so it shows whatever is behind: hover, open menu, either theme. */}
+                  <span className="grid size-full place-items-center rounded-full bg-forest text-sm font-medium text-lime uppercase [mask:radial-gradient(circle_at_calc(100%-5px)_calc(100%-5px),transparent_7px,#000_7.5px)]">
+                    {me?.email[0]}
+                  </span>
+                  <span className="absolute right-0 bottom-0 size-2.5 rounded-full bg-emerald-500" />
                 </span>
                 <Fold collapsed={collapsed} className="flex-1">
                   <span className="block truncate text-sm font-medium">{handle}</span>
@@ -529,55 +534,109 @@ function UnlockScreen() {
   const [password, setPassword] = useState("")
   const [remember, setRemember] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [opened, setOpened] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true)
     try {
-      await unlock(password, remember)
+      await unlock(password, remember, async () => {
+        // The lock swings open before the drive takes its place.
+        setOpened(true)
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) await new Promise((r) => setTimeout(r, 750))
+      })
     } catch (err) {
       toast.error((err as Error).message)
       setPassword("")
-    } finally {
       setBusy(false)
     }
   }
 
   return (
-    <div className="relative grid min-h-svh place-items-center px-4">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-foreground/[0.05]" />
-        <div className="absolute top-1/2 left-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,var(--mint),transparent)] opacity-50" />
-      </div>
-      <form onSubmit={submit} className="grid w-full max-w-sm gap-6 rounded-[1.75rem] border bg-card p-6 shadow-soft sm:p-8">
-        <div className="grid justify-items-center gap-4 text-center">
-          <LogoMark className="size-12" />
-          <div>
-            <h1 className="text-2xl font-medium">{t("Your drive is locked")}</h1>
-            <p className="mt-1.5 truncate text-sm text-muted-foreground">{me?.email}</p>
+    <div className="relative flex min-h-svh flex-col overflow-hidden">
+      <header className="flex items-center justify-between px-4 py-5 sm:px-8">
+        <Brand to="/drive" />
+        <PreferencesMenu />
+      </header>
+
+      <main className="flex flex-1 items-center justify-center px-4 pb-16">
+        <form onSubmit={submit} className="grid w-full max-w-sm justify-items-center text-center">
+          <div className="relative size-40 animate-rise sm:size-44">
+            {/* Light pooling behind the lock; it blooms when the lock opens. */}
+            <div
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute top-1/2 left-1/2 size-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full transition-[opacity,scale] duration-700 ease-out motion-reduce:transition-none",
+                "bg-[radial-gradient(closest-side,color-mix(in_oklch,var(--lime)_30%,transparent),color-mix(in_oklch,var(--mint)_24%,transparent)_55%,transparent)]",
+                opened ? "scale-110 opacity-100" : "scale-90 opacity-60"
+              )}
+            />
+            <div className="absolute inset-0 animate-float">
+              <img
+                src="/3d/lock.webp"
+                alt=""
+                className={cn(
+                  "absolute inset-0 size-full object-contain transition-opacity duration-300 motion-reduce:transition-none",
+                  opened && "opacity-0",
+                  busy && !opened && "animate-pulse"
+                )}
+              />
+              <img
+                src="/3d/lock-open.webp"
+                alt=""
+                className={cn(
+                  "absolute inset-0 size-full object-contain transition-[opacity,scale] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                  opened ? "scale-100 opacity-100 duration-700" : "scale-[1.16] opacity-0 duration-300"
+                )}
+              />
+            </div>
+            <div aria-hidden className="absolute -bottom-2 left-1/2 h-4 w-28 -translate-x-1/2 rounded-full bg-foreground/10 blur-xl" />
           </div>
-        </div>
-        <Input
-          type="password"
-          placeholder={t("Password")}
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoFocus
-          required
-        />
-        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm">
-          {t("Stay unlocked on this device")}
-          <Switch checked={remember} onCheckedChange={setRemember} />
-        </label>
-        <Button size="lg" type="submit" disabled={busy}>
-          {busy ? <Loader2Icon className="animate-spin" /> : <LockKeyholeIcon />}
-          {busy ? t("Unlocking…") : t("Unlock")}
-        </Button>
-        <button type="button" onClick={() => logout()} className="text-sm text-muted-foreground hover:text-foreground">
-          {t("Sign in as someone else")}
-        </button>
-      </form>
+
+          <div className="mt-8 animate-rise [animation-delay:80ms]">
+            <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">
+              {opened ? t("Unlocked") : t("Your drive is locked")}
+            </h1>
+            <p className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1 text-sm text-muted-foreground">
+              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-forest text-xs font-medium text-lime uppercase">
+                {me?.email[0]}
+              </span>
+              <span className="truncate">{me?.email}</span>
+            </p>
+          </div>
+
+          <div className="mt-8 grid w-full animate-rise gap-4 text-left [animation-delay:160ms]">
+            <Input
+              type="password"
+              placeholder={t("Password")}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              autoFocus
+              required
+              className="h-12 rounded-full bg-card px-5"
+            />
+            <label className="flex cursor-pointer items-center justify-between gap-3 px-1 text-sm text-muted-foreground">
+              {t("Stay unlocked on this device")}
+              <Switch checked={remember} onCheckedChange={setRemember} disabled={busy} />
+            </label>
+            <Button size="lg" type="submit" disabled={busy} className="mt-1 h-12">
+              {busy && !opened ? <Loader2Icon className="animate-spin" /> : opened ? <LockKeyholeOpenIcon /> : <LockKeyholeIcon />}
+              {opened ? t("Unlocked") : busy ? t("Unlocking…") : t("Unlock")}
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => logout()}
+            disabled={busy}
+            className="mt-6 animate-rise text-sm text-muted-foreground [animation-delay:240ms] hover:text-foreground"
+          >
+            {t("Sign in as someone else")}
+          </button>
+        </form>
+      </main>
     </div>
   )
 }

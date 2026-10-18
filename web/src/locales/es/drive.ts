@@ -42,6 +42,7 @@ const messages: Messages = {
   Dismiss: "Cerrar",
   "Decrypting {name}…": "Descifrando {name}…",
   "Download ready": "Descarga lista",
+  "Download as .zip": "Descargar como .zip",
   "Move to…": "Mover a…",
   "Note encrypted and saved": "Nota cifrada y guardada",
   "New private note": "Nota privada nueva",

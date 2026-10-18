@@ -42,6 +42,7 @@ const messages: Messages = {
   Dismiss: "Sluiten",
   "Decrypting {name}…": "{name} ontsleutelen…",
   "Download ready": "Download klaar",
+  "Download as .zip": "Downloaden als .zip",
   "Move to…": "Verplaatsen naar…",
   "Note encrypted and saved": "Notitie versleuteld en bewaard",
   "New private note": "Nieuwe privénotitie",

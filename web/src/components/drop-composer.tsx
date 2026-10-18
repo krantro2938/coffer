@@ -36,7 +36,8 @@ export function DropComposer({ onFilesAdded }: { onFilesAdded?: () => void } = {
   // With a usable drive, shares are saved to it. Everyone else gets a quick
   // share: no account, a few small files, gone when it expires.
   const toDrive = status === "unlocked" && !!masterKey && canWrite(me)
-  const needsUnlock = status === "locked" && canWrite(me)
+  // A locked drive can't take the share, but nobody needs a drive for a quick one: it goes out as anyone's would.
+  const couldSave = status === "locked" && canWrite(me)
   const anonMax = config?.anonMaxExpiry ?? 7 * 86400
   // A quick share is quick whoever makes it: a week at most. Longer-lived links are made from the drive.
   const maxExpiry = toDrive ? QUICK_SHARE_MAX : Math.min(anonMax, QUICK_SHARE_MAX)
@@ -251,7 +252,13 @@ export function DropComposer({ onFilesAdded }: { onFilesAdded?: () => void } = {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              <span className="hidden eyebrow sm:block">{toDrive ? t("Saved to your drive") : t("No account needed")}</span>
+              {couldSave ? (
+                <Link to="/drive" className="hidden eyebrow transition-colors hover:text-foreground sm:block">
+                  {t("Unlock to save to your drive")}
+                </Link>
+              ) : (
+                <span className="hidden eyebrow sm:block">{toDrive ? t("Saved to your drive") : t("No account needed")}</span>
+              )}
             </div>
 
             {mode === "file" ? (
@@ -364,15 +371,16 @@ export function DropComposer({ onFilesAdded }: { onFilesAdded?: () => void } = {
                   </div>
                   <Progress value={phase.progress * 100} className="h-1" />
                 </div>
-              ) : needsUnlock ? (
-                <Button size="lg" asChild className="w-full">
-                  <Link to="/drive">
-                    <LockIcon /> {t("Unlock your drive to share")}
-                  </Link>
-                </Button>
               ) : (
-                <Button size="lg" onClick={submit} disabled={!ready} className="w-full">
-                  <SparklesIcon /> {t("Encrypt & create link")}
+                // Until there is something to send, the button says what it needs instead of fading out.
+                <Button
+                  size="lg"
+                  onClick={submit}
+                  disabled={!ready}
+                  className="w-full disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+                >
+                  <SparklesIcon />{" "}
+                  {ready ? t("Encrypt & create link") : mode === "file" ? t("Choose a file first") : t("Write something first")}
                 </Button>
               )}
             </div>

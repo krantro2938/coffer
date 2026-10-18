@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Link2Icon } from "lucide-react"
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ShareList } from "@/components/drive-dialogs"
@@ -17,7 +17,7 @@ function LinksPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
       <p className="eyebrow">{t("Active links")}</p>
-      <h1 className="mt-1 text-3xl font-medium">{t("Shared links")}</h1>
+      <h1 className="mt-1.5 text-4xl font-semibold tracking-tight">{t("Shared links")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {t("Every link that can still be opened. Revoking one destroys its wrapped key on the server immediately.")}
       </p>
@@ -31,18 +31,17 @@ function LinksPage() {
         ) : data && data.shares.length > 0 ? (
           <ShareList shares={data.shares} names={names} />
         ) : (
-          <div className="grid place-items-center rounded-3xl border border-dashed bg-card/40 px-6 py-16 text-center">
-            <span className="grid size-14 place-items-center rounded-2xl bg-lavender-soft text-accent-foreground">
-              <Link2Icon className="size-6" />
-            </span>
-            <p className="mt-5 font-medium">{t("No active links")}</p>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              {t("Share a file from your drive and it will show up here, until it expires or burns.")}
-            </p>
-            <Button asChild className="mt-6">
-              <Link to="/drive">{t("Go to my drive")}</Link>
-            </Button>
-          </div>
+          <EmptyState
+            image="sharing"
+            title={t("No active links")}
+            actions={
+              <Button asChild size="lg">
+                <Link to="/drive">{t("Go to my drive")}</Link>
+              </Button>
+            }
+          >
+            {t("Share a file from your drive and it will show up here, until it expires or burns.")}
+          </EmptyState>
         )}
       </div>
     </div>
