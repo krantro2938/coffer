@@ -65,8 +65,11 @@ describe("what a page is reported as", () => {
     setPage(routePattern("/s/$id"))
     track("download-started")
     expect(bodies()).toEqual([
-      { type: "event", payload: { website: SITE, url: "/s/:id", language: "de-DE", screen: "1440x900" } },
-      { type: "event", payload: { website: SITE, url: "/s/:id", language: "de-DE", screen: "1440x900", name: "download-started" } },
+      { type: "event", payload: { website: SITE, hostname: "coffer.test", url: "/s/:id", language: "de-DE", screen: "1440x900" } },
+      {
+        type: "event",
+        payload: { website: SITE, hostname: "coffer.test", url: "/s/:id", language: "de-DE", screen: "1440x900", name: "download-started" },
+      },
     ])
     expect(JSON.stringify(bodies())).not.toMatch(/k7m3xq2|h4c9w2pz8rtf6mxn|token|inbox|mail\.example/)
     const [url, init] = fetchMock.mock.calls[0]

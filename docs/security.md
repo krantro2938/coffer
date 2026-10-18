@@ -91,11 +91,12 @@ content security policy and nothing in the page.
   `<ANALYTICS_URL>/api/send`, made without credentials and without a `Referer`, whose reply is ignored. It does not
   read `location` or `document.title`; the page's identity comes from the router.
 - **Public pages** (`/`, `/security`, `/terms`, `/privacy`): the page, the referring site's origin and path (an
-  external one only, with no query or fragment), the browser's language and the screen size. On the home page, named
+  external one only, with no query or fragment), the site's own hostname, the browser's language and the screen size. On the home page, named
   events for a button pressed, a file added (not its name, type or size), the pricing reached, and a plan clicked
   (the plan id).
 - **Every other page** (sign-in, sign-up, recover, receive, welcome, drive, links, requests, settings, and
-  share and upload links): the route pattern only, such as `/s/:id`, `/r/:id` or `/drive`; never the real path, a
+  share and upload links): the route pattern only, such as `/s/:id`, `/r/:id` or `/drive`, with the site's hostname,
+  language and screen size; never the real path, a
   query, a fragment, a title or a referrer. Events come from one fixed list (`EVENTS` in `analytics.ts`: sign-up and
   sign-in completed, share dialog opened, share and request link created, upload started, download started) and carry
   no id, name, size, count or text. A name not on the list is dropped.

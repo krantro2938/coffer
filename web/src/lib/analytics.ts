@@ -107,12 +107,23 @@ function referrer(): string | undefined {
   }
 }
 
+/** This site's hostname, taken from its origin rather than from location. */
+function hostname(): string | undefined {
+  try {
+    return new URL(globalThis.origin).hostname
+  } catch {
+    return
+  }
+}
+
 function send(name?: AnalyticsEvent, data?: { plan: string }) {
   if (!config || !page || optedOut()) return
   if (name !== undefined && !EVENT_NAMES.has(name)) return
   const nav = globalThis.navigator
   const payload: Record<string, unknown> = {
     website: config.site,
+    // The site's own name (coffer.rest), from its origin; without it Umami files every visit under "localhost".
+    hostname: hostname(),
     url: page,
     language: nav.language,
     screen: `${globalThis.screen?.width ?? 0}x${globalThis.screen?.height ?? 0}`,
