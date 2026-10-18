@@ -111,7 +111,7 @@ func (a *App) subState(uid string) (*subState, error) {
 			s.Offer = &o
 		}
 	}
-	s.Free = a.billing != nil && !entitled(s.Status.String) && !s.comped() && !s.LapsedAt.Valid
+	s.Free = a.freeTier() && !entitled(s.Status.String) && !s.comped() && !s.LapsedAt.Valid
 	s.freeQuota = a.cfg.FreeQuota
 	return &s, nil
 }
@@ -148,7 +148,7 @@ func cmpOr(s, def string) string {
 }
 
 func (a *App) billingJSON(s *subState) any {
-	if a.billing == nil {
+	if !a.freeTier() {
 		return nil
 	}
 	out := map[string]any{
@@ -195,6 +195,25 @@ func (a *App) billingJSON(s *subState) any {
 
 // plansJSON lists the plans that can be bought right now, with Paddle's
 // prices: both intervals where the yearly one has been created.
+// freeTier reports whether accounts without a plan are free accounts: when
+// billing is on, or while the plans are shown before they are for sale.
+func (a *App) freeTier() bool {
+	return a.billing != nil || a.cfg.PlansPreview
+}
+
+// previewPlansJSON lists the plans at the prices they will be sold at, for a
+// server that shows them before it sells them.
+func previewPlansJSON() []map[string]any {
+	out := []map[string]any{}
+	for _, pl := range paddle.Plans {
+		out = append(out, map[string]any{
+			"id": pl.ID, "name": pl.Name, "quota": pl.Quota, "currency": "EUR", "amount": pl.Cents,
+			"prices": map[string]int{paddle.Month: pl.Cents, paddle.Year: pl.YearCents()},
+		})
+	}
+	return out
+}
+
 func (a *App) plansJSON(ctx context.Context) []map[string]any {
 	out := []map[string]any{}
 	prices, err := a.billing.Catalog(ctx)

@@ -111,6 +111,9 @@ const messages: Messages = {
     "{n} enlaces de solicitud abiertos a la vez y enlaces compartidos de hasta {days} días. Con un plan desaparecen ambos límites.",
   "Keep my plan": "Mantener mi plan",
   "Your plan will renew as before": "Tu plan se renovará como antes",
+  "Coming soon": "Próximamente",
+  "Paid plans are not on sale yet. Until they are, every drive is a free drive.":
+    "Los planes de pago aún no están a la venta. Hasta entonces, todas las unidades son gratuitas.",
 }
 
 export default messages

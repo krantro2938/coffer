@@ -103,6 +103,7 @@ const messages: Messages = {
   "Your password stays on your device": "Ihr Passwort bleibt auf Ihrem Gerät",
   "It unlocks the key that protects your files": "Es öffnet den Schlüssel, der Ihre Dateien schützt",
   "Our server only stores what it can't read": "Unser Server speichert nur, was er nicht lesen kann",
+  "Free, with {size} for your files.": "Kostenlos, mit {size} für Ihre Dateien.",
 }
 
 export default messages

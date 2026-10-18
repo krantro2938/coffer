@@ -107,6 +107,8 @@ const messages: Messages = {
     "Los archivos y sus nombres se cifran en tu navegador antes de subirse, así que nuestro servidor solo guarda lo que no puede abrir. El código es abierto.",
   "How it works in detail": "Cómo funciona en detalle",
   "Read the code on GitHub": "Lee el código en GitHub",
+  "Start with the free drive today. The paid plans, with more room, open soon.":
+    "Empieza hoy con la unidad gratuita. Los planes de pago, con más espacio, llegarán pronto.",
 }
 
 export default messages

@@ -75,6 +75,8 @@ export type ServerConfig = {
   plans: Plan[] | null
   /** Size of the free account in bytes, when billing is on. */
   freeQuota?: number
+  /** False while the plans are shown but not for sale yet; every drive is then a free drive. */
+  plansOpen?: boolean
   /** Whether "Continue with Google" is offered. */
   google: boolean
   /** Present only when the operator turned on visit counting for the public pages. */

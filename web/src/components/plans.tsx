@@ -26,6 +26,12 @@ export function usePlans(): Plan[] | null {
   return data?.plans?.length ? data.plans : null
 }
 
+/** Whether the listed plans can be bought; false while they are shown ahead of going on sale. */
+export function usePlansOpen(): boolean {
+  const { data } = useQuery({ queryKey: ["config"], queryFn: getConfig, staleTime: Infinity })
+  return data?.plansOpen !== false
+}
+
 function useFreeQuota(): number {
   const { data } = useQuery({ queryKey: ["config"], queryFn: getConfig, staleTime: Infinity })
   return data?.freeQuota ?? DEFAULT_FREE_QUOTA
@@ -57,6 +63,7 @@ export function PlanGrid({
 }) {
   const { t } = useI18n()
   const freeQuota = useFreeQuota()
+  const open = usePlansOpen()
   const featured = plans.length === 3 ? plans[1].id : null
   // Yearly unless a plan has no yearly price yet (the server was not set up for it).
   const yearly = plans.length > 0 && plans.every((p) => p.prices.year)
@@ -155,11 +162,11 @@ export function PlanGrid({
               <Button
                 className="mt-8 w-full"
                 variant={on ? "secondary" : "outline"}
-                disabled={mine || !!busy || disabled?.(p)}
+                disabled={mine || !open || !!busy || disabled?.(p)}
                 onClick={() => onPick(p, shown)}
               >
                 {busy === p.id && <Loader2Icon className="animate-spin" />}
-                {mine ? t("Your plan") : label(p, shown)}
+                {mine ? t("Your plan") : open ? label(p, shown) : t("Coming soon")}
               </Button>
             </div>
           )
@@ -171,10 +178,13 @@ export function PlanGrid({
 
 export function PlanFinePrint({ className }: { className?: string }) {
   const { t } = useI18n()
+  const open = usePlansOpen()
   return (
     <p className={cn("text-xs text-pretty text-muted-foreground", className)}>
       {t("Every plan: private files and names, secure sharing, unlimited folders. No ads, and no tracking across sites.")}{" "}
-      {t("Payment is handled by Paddle; we never see your card. Cancel whenever you like.")}
+      {open
+        ? t("Payment is handled by Paddle; we never see your card. Cancel whenever you like.")
+        : t("Paid plans are not on sale yet. Until they are, every drive is a free drive.")}
     </p>
   )
 }

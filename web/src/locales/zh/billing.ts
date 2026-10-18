@@ -105,6 +105,8 @@ const messages: Messages = {
     "同时最多开放 {n} 个请求链接，分享链接最长保留 {days} 天。选择套餐后两项限制都会取消。",
   "Keep my plan": "保留我的套餐",
   "Your plan will renew as before": "你的套餐将照常续订",
+  "Coming soon": "即将推出",
+  "Paid plans are not on sale yet. Until they are, every drive is a free drive.": "付费套餐尚未开售。在此之前，所有云盘都是免费的。",
 }
 
 export default messages

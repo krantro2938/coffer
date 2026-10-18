@@ -106,6 +106,8 @@ const messages: Messages = {
   "Send your own files the same way. No account needed.": "Stuur je eigen bestanden op dezelfde manier. Geen account nodig.",
   "Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.":
     "Je gratis account heeft {n} aanvraaglinks tegelijk open. Sluit er één, of kies een abonnement voor zoveel je wilt.",
+  "Your free account has {n} request links open at a time. Close one to open another.":
+    "Je gratis account heeft {n} aanvraaglinks tegelijk open. Sluit er een om een nieuwe te openen.",
 }
 
 export default messages

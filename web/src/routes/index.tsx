@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropComposer } from "@/components/drop-composer"
-import { PlanFinePrint, PlanGrid, usePlans } from "@/components/plans"
+import { PlanFinePrint, PlanGrid, usePlans, usePlansOpen } from "@/components/plans"
 import { track, trackOnce } from "@/lib/analytics"
 import { useSession } from "@/lib/session"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
@@ -428,6 +428,7 @@ function Pricing() {
   const { status } = useSession()
   const navigate = useNavigate()
   const plans = usePlans()
+  const open = usePlansOpen()
   const section = useRef<HTMLElement>(null)
   useEffect(() => {
     const el = section.current
@@ -448,7 +449,9 @@ function Pricing() {
           {t("Start free. Pay when you need more room.")}
         </h2>
         <p className="mt-4 text-pretty text-muted-foreground">
-          {t("The free account is yours to keep, with nothing deleted. Pay only when you need more room.")}
+          {open
+            ? t("The free account is yours to keep, with nothing deleted. Pay only when you need more room.")
+            : t("Start with the free drive today. The paid plans, with more room, open soon.")}
         </p>
       </div>
       <div className="mx-auto mt-12 max-w-6xl">

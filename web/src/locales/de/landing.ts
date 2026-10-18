@@ -108,6 +108,8 @@ const messages: Messages = {
     "Dateien und ihre Namen werden in Ihrem Browser verschlüsselt, bevor sie hochgeladen werden. Unser Server speichert also nur, was er nicht öffnen kann. Der Code ist Open Source.",
   "How it works in detail": "So funktioniert es im Detail",
   "Read the code on GitHub": "Den Code auf GitHub lesen",
+  "Start with the free drive today. The paid plans, with more room, open soon.":
+    "Starten Sie heute mit dem kostenlosen Laufwerk. Die bezahlten Tarife mit mehr Platz kommen bald.",
 }
 
 export default messages

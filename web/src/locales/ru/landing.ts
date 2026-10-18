@@ -108,6 +108,8 @@ const messages: Messages = {
     "Файлы и их названия шифруются в вашем браузере до загрузки, поэтому наш сервер хранит только то, что не может открыть. Код открыт.",
   "How it works in detail": "Подробно, как это работает",
   "Read the code on GitHub": "Читать код на GitHub",
+  "Start with the free drive today. The paid plans, with more room, open soon.":
+    "Начните с бесплатного диска уже сегодня. Платные тарифы с бо́льшим объёмом скоро появятся.",
 }
 
 export default messages

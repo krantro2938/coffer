@@ -98,6 +98,9 @@ func New(cfg config.Config, db *store.Store, blobs storage.Store, secret []byte)
 			log.Print("billing: PADDLE_WEBHOOK_SECRET is not set, subscriptions are polled instead of pushed")
 		}
 	}
+	if cfg.PlansPreview {
+		log.Print("billing: off; the plans are shown as not for sale yet and every account is a free account (PLANS_PREVIEW)")
+	}
 	if sh, err := newStaticHandler(cfg.StaticDir, a.origin, cfg.AnalyticsURL); err != nil {
 		log.Printf("static: %v (API only)", err)
 	} else {
@@ -249,6 +252,11 @@ func (a *App) handleConfig(w http.ResponseWriter, r *http.Request) error {
 	if a.billing != nil {
 		cfg["plans"] = a.plansJSON(r.Context())
 		cfg["freeQuota"] = a.cfg.FreeQuota
+		cfg["plansOpen"] = true
+	} else if a.cfg.PlansPreview {
+		cfg["plans"] = previewPlansJSON()
+		cfg["freeQuota"] = a.cfg.FreeQuota
+		cfg["plansOpen"] = false // shown, not yet for sale
 	}
 	if a.cfg.AnalyticsURL != "" && a.cfg.AnalyticsSiteID != "" {
 		cfg["analytics"] = map[string]string{"url": a.cfg.AnalyticsURL, "site": a.cfg.AnalyticsSiteID}

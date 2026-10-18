@@ -176,9 +176,13 @@ function Register() {
                   : t("At no charge, with no end date.")}
               </p>
             ) : null
-          ) : config?.plans?.length ? (
+          ) : config?.plans?.length && config.plansOpen !== false ? (
             <p className="mt-2 text-sm text-muted-foreground">
               {t("Free to start. Plans from {price} a month when you need more space.", { price: formatPrice(config.plans[0]) })}
+            </p>
+          ) : config?.freeQuota ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("Free, with {size} for your files.", { size: formatBytes(config.freeQuota) })}
             </p>
           ) : null}
         </div>

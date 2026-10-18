@@ -43,6 +43,9 @@ type Config struct {
 	PaddleWebhookSecret string
 	LapseGrace          time.Duration // how long a lapsed drive is kept before it is emptied
 	PaddleCheckoutURL   string        // overrides the account's default payment link, e.g. a /pay page on its own subdomain
+	// PlansPreview shows the plans, not yet for sale, on a server without Paddle. Accounts are then free
+	// accounts (FreeQuota and its limits), as they will be once billing is on. Ignored with a PaddleKey.
+	PlansPreview bool
 
 	// Resend, for sign-up codes and lapse warnings. Emails are not verified when ResendKey is empty.
 	ResendKey string
@@ -96,6 +99,7 @@ func Load() Config {
 		PaddleWebhookSecret: env("PADDLE_WEBHOOK_SECRET", ""),
 		PaddleCheckoutURL:   env("PADDLE_CHECKOUT_URL", ""),
 		LapseGrace:          time.Duration(envInt("LAPSE_GRACE_DAYS", 30)) * 24 * time.Hour,
+		PlansPreview:        envBool("PLANS_PREVIEW", false) && env("PADDLE_API_KEY", "") == "",
 
 		ResendKey:      env("RESEND_API_KEY", ""),
 		MailFrom:       env("MAIL_FROM", ""),

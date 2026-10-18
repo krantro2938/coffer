@@ -33,6 +33,7 @@ import { track } from "@/lib/analytics"
 import { useI18n } from "@/lib/i18n"
 import { createRequest, requestStatus, type DRequest, type RequestStatus } from "@/lib/requests"
 import { useSession } from "@/lib/session"
+import { usePlansOpen } from "@/components/plans"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app/requests")({ component: RequestsPage })
@@ -70,6 +71,7 @@ function RequestsPage() {
   const requests = (data?.requests ?? []).filter((r) => !r.shareId)
   // The free account takes a few at a time, folder links that take files included.
   const free = me?.billing?.free
+  const plansOpen = usePlansOpen()
   const open = (data?.requests ?? []).filter((r) => !["closed", "expired"].includes(requestStatus(r))).length
   const full = !!free && open >= free.requestLinks
 
@@ -86,12 +88,18 @@ function RequestsPage() {
       </div>
       {full && free && (
         <p className="mt-4 rounded-xl bg-muted/50 px-3.5 py-2.5 text-sm text-muted-foreground">
-          {t("Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.", {
-            n: free.requestLinks,
-          })}{" "}
-          <Link to="/settings" search={{ tab: "billing" }} className="font-medium text-foreground underline underline-offset-4">
-            {t("Choose plan")}
-          </Link>
+          {plansOpen ? (
+            <>
+              {t("Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.", {
+                n: free.requestLinks,
+              })}{" "}
+              <Link to="/settings" search={{ tab: "billing" }} className="font-medium text-foreground underline underline-offset-4">
+                {t("Choose plan")}
+              </Link>
+            </>
+          ) : (
+            t("Your free account has {n} request links open at a time. Close one to open another.", { n: free.requestLinks })
+          )}
         </p>
       )}
       <p className="mt-2 text-sm text-muted-foreground">

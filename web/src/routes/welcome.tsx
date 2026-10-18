@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ArrowRightIcon, CheckIcon, Loader2Icon } from "lucide-react"
 import { Brand } from "@/components/brand"
-import { usePlans } from "@/components/plans"
+import { usePlans, usePlansOpen } from "@/components/plans"
 import { Button } from "@/components/ui/button"
 import { fromB64 } from "@/lib/crypto"
 import { useI18n } from "@/lib/i18n"
@@ -63,7 +63,8 @@ function WelcomeFlow({ wrapped, onDone }: { wrapped: string; onDone: (picks: Pic
   const [picks, setPicks] = useState<Pick[]>([])
 
   const toggle = (p: Pick) => setPicks((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]))
-  const steps = plans ? 3 : 2
+  const open = usePlansOpen()
+  const steps = plans && open ? 3 : 2
 
   return (
     <div className="relative flex min-h-svh flex-col overflow-hidden">
@@ -132,7 +133,7 @@ function WelcomeFlow({ wrapped, onDone }: { wrapped: string; onDone: (picks: Pic
             </div>
           </div>
         ) : (
-          <Sealed wrapped={wrapped} next={plans ? t("Choose my drive") : t("Open my drive")} onNext={() => onDone(picks)} />
+          <Sealed wrapped={wrapped} next={plans && open ? t("Choose my drive") : t("Open my drive")} onNext={() => onDone(picks)} />
         )}
       </main>
     </div>

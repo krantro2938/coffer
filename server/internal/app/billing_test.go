@@ -415,3 +415,43 @@ func TestFreeAccount(t *testing.T) {
 	c.request(nil)
 	c.request(nil)
 }
+
+func TestPlansPreview(t *testing.T) {
+	s := newServer(t, func(c *config.Config) {
+		c.PlansPreview = true
+		c.FreeQuota = 1000
+	})
+	c := s.browser()
+
+	// The plans are listed at their prices, marked as not for sale.
+	var cfg struct {
+		Plans     []map[string]any `json:"plans"`
+		PlansOpen *bool            `json:"plansOpen"`
+		FreeQuota int64            `json:"freeQuota"`
+	}
+	c.must(200, "GET", "/api/config", nil, &cfg)
+	if len(cfg.Plans) != len(paddle.Plans) || cfg.PlansOpen == nil || *cfg.PlansOpen || cfg.FreeQuota != 1000 {
+		t.Fatalf("config: %+v", cfg)
+	}
+	if p := cfg.Plans[0]; p["id"] != "starter" || p["amount"] != float64(499) || p["prices"].(map[string]any)["year"] != float64(4990) {
+		t.Errorf("first plan: %v", p)
+	}
+
+	// Every account is a free account, with its size and its limits.
+	c.mustRegister("ann@example.com")
+	b, quota := c.billing(t)
+	if b.Entitled || b.Free == nil || quota != 1000 {
+		t.Fatalf("a new account: %+v quota %d; want the free account at 1000 bytes", b, quota)
+	}
+	c.request(nil)
+	c.request(nil)
+	body := map[string]any{"id": randomID(20), "accessHash": sha(random(32)), "encInfo": random(120), "encSecret": random(44), "encPrivate": random(170)}
+	if status := c.do("POST", "/api/requests", body, nil); status != http.StatusPaymentRequired {
+		t.Errorf("a third request link: %d; want 402", status)
+	}
+
+	// Nothing can be bought.
+	if status := c.do("POST", "/api/billing/checkout", map[string]any{"plan": "starter", "interval": "month"}, nil); status == 200 {
+		t.Error("a checkout opened while the plans are not for sale")
+	}
+}

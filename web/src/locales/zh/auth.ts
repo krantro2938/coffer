@@ -100,6 +100,7 @@ const messages: Messages = {
   "Your password stays on your device": "你的密码只留在你的设备上",
   "It unlocks the key that protects your files": "它用来解开保护你文件的密钥",
   "Our server only stores what it can't read": "我们的服务器只保存它读不了的内容",
+  "Free, with {size} for your files.": "免费，为你的文件提供 {size} 空间。",
 }
 
 export default messages

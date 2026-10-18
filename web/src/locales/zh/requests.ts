@@ -102,6 +102,8 @@ const messages: Messages = {
   "Send your own files the same way. No account needed.": "用同样的方式发送你自己的文件。无需账户。",
   "Your free account has {n} request links open at a time. Close one, or choose a plan for as many as you like.":
     "你的免费账户同时最多开放 {n} 个请求链接。请关闭一个，或选择套餐以不限数量。",
+  "Your free account has {n} request links open at a time. Close one to open another.":
+    "免费账户最多可同时开启 {n} 个请求链接。关闭一个即可新建。",
 }
 
 export default messages

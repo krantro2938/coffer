@@ -41,6 +41,7 @@ services:
       PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
       PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
       PADDLE_CHECKOUT_URL: ${PADDLE_CHECKOUT_URL:-}
+      PLANS_PREVIEW: ${PLANS_PREVIEW:-false}            # without Paddle: show the plans as coming soon, every drive a free drive
       LAPSE_GRACE_DAYS: ${LAPSE_GRACE_DAYS:-30}         # days a lapsed drive is kept before it is emptied
       # Email codes at sign-up and lapse warnings, through Resend (leave empty to skip verification).
       RESEND_API_KEY: ${RESEND_API_KEY:-}

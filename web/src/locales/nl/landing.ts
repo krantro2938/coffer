@@ -107,6 +107,8 @@ const messages: Messages = {
     "Bestanden en hun namen worden in je browser versleuteld voordat ze worden geüpload, dus onze server bewaart alleen wat hij niet kan openen. De code is open source.",
   "How it works in detail": "Hoe het in detail werkt",
   "Read the code on GitHub": "Lees de code op GitHub",
+  "Start with the free drive today. The paid plans, with more room, open soon.":
+    "Begin vandaag met de gratis drive. De betaalde abonnementen, met meer ruimte, komen binnenkort.",
 }
 
 export default messages

@@ -107,6 +107,7 @@ const messages: Messages = {
     "文件及其名称在上传前就在你的浏览器里加密，所以我们的服务器只保存它打不开的内容。代码是开源的。",
   "How it works in detail": "详细原理",
   "Read the code on GitHub": "在 GitHub 上查看代码",
+  "Start with the free drive today. The paid plans, with more room, open soon.": "今天就从免费云盘开始。空间更大的付费套餐即将推出。",
 }
 
 export default messages

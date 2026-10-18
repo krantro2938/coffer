@@ -111,6 +111,9 @@ const messages: Messages = {
     "Открытых ссылок для запроса одновременно — не больше {n}; ссылки для отправки действуют до {days} дней. С тарифом оба ограничения снимаются.",
   "Keep my plan": "Оставить тариф",
   "Your plan will renew as before": "Тариф будет продлеваться, как раньше",
+  "Coming soon": "Скоро",
+  "Paid plans are not on sale yet. Until they are, every drive is a free drive.":
+    "Платные тарифы пока не продаются. До тех пор каждый диск бесплатный.",
 }
 
 export default messages

@@ -110,6 +110,9 @@ const messages: Messages = {
     "{n} aanvraaglinks tegelijk open en deellinks die tot {days} dagen geldig blijven. Met een abonnement vervallen beide grenzen.",
   "Keep my plan": "Abonnement houden",
   "Your plan will renew as before": "Je abonnement wordt verlengd zoals voorheen",
+  "Coming soon": "Binnenkort",
+  "Paid plans are not on sale yet. Until they are, every drive is a free drive.":
+    "Betaalde abonnementen zijn nog niet te koop. Tot die tijd is elke drive gratis.",
 }
 
 export default messages

@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { FileGlyph } from "@/components/file-glyph"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
-import { usePlans } from "@/components/plans"
+import { usePlans, usePlansOpen } from "@/components/plans"
 import { useI18n } from "@/lib/i18n"
 
 // The server sends the same title and description with the page (server/internal/app/seo.go).
@@ -97,7 +97,8 @@ const views = [
 function Security() {
   const { t } = useI18n()
   const plans = usePlans()
-  const shown = plans ? [...sections, payments] : sections
+  const open = usePlansOpen()
+  const shown = plans && open ? [...sections, payments] : sections
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />

@@ -104,6 +104,7 @@ const messages: Messages = {
   "Your password stays on your device": "Je wachtwoord blijft op je apparaat",
   "It unlocks the key that protects your files": "Hij ontgrendelt de sleutel die je bestanden beschermt",
   "Our server only stores what it can't read": "Onze server bewaart alleen wat hij niet kan lezen",
+  "Free, with {size} for your files.": "Gratis, met {size} voor je bestanden.",
 }
 
 export default messages

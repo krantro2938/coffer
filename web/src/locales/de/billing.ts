@@ -112,6 +112,9 @@ const messages: Messages = {
     "{n} Anfragelinks gleichzeitig offen und Freigabelinks mit bis zu {days} Tagen Laufzeit. Mit einem Tarif entfallen beide Grenzen.",
   "Keep my plan": "Tarif behalten",
   "Your plan will renew as before": "Ihr Tarif verlängert sich wie bisher",
+  "Coming soon": "Bald verfügbar",
+  "Paid plans are not on sale yet. Until they are, every drive is a free drive.":
+    "Bezahlte Tarife gibt es noch nicht. Bis dahin ist jedes Laufwerk kostenlos.",
 }
 
 export default messages
