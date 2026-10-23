@@ -60,9 +60,9 @@ const messages: Messages = {
   "Send files": "发送文件",
   "File requests, no account for your clients": "文件请求，客户无需账户",
   "Collect documents from clients.": "向客户收集文件。",
-  "Only you can open them.": "只有你能打开。",
-  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
-    "发送一个链接。客户用任何浏览器上传，无需账户。文件在他们的浏览器中加密，所以我们无法读取。",
+  "Encrypted on their device, before upload.": "上传之前，就在对方设备上加密。",
+  "Send a link. Your client uploads from any browser, no account needed. Only you hold the key, so not even we can open what they send.":
+    "发送一个链接。客户用任何浏览器上传，无需账户。密钥只在你手里，所以连我们也打不开他们发来的内容。",
   "Create a request link": "创建请求链接",
   "Just need to send a file?": "只想发送一个文件？",
   "Free to start. No card needed.": "免费开始，无需绑定银行卡。",
@@ -102,12 +102,13 @@ const messages: Messages = {
   "A recovery key, so a forgotten password isn't the end": "恢复密钥，忘记密码也不至于无法挽回",
   "Tax documents": "税务文件",
   "Rental application": "租房申请",
-  "We can't read your files.": "我们读不了你的文件。",
-  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
-    "文件及其名称在上传前就在你的浏览器里加密，所以我们的服务器只保存它打不开的内容。代码是开源的。",
+  "Don't take our word for it.": "不必只听我们说。",
+  "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived.":
+    "文件及其名称在上传前就在你的浏览器中加密，所以我们的服务器只保存它打不开的内容。代码是公开的，任何人都可以核实。服务器能看到的只有：文件有多大、何时到达。",
   "How it works in detail": "详细原理",
   "Read the code on GitHub": "在 GitHub 上查看代码",
   "Start with the free drive today. The paid plans, with more room, open soon.": "今天就从免费云盘开始。空间更大的付费套餐即将推出。",
+  "Built and run by {name}. Questions go straight to the person who built it:": "由 {name} 开发和运营。问题会直接送到开发者手里：",
 }
 
 export default messages

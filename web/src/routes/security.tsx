@@ -37,7 +37,7 @@ const sections: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: FileLockIcon,
     title: "Everything is encrypted before upload",
-    body: "Each file or note gets its own random 256-bit key. Content is split into 4 MB chunks and sealed with AES-256-GCM in your browser. Chunk nonces encode position and a final-chunk flag, so the server can't reorder, drop or truncate data without detection. File names, types and sizes are encrypted separately.",
+    body: "Each file or note gets its own random 256-bit key. Content is split into 4 MB chunks and sealed with AES-256-GCM in your browser. Chunk nonces encode position and a final-chunk flag, so the server can't reorder, drop or truncate data without detection. File names and types are encrypted separately. The server still sees how large each file is.",
   },
   {
     icon: LinkIcon,
@@ -111,7 +111,7 @@ function Security() {
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground">
               {t(
-                "Coffer is designed so that a complete compromise of the server — database, disks and code on disk — reveals nothing about what you've stored or shared."
+                "Coffer is built so that someone who takes over the server, with its database and disks, still can't read your files, their names or your notes. Here is how, and where that protection stops."
               )}
             </p>
           </div>

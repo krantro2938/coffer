@@ -22,7 +22,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Send a link and your clients upload documents from any browser, no account needed. Files are encrypted before they leave, so only you can open them. Free to start.",
+          "Send clients an upload link. Files are encrypted in their browser before upload, so only you can open them. No account for your clients, open source, free to start.",
       },
       { name: "referrer", content: "no-referrer" },
       { name: "theme-color", content: "#fbfbf9" },

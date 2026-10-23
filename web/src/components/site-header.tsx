@@ -144,7 +144,7 @@ export function SiteHeader() {
   ) : (
     <Button asChild className="h-10 px-5">
       <Link to="/register" onClick={() => track("signup-header")}>
-        {t("Get a drive")}
+        {t("Start free")}
       </Link>
     </Button>
   )

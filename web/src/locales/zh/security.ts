@@ -12,11 +12,11 @@ const messages: Messages = {
   "The same drive, twice. Only one side holds the key.": "同一个网盘，两种视角。只有一方持有密钥。",
   "Security model": "安全模型",
   "How Coffer keeps your data unreadable.": "Coffer 如何让你的数据无法被读取。",
-  "Coffer is designed so that a complete compromise of the server — database, disks and code on disk — reveals nothing about what you've stored or shared.":
-    "Coffer 的设计目标是：即使服务器被彻底攻破——数据库、硬盘以及硬盘上的代码——也不会泄露你存储或分享的任何内容。",
+  "Coffer is built so that someone who takes over the server, with its database and disks, still can't read your files, their names or your notes. Here is how, and where that protection stops.":
+    "Coffer 的设计是：即使有人接管了服务器及其数据库和硬盘，也读不了你的文件、文件名和笔记。下面说明它如何做到，以及保护在哪里止步。",
   "Everything is encrypted before upload": "一切在上传前加密",
-  "Each file or note gets its own random 256-bit key. Content is split into 4 MB chunks and sealed with AES-256-GCM in your browser. Chunk nonces encode position and a final-chunk flag, so the server can't reorder, drop or truncate data without detection. File names, types and sizes are encrypted separately.":
-    "每个文件或笔记都有自己的 256 位随机密钥。内容被切成 4 MB 的分块，在你的浏览器中用 AES-256-GCM 封存。分块的随机数编码了位置和“最后一块”标记，因此服务器无法在不被察觉的情况下重排、丢弃或截断数据。文件名、类型和大小另行加密。",
+  "Each file or note gets its own random 256-bit key. Content is split into 4 MB chunks and sealed with AES-256-GCM in your browser. Chunk nonces encode position and a final-chunk flag, so the server can't reorder, drop or truncate data without detection. File names and types are encrypted separately. The server still sees how large each file is.":
+    "每个文件或笔记都有自己的 256 位随机密钥。内容被切成 4 MB 的分块，在你的浏览器中用 AES-256-GCM 封存。分块的随机数编码了位置和“最后一块”标记，因此服务器无法在不被察觉的情况下重排、丢弃或截断数据。文件名和类型另行加密。服务器仍能看到每个文件的大小。",
   "Share links carry the key": "分享链接携带密钥",
   "A link looks like /s/k7m3xq2#h4c9w2pz8rtf6mxn. The part after # is an 80-bit secret that browsers never send to servers. From it we derive two things: a key that unwraps the file key, and an access token. The server only stores a SHA-256 hash of that token, so it can check a recipient without being able to decrypt anything.":
     "链接形如 /s/k7m3xq2#h4c9w2pz8rtf6mxn。# 之后的部分是一个 80 位的密钥，浏览器从不把它发送给服务器。我们由它派生出两样东西：一个用来解开文件密钥的密钥，以及一个访问令牌。服务器只保存该令牌的 SHA-256 哈希，因此它能核验接收者，却无法解密任何内容。",

@@ -22,7 +22,7 @@ import { useSession } from "@/lib/session"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
 import { formatBytes } from "@/lib/format"
 import { useI18n } from "@/lib/i18n"
-import { GITHUB_URL, SITE_HOST } from "@/lib/contact"
+import { GITHUB_URL, OPERATOR, SITE_HOST, SUPPORT_EMAIL } from "@/lib/contact"
 
 export const Route = createFileRoute("/")({ component: Home })
 
@@ -66,11 +66,11 @@ function Hero() {
               {t("File requests, no account for your clients")}
             </span>
             <h1 className="mt-6 text-[2.25rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3rem] xl:text-[3.5rem]">
-              {t("Collect documents from clients.")} <span className="text-lime">{t("Only you can open them.")}</span>
+              {t("Collect documents from clients.")} <span className="text-lime">{t("Encrypted on their device, before upload.")}</span>
             </h1>
             <p className="mt-6 max-w-lg text-base text-pretty text-hero-foreground/80 sm:text-lg">
               {t(
-                "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them."
+                "Send a link. Your client uploads from any browser, no account needed. Only you hold the key, so not even we can open what they send."
               )}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -405,10 +405,10 @@ function SecurityBand() {
     <section className="bg-forest text-forest-foreground">
       <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.3fr_1fr]">
         <div>
-          <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("We can't read your files.")}</h2>
+          <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("Don't take our word for it.")}</h2>
           <p className="mt-5 max-w-xl text-pretty text-forest-foreground/75 sm:text-lg">
             {t(
-              "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source."
+              "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived."
             )}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
@@ -421,6 +421,12 @@ function SecurityBand() {
               </a>
             </Button>
           </div>
+          <p className="mt-8 max-w-xl text-sm text-pretty text-forest-foreground/70">
+            {t("Built and run by {name}. Questions go straight to the person who built it:", { name: OPERATOR })}{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4 hover:text-forest-foreground">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
         </div>
         <div className="flex justify-center lg:justify-end">
           <Visual name="lock" icon={LockKeyholeIcon} className="size-60 sm:size-72" />

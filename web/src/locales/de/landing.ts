@@ -60,9 +60,9 @@ const messages: Messages = {
   "Send files": "Dateien senden",
   "File requests, no account for your clients": "Dateianfragen, ohne Konto für Ihre Kunden",
   "Collect documents from clients.": "Sammeln Sie Dokumente von Kunden ein.",
-  "Only you can open them.": "Nur Sie können sie öffnen.",
-  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
-    "Senden Sie einen Link. Ihr Kunde lädt aus jedem Browser hoch, ohne Konto. Die Dateien werden in seinem Browser verschlüsselt, daher können wir sie nicht lesen.",
+  "Encrypted on their device, before upload.": "Verschlüsselt auf ihrem Gerät, noch vor dem Upload.",
+  "Send a link. Your client uploads from any browser, no account needed. Only you hold the key, so not even we can open what they send.":
+    "Senden Sie einen Link. Ihr Kunde lädt aus jedem Browser hoch, ohne Konto. Den Schlüssel haben nur Sie, daher können nicht einmal wir öffnen, was er sendet.",
   "Create a request link": "Anfragelink erstellen",
   "Just need to send a file?": "Sie möchten nur eine Datei senden?",
   "Free to start. No card needed.": "Kostenlos starten. Keine Karte nötig.",
@@ -103,13 +103,15 @@ const messages: Messages = {
     "Ein Wiederherstellungsschlüssel, damit ein vergessenes Passwort nicht das Ende ist",
   "Tax documents": "Steuerunterlagen",
   "Rental application": "Mietbewerbung",
-  "We can't read your files.": "Wir können Ihre Dateien nicht lesen.",
-  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
-    "Dateien und ihre Namen werden in Ihrem Browser verschlüsselt, bevor sie hochgeladen werden. Unser Server speichert also nur, was er nicht öffnen kann. Der Code ist Open Source.",
+  "Don't take our word for it.": "Sie müssen uns nicht beim Wort nehmen.",
+  "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived.":
+    "Dateien und ihre Namen werden vor dem Upload in Ihrem Browser verschlüsselt. Unser Server speichert also nur, was er nicht öffnen kann. Der Code ist öffentlich, jeder kann es prüfen. Was der Server sieht: wie groß eine Datei ist und wann sie ankam.",
   "How it works in detail": "So funktioniert es im Detail",
   "Read the code on GitHub": "Den Code auf GitHub lesen",
   "Start with the free drive today. The paid plans, with more room, open soon.":
     "Starten Sie heute mit dem kostenlosen Laufwerk. Die bezahlten Tarife mit mehr Platz kommen bald.",
+  "Built and run by {name}. Questions go straight to the person who built it:":
+    "Entwickelt und betrieben von {name}. Fragen gehen direkt an die Person, die es gebaut hat:",
 }
 
 export default messages

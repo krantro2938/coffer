@@ -60,9 +60,9 @@ const messages: Messages = {
   "Send files": "Bestanden versturen",
   "File requests, no account for your clients": "Bestanden opvragen, zonder account voor je klanten",
   "Collect documents from clients.": "Verzamel documenten van klanten.",
-  "Only you can open them.": "Alleen jij kunt ze openen.",
-  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
-    "Stuur een link. Je klant uploadt vanuit elke browser, zonder account. Bestanden worden in hun browser versleuteld, dus wij kunnen ze niet lezen.",
+  "Encrypted on their device, before upload.": "Versleuteld op hun apparaat, nog vóór de upload.",
+  "Send a link. Your client uploads from any browser, no account needed. Only you hold the key, so not even we can open what they send.":
+    "Stuur een link. Je klant uploadt vanuit elke browser, zonder account. Alleen jij hebt de sleutel, dus zelfs wij kunnen niet openen wat er binnenkomt.",
   "Create a request link": "Aanvraaglink maken",
   "Just need to send a file?": "Wil je alleen een bestand sturen?",
   "Free to start. No card needed.": "Gratis beginnen. Geen betaalkaart nodig.",
@@ -102,13 +102,15 @@ const messages: Messages = {
   "A recovery key, so a forgotten password isn't the end": "Een herstelsleutel, zodat een vergeten wachtwoord niet het einde is",
   "Tax documents": "Belastingdocumenten",
   "Rental application": "Huuraanvraag",
-  "We can't read your files.": "Wij kunnen je bestanden niet lezen.",
-  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
-    "Bestanden en hun namen worden in je browser versleuteld voordat ze worden geüpload, dus onze server bewaart alleen wat hij niet kan openen. De code is open source.",
+  "Don't take our word for it.": "Je hoeft ons niet op ons woord te geloven.",
+  "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived.":
+    "Bestanden en hun namen worden vóór de upload in je browser versleuteld, dus onze server bewaart alleen wat hij niet kan openen. De code is openbaar, iedereen kan het nagaan. Wat de server wel ziet: hoe groot een bestand is en wanneer het binnenkwam.",
   "How it works in detail": "Hoe het in detail werkt",
   "Read the code on GitHub": "Lees de code op GitHub",
   "Start with the free drive today. The paid plans, with more room, open soon.":
     "Begin vandaag met de gratis drive. De betaalde abonnementen, met meer ruimte, komen binnenkort.",
+  "Built and run by {name}. Questions go straight to the person who built it:":
+    "Gebouwd en beheerd door {name}. Vragen komen direct terecht bij wie het gebouwd heeft:",
 }
 
 export default messages

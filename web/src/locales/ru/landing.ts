@@ -61,9 +61,9 @@ const messages: Messages = {
   "Send files": "Отправить файлы",
   "File requests, no account for your clients": "Запрос файлов, без аккаунта для ваших клиентов",
   "Collect documents from clients.": "Собирайте документы от клиентов.",
-  "Only you can open them.": "Открыть их сможете только вы.",
-  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
-    "Отправьте ссылку. Клиент загрузит файлы из любого браузера, без аккаунта. Файлы шифруются прямо в его браузере, поэтому мы не можем их прочитать.",
+  "Encrypted on their device, before upload.": "Шифруются на их устройстве ещё до загрузки.",
+  "Send a link. Your client uploads from any browser, no account needed. Only you hold the key, so not even we can open what they send.":
+    "Отправьте ссылку. Клиент загрузит файлы из любого браузера, без аккаунта. Ключ есть только у вас, поэтому даже мы не можем открыть то, что он присылает.",
   "Create a request link": "Создать ссылку для запроса",
   "Just need to send a file?": "Нужно просто отправить файл?",
   "Free to start. No card needed.": "Начать бесплатно. Карта не нужна.",
@@ -103,13 +103,15 @@ const messages: Messages = {
   "A recovery key, so a forgotten password isn't the end": "Ключ восстановления: забытый пароль не станет концом",
   "Tax documents": "Налоговые документы",
   "Rental application": "Заявка на аренду",
-  "We can't read your files.": "Мы не можем прочитать ваши файлы.",
-  "Files and their names are encrypted in your browser before they are uploaded, so our server only stores what it can't open. The code is open source.":
-    "Файлы и их названия шифруются в вашем браузере до загрузки, поэтому наш сервер хранит только то, что не может открыть. Код открыт.",
+  "Don't take our word for it.": "Не верьте нам на слово.",
+  "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived.":
+    "Файлы и их имена шифруются в вашем браузере до загрузки, поэтому наш сервер хранит только то, что не может открыть. Код открыт, проверить может любой. Что сервер всё же видит: размер файла и время, когда он пришёл.",
   "How it works in detail": "Подробно, как это работает",
   "Read the code on GitHub": "Читать код на GitHub",
   "Start with the free drive today. The paid plans, with more room, open soon.":
     "Начните с бесплатного диска уже сегодня. Платные тарифы с бо́льшим объёмом скоро появятся.",
+  "Built and run by {name}. Questions go straight to the person who built it:":
+    "Создатель и владелец — {name}. Вопросы попадают прямо к автору:",
 }
 
 export default messages

@@ -55,7 +55,7 @@ var publicPages = map[string]pageMeta{
 // The home page's title and description, also the shell's default (web/src/routes/__root.tsx).
 const (
 	homeTitle       = "Coffer — collect documents from clients, end-to-end encrypted"
-	homeDescription = "Send a link and your clients upload documents from any browser, no account needed. Files are encrypted before they leave, so only you can open them. Free to start."
+	homeDescription = "Send clients an upload link. Files are encrypted in their browser before upload, so only you can open them. No account for your clients, open source, free to start."
 )
 
 // structuredData tells search engines what Coffer is, for the home page.
@@ -72,8 +72,8 @@ var sitemapOrder = []string{"/", "/security", "/receive", "/register", "/login",
 // noscriptHome is the home page in plain words, for readers that do not run
 // JavaScript: some crawlers, and every link-preview scraper.
 const noscriptHome = `<noscript><main style="max-width:40rem;margin:3rem auto;padding:0 1rem;font-family:system-ui,sans-serif;line-height:1.6">
-<h1>Collect documents from clients. Only you can open them.</h1>
-<p>Coffer is an end-to-end encrypted way to request, send and keep files. Send a link, and your client uploads from any browser with no account. Files are encrypted in their browser with AES-256-GCM before they leave it, so the server stores only ciphertext: it cannot read a file or its name.</p>
+<h1>Collect documents from clients. Encrypted on their device, before upload.</h1>
+<p>Coffer is an end-to-end encrypted way to request, send and keep files. Send a link, and your client uploads from any browser with no account. Files are encrypted in their browser with AES-256-GCM before they leave it, so the server stores only ciphertext: it cannot read a file or its name. It does see how large a file is and when it arrived.</p>
 <h2>Request files</h2>
 <p>Make an upload link, say what you need and by when, and set how many files it takes and when it closes. Your client opens it and drops their files in. The link can only upload: it cannot read, list or delete anything. For accountants collecting statements and IDs, lawyers collecting case documents, recruiters collecting CVs, landlords collecting applications, and teachers collecting coursework by a deadline.</p>
 <h2>Send files</h2>
@@ -109,7 +109,7 @@ func (s *staticHandler) page(path, origin string) []byte {
 		head.WriteString(`<meta property="og:url" content="` + url + `"/>`)
 		head.WriteString(`<meta property="og:image" content="` + html.EscapeString(origin) + `/og.png"/>`)
 		head.WriteString(`<meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>`)
-		head.WriteString(`<meta property="og:image:alt" content="Coffer: collect documents from clients. Only you can open them."/>`)
+		head.WriteString(`<meta property="og:image:alt" content="Coffer: collect documents from clients, encrypted on their device before upload."/>`)
 		head.WriteString(`<meta name="twitter:card" content="summary_large_image"/>`)
 		head.WriteString(`<meta name="twitter:title" content="` + t + `"/><meta name="twitter:description" content="` + d + `"/>`)
 		head.WriteString(`<meta name="twitter:image" content="` + html.EscapeString(origin) + `/og.png"/>`)

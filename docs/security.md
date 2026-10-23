@@ -5,7 +5,8 @@ What Coffer protects, how, and where the protection stops.
 ## The short version
 
 - Files and notes are encrypted in the browser (AES-256-GCM, 4 MB chunks, per-file random keys). The
-  server stores only ciphertext; names, types and sizes are encrypted too.
+  server stores only ciphertext; names and types are encrypted too. The server still sees how large each
+  file is (see the limits below).
 - Share links look like `/s/k7m3xq2#h4c9w2pz8rtf6mxn`. The fragment is an 80-bit secret the server never
   sees. Optional passwords are mixed in via Argon2id. The server keeps only a hash of a derived access token.
 - Links can expire, burn after N views, and be revoked. Wrong passwords never consume a view.
@@ -32,7 +33,8 @@ link secret (+ optional password) ──HKDF──► share wrap key, access tok
 
 - **Content** is split into 4 MB chunks sealed with AES-256-GCM. Each chunk's nonce encodes its index and whether
   it is the last, so chunks cannot be reordered, dropped or cut short without the download failing.
-- **Names, types and sizes** are sealed separately under a key derived from the same file key.
+- **Names, types and exact sizes** are sealed separately under a key derived from the same file key. The
+  server still sees roughly how large each file is, from the size of what it stores.
 - **A share link** carries its secret after the `#`, which browsers do not send to servers. The file key is
   wrapped under a key derived from that secret; the server keeps the wrapped key and a hash of an access token
   derived from it, and hands the wrapped key only to someone who presents the token.
