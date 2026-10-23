@@ -62,11 +62,15 @@ const (
 	homeDescription = "Send clients an upload link. Files are encrypted in their browser before upload, so only you can open them. No account for your clients, open source, free to start."
 )
 
+// ogImage is the link preview's address. X and other sites keep their own copy
+// of a preview under its address, so change the version whenever og.png changes.
+const ogImage = "/og.png?v=2"
+
 // structuredData tells search engines what Coffer is, for the home page.
 const structuredData = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[` +
 	`{"@type":"WebSite","name":"Coffer","url":"ORIGIN/"},` +
 	`{"@type":"SoftwareApplication","name":"Coffer","url":"ORIGIN/","applicationCategory":"BusinessApplication","operatingSystem":"Any (web browser)",` +
-	`"description":"DESCRIPTION","image":"ORIGIN/og.png","isAccessibleForFree":true,` +
+	`"description":"DESCRIPTION","image":"ORIGIN` + ogImage + `","isAccessibleForFree":true,` +
 	`"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Free account: 300 MB, upload links and share links"},` +
 	`"license":"https://www.gnu.org/licenses/agpl-3.0.html","codeRepository":"https://github.com/krantro2938/coffer"}]}</script>`
 
@@ -111,12 +115,12 @@ func (s *staticHandler) page(path, origin string) []byte {
 		head.WriteString(`<meta property="og:type" content="website"/><meta property="og:site_name" content="Coffer"/><meta property="og:locale" content="en_US"/>`)
 		head.WriteString(`<meta property="og:title" content="` + t + `"/><meta property="og:description" content="` + d + `"/>`)
 		head.WriteString(`<meta property="og:url" content="` + url + `"/>`)
-		head.WriteString(`<meta property="og:image" content="` + html.EscapeString(origin) + `/og.png"/>`)
+		head.WriteString(`<meta property="og:image" content="` + html.EscapeString(origin+ogImage) + `"/>`)
 		head.WriteString(`<meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>`)
 		head.WriteString(`<meta property="og:image:alt" content="Coffer: collect documents from clients, encrypted on their device before upload."/>`)
 		head.WriteString(`<meta name="twitter:card" content="summary_large_image"/>`)
 		head.WriteString(`<meta name="twitter:title" content="` + t + `"/><meta name="twitter:description" content="` + d + `"/>`)
-		head.WriteString(`<meta name="twitter:image" content="` + html.EscapeString(origin) + `/og.png"/>`)
+		head.WriteString(`<meta name="twitter:image" content="` + html.EscapeString(origin+ogImage) + `"/>`)
 		if path == "/" {
 			ld := strings.NewReplacer("ORIGIN", jsonString(origin), "DESCRIPTION", jsonString(meta.description)).Replace(structuredData)
 			head.WriteString(ld)

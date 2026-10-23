@@ -31,7 +31,7 @@ func TestPagesDescribeThemselves(t *testing.T) {
 		`<script type="application/ld+json">{"@context":"https://schema.org"`,
 		`"url":"https://coffer.test/"`,
 		`<link rel="canonical" href="https://coffer.test/"/>`,
-		`<meta property="og:image" content="https://coffer.test/og.png"/>`,
+		`<meta property="og:image" content="https://coffer.test/og.png?v=2"/>`,
 		`<meta name="twitter:card" content="summary_large_image"/>`,
 		`<body class="x"><noscript>`,
 		"<script>boot()</script>", // the bootstrap script is untouched, so its hash in the policy still matches
