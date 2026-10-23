@@ -61,8 +61,8 @@ const messages: Messages = {
   "File requests, no account for your clients": "Dateianfragen, ohne Konto für Ihre Kunden",
   "Collect documents from clients.": "Sammeln Sie Dokumente von Kunden ein.",
   "Only you can open them.": "Nur Sie können sie öffnen.",
-  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
-    "Senden Sie einen Link. Ihr Kunde lädt aus jedem Browser hoch, ohne Konto. Wir können nicht lesen, was er sendet.",
+  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
+    "Senden Sie einen Link. Ihr Kunde lädt aus jedem Browser hoch, ohne Konto. Die Dateien werden in seinem Browser verschlüsselt, daher können wir sie nicht lesen.",
   "Create a request link": "Anfragelink erstellen",
   "Just need to send a file?": "Sie möchten nur eine Datei senden?",
   "Free to start. No card needed.": "Kostenlos starten. Keine Karte nötig.",

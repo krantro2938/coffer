@@ -61,8 +61,8 @@ const messages: Messages = {
   "File requests, no account for your clients": "文件请求，客户无需账户",
   "Collect documents from clients.": "向客户收集文件。",
   "Only you can open them.": "只有你能打开。",
-  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
-    "发送一个链接。客户用任何浏览器上传，无需账户。我们无法读取他们发来的内容。",
+  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
+    "发送一个链接。客户用任何浏览器上传，无需账户。文件在他们的浏览器中加密，所以我们无法读取。",
   "Create a request link": "创建请求链接",
   "Just need to send a file?": "只想发送一个文件？",
   "Free to start. No card needed.": "免费开始，无需绑定银行卡。",

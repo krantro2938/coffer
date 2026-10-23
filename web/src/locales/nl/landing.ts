@@ -61,8 +61,8 @@ const messages: Messages = {
   "File requests, no account for your clients": "Bestanden opvragen, zonder account voor je klanten",
   "Collect documents from clients.": "Verzamel documenten van klanten.",
   "Only you can open them.": "Alleen jij kunt ze openen.",
-  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
-    "Stuur een link. Je klant uploadt vanuit elke browser, zonder account. Wij kunnen niet lezen wat er binnenkomt.",
+  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
+    "Stuur een link. Je klant uploadt vanuit elke browser, zonder account. Bestanden worden in hun browser versleuteld, dus wij kunnen ze niet lezen.",
   "Create a request link": "Aanvraaglink maken",
   "Just need to send a file?": "Wil je alleen een bestand sturen?",
   "Free to start. No card needed.": "Gratis beginnen. Geen betaalkaart nodig.",

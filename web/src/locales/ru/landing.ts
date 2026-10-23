@@ -62,8 +62,8 @@ const messages: Messages = {
   "File requests, no account for your clients": "Запрос файлов, без аккаунта для ваших клиентов",
   "Collect documents from clients.": "Собирайте документы от клиентов.",
   "Only you can open them.": "Открыть их сможете только вы.",
-  "Send a link. Your client uploads from any browser, no account needed. We can't read what they send.":
-    "Отправьте ссылку. Клиент загрузит файлы из любого браузера, без аккаунта. Мы не можем прочитать, что он присылает.",
+  "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them.":
+    "Отправьте ссылку. Клиент загрузит файлы из любого браузера, без аккаунта. Файлы шифруются прямо в его браузере, поэтому мы не можем их прочитать.",
   "Create a request link": "Создать ссылку для запроса",
   "Just need to send a file?": "Нужно просто отправить файл?",
   "Free to start. No card needed.": "Начать бесплатно. Карта не нужна.",

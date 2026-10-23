@@ -69,7 +69,9 @@ function Hero() {
               {t("Collect documents from clients.")} <span className="text-lime">{t("Only you can open them.")}</span>
             </h1>
             <p className="mt-6 max-w-lg text-base text-pretty text-hero-foreground/80 sm:text-lg">
-              {t("Send a link. Your client uploads from any browser, no account needed. We can't read what they send.")}
+              {t(
+                "Send a link. Your client uploads from any browser, no account needed. Files are encrypted in their browser, so we can't read them."
+              )}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Button size="lg" asChild className="h-12 bg-lime px-7 text-base text-hero hover:bg-lime/85">
@@ -85,7 +87,12 @@ function Hero() {
                 {t("Just need to send a file?")}
               </a>
             </div>
-            <p className="mt-4 text-sm text-hero-foreground/70">{t("Free to start. No card needed.")}</p>
+            <p className="mt-4 text-sm text-hero-foreground/70">
+              {t("Free to start. No card needed.")}{" "}
+              <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-hero-foreground">
+                {t("Read the code on GitHub")}
+              </a>
+            </p>
           </div>
 
           <RequestPageMock />
