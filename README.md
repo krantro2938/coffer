@@ -11,7 +11,7 @@ The server stores only ciphertext: it cannot read a single file name.
 
 <br>
 
-<img src="docs/screenshot.png" alt="Coffer's home page: collect documents from clients, only you can open them" width="820">
+<img src="docs/screenshot.png" alt="Coffer's home page: collect documents from clients, encrypted on their device before upload" width="820">
 
 </div>
 
