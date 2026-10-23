@@ -113,6 +113,10 @@ const messages: Messages = {
   "Sign out everywhere else": "Überall sonst abmelden",
   "We keep the browser's name and when it was used, not its IP address.":
     "Wir speichern den Namen des Browsers und wann er genutzt wurde, nicht seine IP-Adresse.",
+  Email: "E-Mail",
+  "We only ever say how many files arrived. Their names are encrypted, so we can't say which.":
+    "Wir nennen nur, wie viele Dateien angekommen sind. Ihre Namen sind verschlüsselt, welche es sind, können wir nicht sagen.",
+  "Email me when someone sends files through my links": "Mir eine E-Mail senden, wenn jemand Dateien über meine Links schickt",
 }
 
 export default messages

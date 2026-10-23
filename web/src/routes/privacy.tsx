@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { Clause, LegalPage, Mail } from "@/components/legal"
 import { OPERATOR } from "@/lib/contact"
 
@@ -24,6 +24,14 @@ function Privacy() {
           Coffer is run by {OPERATOR}, who is responsible for the personal data described on this page (the controller, in the words of the
           GDPR). Write to <Mail /> for anything on this page, including the requests under "Your rights".
         </p>
+        <p>
+          For the files your clients and others send you through Coffer, the roles are the other way round: you are the controller and we
+          are your processor, under the{" "}
+          <Link to="/dpa" className="underline underline-offset-4">
+            data processing agreement
+          </Link>
+          .
+        </p>
       </Clause>
 
       <Clause title="What we cannot see">
@@ -41,7 +49,9 @@ function Privacy() {
       <Clause title="What we hold about an account">
         <ul>
           <li>
-            <strong>Your email address</strong>, to sign you in, send codes and tell you about your plan.
+            <strong>Your email address</strong>, to sign you in, send codes, tell you about your plan and, unless you turn it off in
+            Settings, tell you when files arrive through your links. If you choose to, it is shown on the page of an upload link you make,
+            so the person uploading knows who is asking.
           </li>
           <li>
             <strong>Sign-in material</strong>: a hash derived from your password on your device (never the password), and your encryption

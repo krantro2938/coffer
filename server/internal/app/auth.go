@@ -244,7 +244,27 @@ func (a *App) writeMe(w http.ResponseWriter, uid string) error {
 		"billing":          a.billingJSON(sub), // null: drives are free on this server
 		"verified":         sub.Verified,
 		"createdAt":        p.CreatedAt,
+		"notifyUploads":    p.NotifyUploads,
 	})
+	return nil
+}
+
+// handleNotifications turns the emails about files arriving through the account's links on or off.
+func (a *App) handleNotifications(w http.ResponseWriter, r *http.Request) error {
+	uid, err := a.requireUser(r)
+	if err != nil {
+		return err
+	}
+	var req struct {
+		Uploads bool `json:"uploads"`
+	}
+	if err := readJSON(w, r, &req); err != nil {
+		return err
+	}
+	if err := a.db.SetNotifyUploads(uid, req.Uploads); err != nil {
+		return err
+	}
+	writeJSON(w, 200, map[string]bool{"ok": true})
 	return nil
 }
 

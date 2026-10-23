@@ -16,14 +16,15 @@ type NewRequest struct {
 	MaxFileSize *int64
 	ExpiresAt   *int64
 	ShareID     *string // set on the request behind a folder link that takes files
+	ShowOwner   bool    // its page names the account's address
 }
 
 // CreateRequest adds a file request, or returns ErrExists if the id is taken.
 func (s *Store) CreateRequest(r NewRequest) error {
 	_, err := s.db.Exec(`INSERT INTO requests (id, user_id, folder_id, access_hash, enc_info, enc_secret, enc_private,
-		max_files, max_bytes, max_file_size, expires_at, share_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		max_files, max_bytes, max_file_size, expires_at, share_id, show_owner, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		r.ID, r.UserID, r.FolderID, r.AccessHash, r.EncInfo, r.EncSecret, r.EncPrivate,
-		r.MaxFiles, r.MaxBytes, r.MaxFileSize, r.ExpiresAt, r.ShareID, now())
+		r.MaxFiles, r.MaxBytes, r.MaxFileSize, r.ExpiresAt, r.ShareID, r.ShowOwner, now())
 	if err != nil {
 		return ErrExists
 	}
@@ -47,6 +48,8 @@ type Request struct {
 	CreatedAt   int64   `json:"createdAt"`
 	// The folder link this request stands behind, if it is not one of its own.
 	ShareID *string `json:"shareId,omitempty"`
+	// Whether its page names the account that made it.
+	ShowOwner bool `json:"showOwner"`
 	// Uploads and Bytes count what has arrived and what is on its way: an
 	// upload holds its place from the moment it starts. Bytes is the size of
 	// the files as sent, without the encryption's tag on each chunk.
@@ -62,7 +65,7 @@ func (r *Request) Open() bool {
 }
 
 const requestSQL = `SELECT r.id, r.user_id, r.folder_id, r.access_hash, r.enc_info, r.enc_secret, r.enc_private,
-	r.max_files, r.max_bytes, r.max_file_size, r.expires_at, r.revoked_at, r.created_at, r.share_id,
+	r.max_files, r.max_bytes, r.max_file_size, r.expires_at, r.revoked_at, r.created_at, r.share_id, r.show_owner,
 	(SELECT COUNT(*) FROM items i WHERE i.request_id = r.id),
 	(SELECT COALESCE(SUM(size - 16 * chunk_count), 0) FROM items i WHERE i.request_id = r.id),
 	(SELECT COUNT(*) FROM items i WHERE i.request_id = r.id AND i.ready = 1)
@@ -71,7 +74,7 @@ const requestSQL = `SELECT r.id, r.user_id, r.folder_id, r.access_hash, r.enc_in
 func scanRequest(row interface{ Scan(...any) error }) (*Request, error) {
 	var r Request
 	err := row.Scan(&r.ID, &r.UserID, &r.FolderID, &r.AccessHash, &r.EncInfo, &r.EncSecret, &r.EncPrivate,
-		&r.MaxFiles, &r.MaxBytes, &r.MaxFileSize, &r.ExpiresAt, &r.RevokedAt, &r.CreatedAt, &r.ShareID, &r.Uploads, &r.Bytes, &r.Received)
+		&r.MaxFiles, &r.MaxBytes, &r.MaxFileSize, &r.ExpiresAt, &r.RevokedAt, &r.CreatedAt, &r.ShareID, &r.ShowOwner, &r.Uploads, &r.Bytes, &r.Received)
 	return &r, err
 }
 
@@ -199,4 +202,57 @@ func (s *Store) DeleteOrphanedLinkRequests() error {
 	return s.exec(`DELETE FROM requests WHERE share_id IS NOT NULL
 		AND NOT EXISTS (SELECT 1 FROM shares WHERE shares.id = requests.share_id)
 		AND NOT EXISTS (SELECT 1 FROM items WHERE items.request_id = requests.id AND items.sealed_key IS NOT NULL)`)
+}
+
+// Arrivals is what came in through an account's links since it was last told.
+type Arrivals struct {
+	UserID string
+	Email  string
+	Lang   string
+	Files  int64
+	Latest int64 // when the newest of them started uploading
+}
+
+// PendingArrivals lists the accounts to tell about files that came in through
+// their links and that they have not opened yet. An account is left for later
+// while an upload through one of its links is still going, or while the last
+// one started after quietSince: a client sending ten files gets one email to
+// their owner, not ten.
+func (s *Store) PendingArrivals(quietSince int64) ([]Arrivals, error) {
+	rows, err := s.db.Query(`SELECT u.id, u.email, COALESCE(u.lang, ''), COUNT(*), MAX(i.created_at)
+		FROM items i JOIN users u ON u.id = i.user_id
+		WHERE i.request_id IS NOT NULL AND i.ready = 1 AND i.sealed_key IS NOT NULL AND i.created_at > u.uploads_notified_at
+			AND u.notify_uploads = 1 AND u.email_verified = 1 AND u.suspended_at IS NULL
+			AND NOT EXISTS (SELECT 1 FROM items p WHERE p.user_id = u.id AND p.request_id IS NOT NULL AND p.ready = 0
+				AND p.created_at > ? - 6 * 3600)
+		GROUP BY u.id HAVING MAX(i.created_at) <= ?`, quietSince, quietSince)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Arrivals
+	for rows.Next() {
+		var a Arrivals
+		if err := rows.Scan(&a.UserID, &a.Email, &a.Lang, &a.Files, &a.Latest); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
+// MarkArrivalsTold records that an account has been told about what arrived up to upto.
+func (s *Store) MarkArrivalsTold(userID string, upto int64) error {
+	return s.exec(`UPDATE users SET uploads_notified_at = MAX(uploads_notified_at, ?) WHERE id = ?`, upto, userID)
+}
+
+// SetNotifyUploads turns the arrival emails on or off for an account.
+func (s *Store) SetNotifyUploads(userID string, on bool) error {
+	return s.exec(`UPDATE users SET notify_uploads = ? WHERE id = ?`, on, userID)
+}
+
+// RequestOwner is the address a request's page may show, with whether it has been confirmed.
+func (s *Store) RequestOwner(userID string) (email string, verified bool, err error) {
+	err = s.db.QueryRow(`SELECT email, email_verified FROM users WHERE id = ?`, userID).Scan(&email, &verified)
+	return email, verified, err
 }

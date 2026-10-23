@@ -104,13 +104,15 @@ type Profile struct {
 	KDFParams string // JSON
 	WrappedMK []byte
 	CreatedAt int64
+	// Whether files coming in through the account's links are announced by email.
+	NotifyUploads bool
 }
 
 // Profile returns the account's own view of itself.
 func (s *Store) Profile(id string) (*Profile, error) {
 	var p Profile
-	err := s.db.QueryRow(`SELECT email, kdf_salt, kdf_params, wrapped_mk, created_at FROM users WHERE id = ?`, id).
-		Scan(&p.Email, &p.KDFSalt, &p.KDFParams, &p.WrappedMK, &p.CreatedAt)
+	err := s.db.QueryRow(`SELECT email, kdf_salt, kdf_params, wrapped_mk, created_at, notify_uploads FROM users WHERE id = ?`, id).
+		Scan(&p.Email, &p.KDFSalt, &p.KDFParams, &p.WrappedMK, &p.CreatedAt, &p.NotifyUploads)
 	return &p, err
 }
 

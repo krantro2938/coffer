@@ -18,7 +18,7 @@
 export type AnalyticsConfig = { url: string; site: string }
 
 /** The marketing pages. They also report the referring site and their real path, which is a fixed word. */
-const PUBLIC_PAGES: ReadonlySet<string> = new Set(["/", "/security", "/terms", "/privacy"])
+const PUBLIC_PAGES: ReadonlySet<string> = new Set(["/", "/security", "/terms", "/privacy", "/dpa"])
 
 /** The rest of the app, by pattern. A route not listed here (admin, not found) reports nothing. */
 const APP_PAGES: ReadonlySet<string> = new Set([

@@ -87,6 +87,8 @@ export type NewRequest = {
   maxFileSize: number | null
   /** Bytes in all. */
   maxBytes: number | null
+  /** Show the account's address on the upload page. */
+  showOwner: boolean
 }
 
 /** Everything a new request consists of: what the server stores, and what an uploader needs. */
@@ -127,6 +129,7 @@ export async function createRequest(masterKey: CryptoKey, opts: NewRequest): Pro
         maxBytes: opts.maxBytes ?? undefined,
         maxFileSize: opts.maxFileSize ?? undefined,
         expiresIn: opts.expiresIn ?? undefined,
+        showOwner: opts.showOwner,
       },
     })
   } catch (e) {
@@ -163,6 +166,8 @@ export type OpenRequest = {
   filesLeft?: number
   bytesLeft?: number
   expiresAt?: number
+  /** Who is asking: the account's confirmed address, if it chose to show it. */
+  owner?: string
   access: Uint8Array<ArrayBuffer>
   publicKey: Uint8Array<ArrayBuffer>
 }
@@ -192,6 +197,7 @@ export async function openRequest(id: string, fragment: string): Promise<OpenReq
     filesLeft: pub.filesLeft,
     bytesLeft: pub.bytesLeft,
     expiresAt: pub.expiresAt,
+    owner: pub.owner,
     access: keys.access,
     publicKey: fromB64(info.publicKey),
   }

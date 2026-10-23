@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
   AlertCircleIcon,
+  BadgeCheckIcon,
   CheckCircle2Icon,
   CheckIcon,
   InboxIcon,
@@ -158,11 +159,21 @@ function RequestPage() {
                     <InboxIcon className="size-6" />
                   </span>
                   <div className="min-w-0">
+                    {req.owner && (
+                      <p className="mb-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+                        <BadgeCheckIcon className="size-4 shrink-0 text-primary" />
+                        <span className="min-w-0 break-words">{t("From {email} · address confirmed", { email: req.owner })}</span>
+                      </p>
+                    )}
                     <h1 className="text-2xl font-medium break-words">{req.title || t("Send files securely")}</h1>
                     {req.note && <p className="mt-2 text-sm break-words whitespace-pre-wrap text-muted-foreground">{req.note}</p>}
                     <p className="mt-2 text-sm text-pretty text-muted-foreground">
                       <LockKeyholeIcon className="mr-1.5 inline size-3.5 -translate-y-px" />
-                      {t("Encrypted in your browser before they leave it. Only the person who gave you this link can open them.")}
+                      {req.owner
+                        ? t("Encrypted in your browser before they leave it. Only {email} can open them.", {
+                            email: req.owner,
+                          })
+                        : t("Encrypted in your browser before they leave it. Only the person who gave you this link can open them.")}
                     </p>
                   </div>
                 </div>

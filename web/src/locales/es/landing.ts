@@ -75,11 +75,11 @@ const messages: Messages = {
     "Di qué necesitas y para cuándo. Define cuántos archivos, de qué tamaño y cuándo deja de funcionar el enlace.",
   "Up to 10 files, closes in 7 days": "Hasta 10 archivos, se cierra en 7 días",
   "Send it to your client": "Envíaselo a tu cliente",
-  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
-    "Lo abren en cualquier navegador y sueltan sus archivos. El enlace solo sirve para subir. No puede leer, listar ni borrar nada.",
+  "They open it in any browser, see that it comes from you, and drop their files in. The link can only upload: it can't read, list or delete anything.":
+    "Lo abre en cualquier navegador, ve que viene de ti y deja sus archivos. El enlace solo sirve para subir: no puede leer, listar ni borrar nada.",
   "Open them in your drive": "Ábrelos en tu unidad",
-  "The files show up in your drive the next time you open it. Only you can read them.":
-    "Los archivos aparecen en tu unidad la próxima vez que la abras. Solo tú puedes leerlos.",
+  "We email you when files arrive. They wait in your drive, and only you can open them.":
+    "Te avisamos por correo cuando llegan archivos. Te esperan en tu unidad, y solo tú puedes abrirlos.",
   "The paperwork you keep chasing": "Los papeles que siempre estás persiguiendo",
   "Client documents": "Documentos de clientes",
   "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
@@ -111,6 +111,11 @@ const messages: Messages = {
     "Empieza hoy con la unidad gratuita. Los planes de pago, con más espacio, llegarán pronto.",
   "Built and run by {name}. Questions go straight to the person who built it:":
     "Creado y gestionado por {name}. Las preguntas llegan directamente a quien lo hizo:",
+  "Email was never meant for passports.": "El correo nunca se pensó para pasaportes.",
+  "A scan sent by email stays in your client's sent folder and in your inbox for years, readable by both email providers and by anyone who gets into either account. A Coffer link puts it in one place that only you can open, and you delete it when the job is done.":
+    "Un escaneo enviado por correo se queda años en la carpeta de enviados de tu cliente y en tu bandeja de entrada, legible para ambos proveedores de correo y para cualquiera que entre en una de las cuentas. Un enlace de Coffer lo deja en un solo lugar que solo tú puedes abrir, y lo borras cuando terminas el trabajo.",
+  "Servers in Germany, encrypted files stored in the EU": "Servidores en Alemania, archivos cifrados guardados en la UE",
+  "A GDPR data processing agreement, included": "Un acuerdo de tratamiento de datos según el RGPD, incluido",
 }
 
 export default messages

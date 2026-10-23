@@ -76,11 +76,11 @@ const messages: Messages = {
     "Напишите, что вам нужно и к какому сроку. Задайте, сколько файлов, какого размера и когда ссылка перестанет работать.",
   "Up to 10 files, closes in 7 days": "До 10 файлов, закроется через 7 дней",
   "Send it to your client": "Отправьте клиенту",
-  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
-    "Они открывают её в любом браузере и перетаскивают файлы. Ссылка умеет только загружать: прочитать, показать список или удалить она ничего не может.",
+  "They open it in any browser, see that it comes from you, and drop their files in. The link can only upload: it can't read, list or delete anything.":
+    "Клиент открывает её в любом браузере, видит, что она от вас, и перетаскивает файлы. Ссылка умеет только загружать: читать, просматривать список или удалять она не может.",
   "Open them in your drive": "Откройте их в своём диске",
-  "The files show up in your drive the next time you open it. Only you can read them.":
-    "Файлы появятся в вашем диске при следующем входе. Прочитать их можете только вы.",
+  "We email you when files arrive. They wait in your drive, and only you can open them.":
+    "Мы пришлём письмо, когда файлы придут. Они ждут вас на диске, и открыть их можете только вы.",
   "The paperwork you keep chasing": "Бумаги, за которыми вы всё время гоняетесь",
   "Client documents": "Документы клиентов",
   "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
@@ -112,6 +112,11 @@ const messages: Messages = {
     "Начните с бесплатного диска уже сегодня. Платные тарифы с бо́льшим объёмом скоро появятся.",
   "Built and run by {name}. Questions go straight to the person who built it:":
     "Создатель и владелец — {name}. Вопросы попадают прямо к автору:",
+  "Email was never meant for passports.": "Почта не создана для паспортов.",
+  "A scan sent by email stays in your client's sent folder and in your inbox for years, readable by both email providers and by anyone who gets into either account. A Coffer link puts it in one place that only you can open, and you delete it when the job is done.":
+    "Скан, отправленный по почте, годами лежит в «Отправленных» у клиента и у вас во входящих. Его могут прочитать оба почтовых сервиса и любой, кто попадёт в один из ящиков. Ссылка Coffer кладёт его в одно место, которое можете открыть только вы, и вы удаляете его, когда работа закончена.",
+  "Servers in Germany, encrypted files stored in the EU": "Серверы в Германии, зашифрованные файлы хранятся в ЕС",
+  "A GDPR data processing agreement, included": "Договор об обработке данных по GDPR — включён",
 }
 
 export default messages

@@ -115,6 +115,8 @@ export type Me = {
   billing: Billing | null
   /** Whether the email address has been confirmed. */
   verified: boolean
+  /** Whether files arriving through the account's links are announced by email. */
+  notifyUploads: boolean
 }
 
 /** Whether this account's drive accepts new files. */
@@ -180,6 +182,8 @@ export type RequestPublic = {
   filesLeft?: number
   bytesLeft?: number
   expiresAt?: number
+  /** The confirmed address of the account asking, when it chose to show it. */
+  owner?: string
 }
 
 export type ShareRow = {

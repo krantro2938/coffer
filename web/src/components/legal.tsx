@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
 import { LEGAL_UPDATED, SUPPORT_EMAIL } from "@/lib/contact"
 
-/** Page frame for the terms and the privacy policy. They are written in English only. */
+/** Page frame for the terms, the privacy policy and the data processing agreement. They are written in English only. */
 export function LegalPage({ title, intro, children }: { title: string; intro: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
@@ -20,6 +20,10 @@ export function LegalPage({ title, intro, children }: { title: string; intro: Re
           , the{" "}
           <Link to="/privacy" className="underline underline-offset-4">
             privacy policy
+          </Link>
+          , the{" "}
+          <Link to="/dpa" className="underline underline-offset-4">
+            data processing agreement
           </Link>{" "}
           and{" "}
           <Link to="/security" className="underline underline-offset-4">

@@ -53,6 +53,8 @@ func (a *App) handleCreateRequest(w http.ResponseWriter, r *http.Request) error 
 		ExpiresIn   *int64  `json:"expiresIn"`
 		// The folder link this request stands behind: its holders may add files.
 		ShareID *string `json:"shareId"`
+		// Its page names the account's address, so whoever opens it knows who is asking.
+		ShowOwner bool `json:"showOwner"`
 	}
 	if err := readJSON(w, r, &req); err != nil {
 		return err
@@ -125,7 +127,7 @@ func (a *App) handleCreateRequest(w http.ResponseWriter, r *http.Request) error 
 	nr := store.NewRequest{
 		ID: req.ID, UserID: uid, FolderID: req.FolderID, AccessHash: req.AccessHash, EncInfo: req.EncInfo, EncSecret: req.EncSecret,
 		EncPrivate: req.EncPrivate, MaxFiles: req.MaxFiles, MaxBytes: req.MaxBytes, MaxFileSize: req.MaxFileSize, ExpiresAt: expires,
-		ShareID: req.ShareID,
+		ShareID: req.ShareID, ShowOwner: req.ShowOwner && req.ShareID == nil,
 	}
 	if err := a.db.CreateRequest(nr); errors.Is(err, store.ErrExists) {
 		return errf(http.StatusConflict, "request already exists")
@@ -225,7 +227,8 @@ func (a *App) fileLimit(rq *store.Request) int64 {
 }
 
 // handleRequestInfo is what anyone holding a request's id may learn: its
-// sealed description and what it still takes. Nothing about what came in.
+// sealed description, what it still takes and, if its owner chose to say,
+// whose it is. Nothing about what came in.
 func (a *App) handleRequestInfo(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	if !requestIDRe.MatchString(id) {
@@ -263,6 +266,14 @@ func (a *App) handleRequestInfo(w http.ResponseWriter, r *http.Request) error {
 	}
 	if rq.ExpiresAt != nil {
 		resp["expiresAt"] = *rq.ExpiresAt
+	}
+	// Only an address the account has proven it holds: one it merely typed would vouch for nothing.
+	if rq.ShowOwner {
+		if email, verified, err := a.db.RequestOwner(rq.UserID); err != nil {
+			return err
+		} else if verified {
+			resp["owner"] = email
+		}
 	}
 	writeJSON(w, 200, resp)
 	return nil

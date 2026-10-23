@@ -298,6 +298,7 @@ run("coffer end-to-end", () => {
       maxFiles: 2,
       maxFileSize: null,
       maxBytes: null,
+      showOwner: true,
     })
     const owner = cookie
 
@@ -308,6 +309,8 @@ run("coffer end-to-end", () => {
     expect(req.title).toBe("Papers")
     expect(req.note).toBe("By Friday, please")
     expect(req.filesLeft).toBe(2)
+    // It says who is asking: the account's confirmed address.
+    expect(req.owner).toMatch(/^r\d+@example\.com$/)
     // The id without the right secret opens nothing.
     await expect(openRequest(id, "0".repeat(26))).rejects.toBeInstanceOf(BadRequestLink)
     await expect(openRequest(id, "")).rejects.toBeInstanceOf(BadRequestLink)

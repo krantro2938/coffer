@@ -36,6 +36,7 @@ type App struct {
 
 	removing   chan struct{} // bounds concurrent blob deletions
 	hourlyBusy atomic.Bool
+	telling    atomic.Bool // arrival emails are going out
 	lastBackup time.Time
 
 	authLimit      *ratelimit.Limiter  // per IP, auth endpoints
@@ -175,6 +176,7 @@ func (a *App) routes() http.Handler {
 	h("POST /api/auth/sessions/end-others", a.handleEndOtherSessions)
 	h("POST /api/auth/verify", a.limitAuth(a.handleVerify))
 	h("POST /api/auth/verify/resend", a.limitAuth(a.handleResendCode))
+	h("POST /api/auth/notifications", a.handleNotifications)
 	if a.cfg.GoogleClientID != "" && a.cfg.GoogleSecret != "" {
 		h("GET /api/auth/google/start", a.limitAuth(a.handleGoogleStart))
 		h("GET /api/auth/google/callback", a.limitAuth(a.handleGoogleCallback))

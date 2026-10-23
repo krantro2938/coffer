@@ -112,6 +112,10 @@ const messages: Messages = {
   "Sign out everywhere else": "Overal elders uitloggen",
   "We keep the browser's name and when it was used, not its IP address.":
     "We bewaren de naam van de browser en wanneer hij is gebruikt, niet het IP-adres.",
+  Email: "E-mail",
+  "We only ever say how many files arrived. Their names are encrypted, so we can't say which.":
+    "We zeggen alleen hoeveel bestanden er binnenkwamen. Hun namen zijn versleuteld, dus welke kunnen we niet zeggen.",
+  "Email me when someone sends files through my links": "Mail me als iemand bestanden via mijn links stuurt",
 }
 
 export default messages

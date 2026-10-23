@@ -8,12 +8,14 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
 // Mailer sends the few transactional emails Coffer needs through Resend:
-// sign-up codes and the warnings before a lapsed drive is emptied.
+// sign-up codes, news of files arriving through a request link, and the
+// warnings before a lapsed drive is emptied.
 type Mailer struct {
 	key, from string
 	hc        *http.Client
@@ -153,5 +155,40 @@ func PurgedMessage(lang string) Message {
 		Heading: "Your drive has been emptied",
 		Body:    "Your plan was not renewed, so the files, folders and links in your drive have been deleted. Your account is still here: pick a plan to start again.",
 		Footer:  "You are receiving this because you have a Coffer account.",
+	}
+}
+
+// ArrivalMessage tells an account that files came in through its links. It
+// cannot say which: their names are encrypted and the server cannot read them.
+func ArrivalMessage(lang string, files int64, link string) Message {
+	n := strconv.FormatInt(files, 10)
+	if ru(lang) {
+		subject := n + " новых файла в Coffer"
+		switch {
+		case files%10 == 1 && files%100 != 11:
+			subject = n + " новый файл в Coffer"
+		case files%10 >= 5 || files%10 == 0 || (files%100 >= 11 && files%100 <= 14):
+			subject = n + " новых файлов в Coffer"
+		}
+		return Message{
+			Subject:   subject,
+			Heading:   "Вам прислали файлы",
+			Body:      "Через одну из ваших ссылок для загрузки пришли файлы: " + n + ". Какие именно, письмо сказать не может: их имена зашифрованы, и наш сервер их не видит.",
+			Link:      link,
+			LinkLabel: "Открыть Coffer",
+			Footer:    "Отключить эти письма можно в настройках Coffer.",
+		}
+	}
+	subject, body := n+" new files in Coffer", n+" files came in through your upload links."
+	if files == 1 {
+		subject, body = "A new file in Coffer", "A file came in through one of your upload links."
+	}
+	return Message{
+		Subject:   subject,
+		Heading:   "Someone sent you files",
+		Body:      body + " This email can't say what they are: their names are encrypted, and our server can't read them.",
+		Link:      link,
+		LinkLabel: "Open Coffer",
+		Footer:    "You can turn these emails off in Settings in Coffer.",
 	}
 }

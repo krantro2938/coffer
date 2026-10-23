@@ -106,6 +106,10 @@ const messages: Messages = {
   "Signed out everywhere else": "已退出其他所有位置",
   "Sign out everywhere else": "退出其他所有位置",
   "We keep the browser's name and when it was used, not its IP address.": "我们只保存浏览器名称和使用时间，不保存 IP 地址。",
+  Email: "邮件",
+  "We only ever say how many files arrived. Their names are encrypted, so we can't say which.":
+    "我们只会告诉你收到了几个文件。文件名是加密的，所以我们无法说出是哪些。",
+  "Email me when someone sends files through my links": "有人通过我的链接发送文件时给我发邮件",
 }
 
 export default messages

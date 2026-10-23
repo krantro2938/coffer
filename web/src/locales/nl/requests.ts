@@ -108,6 +108,12 @@ const messages: Messages = {
     "Je gratis account heeft {n} aanvraaglinks tegelijk open. Sluit er één, of kies een abonnement voor zoveel je wilt.",
   "Your free account has {n} request links open at a time. Close one to open another.":
     "Je gratis account heeft {n} aanvraaglinks tegelijk open. Sluit er een om een nieuwe te openen.",
+  "Show my email on the upload page": "Mijn e-mailadres op de uploadpagina tonen",
+  "So they can see the request really comes from you. Turn it off for a link you post in public.":
+    "Zo zien ze dat het verzoek echt van jou komt. Zet het uit voor een link die je openbaar plaatst.",
+  "From {email} · address confirmed": "Van {email} · adres bevestigd",
+  "Encrypted in your browser before they leave it. Only {email} can open them.":
+    "Versleuteld in je browser voordat ze hem verlaten. Alleen {email} kan ze openen.",
 }
 
 export default messages

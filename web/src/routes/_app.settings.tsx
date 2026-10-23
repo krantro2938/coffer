@@ -19,6 +19,7 @@ import {
   ShieldCheckIcon,
   SunIcon,
   UserRoundIcon,
+  MailIcon,
 } from "lucide-react"
 import { OfferCard, PlanFinePrint, PlanGrid, usePlans } from "@/components/plans"
 import { api, type Interval, type Plan } from "@/lib/api"
@@ -27,6 +28,7 @@ import { PasswordStrength, strength } from "@/components/auth-layout"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { SlidingTabs } from "@/components/sliding-tabs"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -206,6 +208,15 @@ function SettingsPage() {
 
             <Section
               flat
+              title="Email"
+              icon={MailIcon}
+              description="We only ever say how many files arrived. Their names are encrypted, so we can't say which."
+            >
+              <ArrivalEmails />
+            </Section>
+
+            <Section
+              flat
               title="Signed-in browsers"
               icon={LaptopIcon}
               description="Everywhere this account is signed in. Signing one out does not affect the others."
@@ -321,6 +332,31 @@ function SettingsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+/** The email that says files came in through one of the account's links. */
+function ArrivalEmails() {
+  const { t } = useI18n()
+  const { me, updateMe } = useSession()
+  const [busy, setBusy] = useState(false)
+  if (!me) return null
+  const set = async (on: boolean) => {
+    setBusy(true)
+    try {
+      await api("/api/auth/notifications", { body: { uploads: on } })
+      updateMe({ ...me, notifyUploads: on })
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-4">
+      <span className="text-sm">{t("Email me when someone sends files through my links")}</span>
+      <Switch checked={me.notifyUploads} disabled={busy} onCheckedChange={(on) => void set(on)} />
+    </label>
   )
 }
 

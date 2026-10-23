@@ -23,6 +23,7 @@ import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useCopy } from "@/hooks/use-copy"
@@ -269,6 +270,7 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [maxFiles, setMaxFiles] = useState(0)
   const [maxFileSize, setMaxFileSize] = useState(0)
   const [maxBytes, setMaxBytes] = useState(0)
+  const [showOwner, setShowOwner] = useState(true)
   // Size limits are seldom wanted, so they wait behind "More options"; a limit already set keeps them in view.
   const [moreOpen, setMoreOpen] = useState(false)
   const more = moreOpen || maxFileSize > 0 || maxBytes > 0
@@ -299,6 +301,7 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         maxFiles: maxFiles || null,
         maxFileSize: maxFileSize || null,
         maxBytes: maxBytes || null,
+        showOwner,
       })
       setUrl(made.url)
       track("request-created")
@@ -394,6 +397,15 @@ function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
             <ChevronDownIcon className={cn("size-4 transition-transform duration-200", more && "rotate-180")} />
           </button>
         )}
+        <label htmlFor="request-show-owner" className="flex cursor-pointer items-center justify-between gap-3">
+          <span className="min-w-0">
+            <span className="block text-sm">{t("Show my email on the upload page")}</span>
+            <span className="block text-xs text-pretty text-muted-foreground">
+              {t("So they can see the request really comes from you. Turn it off for a link you post in public.")}
+            </span>
+          </span>
+          <Switch id="request-show-owner" checked={showOwner} onCheckedChange={setShowOwner} />
+        </label>
         <p className="text-xs text-muted-foreground">
           {t("The title and note are encrypted with the link's key. What comes in counts against the space in your drive.")}
         </p>

@@ -112,6 +112,10 @@ const messages: Messages = {
   "Sign out everywhere else": "Выйти везде, кроме этого браузера",
   "We keep the browser's name and when it was used, not its IP address.":
     "Мы храним название браузера и время использования, но не IP-адрес.",
+  Email: "Почта",
+  "We only ever say how many files arrived. Their names are encrypted, so we can't say which.":
+    "Мы сообщаем только, сколько файлов пришло. Их имена зашифрованы, поэтому какие именно, мы сказать не можем.",
+  "Email me when someone sends files through my links": "Присылать письмо, когда через мои ссылки присылают файлы",
 }
 
 export default messages

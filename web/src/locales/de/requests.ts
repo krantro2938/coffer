@@ -109,6 +109,12 @@ const messages: Messages = {
     "Ihr kostenloses Konto erlaubt {n} offene Anfragelinks gleichzeitig. Schließen Sie einen oder wählen Sie einen Tarif für beliebig viele.",
   "Your free account has {n} request links open at a time. Close one to open another.":
     "Ihr kostenloses Konto hat {n} Anfragelinks gleichzeitig offen. Schließen Sie einen, um einen neuen zu öffnen.",
+  "Show my email on the upload page": "Meine E-Mail-Adresse auf der Upload-Seite zeigen",
+  "So they can see the request really comes from you. Turn it off for a link you post in public.":
+    "Damit man sieht, dass die Anfrage wirklich von Ihnen kommt. Schalten Sie es für Links aus, die Sie öffentlich posten.",
+  "From {email} · address confirmed": "Von {email} · Adresse bestätigt",
+  "Encrypted in your browser before they leave it. Only {email} can open them.":
+    "Verschlüsselt in Ihrem Browser, bevor sie ihn verlassen. Nur {email} kann sie öffnen.",
 }
 
 export default messages

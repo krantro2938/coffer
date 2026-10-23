@@ -75,11 +75,11 @@ const messages: Messages = {
     "Geef aan wat je nodig hebt en tegen wanneer. Bepaal hoeveel bestanden, hoe groot, en wanneer de link niet meer werkt.",
   "Up to 10 files, closes in 7 days": "Maximaal 10 bestanden, sluit over 7 dagen",
   "Send it to your client": "Stuur hem naar je klant",
-  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
-    "Ze openen hem in elke browser en slepen hun bestanden erin. De link kan alleen uploaden. Hij kan niets lezen, tonen of verwijderen.",
+  "They open it in any browser, see that it comes from you, and drop their files in. The link can only upload: it can't read, list or delete anything.":
+    "Je klant opent hem in elke browser, ziet dat hij van jou komt en zet de bestanden erin. De link kan alleen uploaden: hij kan niets lezen, tonen of verwijderen.",
   "Open them in your drive": "Open ze in je drive",
-  "The files show up in your drive the next time you open it. Only you can read them.":
-    "De bestanden verschijnen in je drive zodra je die opent. Alleen jij kunt ze lezen.",
+  "We email you when files arrive. They wait in your drive, and only you can open them.":
+    "We mailen je als er bestanden binnenkomen. Ze staan klaar in je drive, en alleen jij kunt ze openen.",
   "The paperwork you keep chasing": "De papieren waar je steeds achteraan zit",
   "Client documents": "Klantdocumenten",
   "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
@@ -111,6 +111,11 @@ const messages: Messages = {
     "Begin vandaag met de gratis drive. De betaalde abonnementen, met meer ruimte, komen binnenkort.",
   "Built and run by {name}. Questions go straight to the person who built it:":
     "Gebouwd en beheerd door {name}. Vragen komen direct terecht bij wie het gebouwd heeft:",
+  "Email was never meant for passports.": "E-mail was nooit bedoeld voor paspoorten.",
+  "A scan sent by email stays in your client's sent folder and in your inbox for years, readable by both email providers and by anyone who gets into either account. A Coffer link puts it in one place that only you can open, and you delete it when the job is done.":
+    "Een scan die per e-mail is verstuurd, blijft jarenlang in de map Verzonden van je klant en in jouw inbox staan, leesbaar voor beide e-mailproviders en voor iedereen die in een van de accounts komt. Een Coffer-link zet hem op één plek die alleen jij kunt openen, en je verwijdert hem als het werk klaar is.",
+  "Servers in Germany, encrypted files stored in the EU": "Servers in Duitsland, versleutelde bestanden opgeslagen in de EU",
+  "A GDPR data processing agreement, included": "Een verwerkersovereenkomst volgens de AVG, inbegrepen",
 }
 
 export default messages

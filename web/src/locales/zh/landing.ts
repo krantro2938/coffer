@@ -75,11 +75,11 @@ const messages: Messages = {
     "写明需要什么、什么时候要。设置文件数量、大小，以及链接何时失效。",
   "Up to 10 files, closes in 7 days": "最多 10 个文件，7 天后关闭",
   "Send it to your client": "发给你的客户",
-  "They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.":
-    "对方在任何浏览器里打开链接，把文件拖进去即可。链接只能上传，不能读取、列出或删除任何内容。",
+  "They open it in any browser, see that it comes from you, and drop their files in. The link can only upload: it can't read, list or delete anything.":
+    "客户用任何浏览器打开，看到链接来自你，然后把文件拖进去。这个链接只能上传：不能读取、列出或删除任何内容。",
   "Open them in your drive": "在你的云盘中打开",
-  "The files show up in your drive the next time you open it. Only you can read them.":
-    "下次打开云盘时，文件就会出现在里面。只有你能读取。",
+  "We email you when files arrive. They wait in your drive, and only you can open them.":
+    "文件到达时我们会给你发邮件。文件在你的云盘里等你，只有你能打开。",
   "The paperwork you keep chasing": "那些总要追着要的文件",
   "Client documents": "客户文件",
   "Tax papers, IDs and receipts. One link per client, and everything lands in one place instead of across email threads.":
@@ -109,6 +109,11 @@ const messages: Messages = {
   "Read the code on GitHub": "在 GitHub 上查看代码",
   "Start with the free drive today. The paid plans, with more room, open soon.": "今天就从免费云盘开始。空间更大的付费套餐即将推出。",
   "Built and run by {name}. Questions go straight to the person who built it:": "由 {name} 开发和运营。问题会直接送到开发者手里：",
+  "Email was never meant for passports.": "电子邮件从来不是用来传护照的。",
+  "A scan sent by email stays in your client's sent folder and in your inbox for years, readable by both email providers and by anyone who gets into either account. A Coffer link puts it in one place that only you can open, and you delete it when the job is done.":
+    "通过邮件发送的扫描件会在客户的已发送文件夹和你的收件箱里躺上好几年，两家邮件服务商都能读取，任何进入其中一个账户的人也能看到。Coffer 链接把它放在只有你能打开的一个地方，事情办完就可以删除。",
+  "Servers in Germany, encrypted files stored in the EU": "服务器位于德国，加密文件存储在欧盟",
+  "A GDPR data processing agreement, included": "附带符合 GDPR 的数据处理协议",
 }
 
 export default messages

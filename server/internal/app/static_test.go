@@ -46,7 +46,7 @@ func TestPolicyWithAnalyticsOff(t *testing.T) {
 func TestPolicyWithAnalyticsOn(t *testing.T) {
 	const origin = "https://stats.example.com"
 	base := cspFor(t, "", "/")
-	for _, p := range []string{"/", "/security", "/terms", "/privacy", "/s/abc1234", "/r/abc1234", "/receive", "/login", "/register", "/drive", "/settings"} {
+	for _, p := range []string{"/", "/security", "/terms", "/privacy", "/dpa", "/s/abc1234", "/r/abc1234", "/receive", "/login", "/register", "/drive", "/settings"} {
 		csp := cspFor(t, origin, p)
 		if got := directive(csp, "connect-src"); got != "connect-src 'self' "+origin {
 			t.Errorf("%s: %s", p, got)

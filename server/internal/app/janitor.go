@@ -5,8 +5,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"coffer/internal/mail"
 	"coffer/internal/storage"
 )
 
@@ -107,8 +109,41 @@ func (a *App) sweep() {
 	if err := a.db.DeleteExpiredSessions(); err != nil {
 		log.Printf("janitor: sessions: %v", err)
 	}
+	if a.mail != nil && a.cfg.PublicURL != "" && a.telling.CompareAndSwap(false, true) {
+		go func() {
+			defer a.telling.Store(false)
+			a.tellArrivals()
+		}()
+	}
 	// Sign-ups that never confirmed their email; they cannot have stored anything.
 	if err := a.db.DeleteStaleSignups(now() - 24*3600); err != nil {
 		log.Printf("janitor: unverified accounts: %v", err)
+	}
+}
+
+// arrivalQuiet is how long uploads through an account's links must have
+// stopped before it is emailed about them, so that a batch makes one email.
+const arrivalQuiet = 2 * time.Minute
+
+// tellArrivals emails each account that has new files from its links. The
+// email can say how many, never which: the server cannot read their names.
+func (a *App) tellArrivals() {
+	due, err := a.db.PendingArrivals(now() - int64(arrivalQuiet.Seconds()))
+	if err != nil {
+		log.Printf("janitor: arrivals: %v", err)
+		return
+	}
+	for _, d := range due {
+		// Marked first: a failed send is not retried, rather than risk sending twice.
+		if err := a.db.MarkArrivalsTold(d.UserID, d.Latest); err != nil {
+			log.Printf("janitor: arrivals: %v", err)
+			continue
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		err := a.mail.Send(ctx, d.Email, mail.ArrivalMessage(d.Lang, d.Files, strings.TrimRight(a.cfg.PublicURL, "/")+"/requests"))
+		cancel()
+		if err != nil {
+			log.Printf("mail: arrivals: %v", err)
+		}
 	}
 }

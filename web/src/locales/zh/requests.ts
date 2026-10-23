@@ -104,6 +104,11 @@ const messages: Messages = {
     "你的免费账户同时最多开放 {n} 个请求链接。请关闭一个，或选择套餐以不限数量。",
   "Your free account has {n} request links open at a time. Close one to open another.":
     "免费账户最多可同时开启 {n} 个请求链接。关闭一个即可新建。",
+  "Show my email on the upload page": "在上传页面显示我的邮箱",
+  "So they can see the request really comes from you. Turn it off for a link you post in public.":
+    "这样对方能看出请求确实来自你。若链接要公开发布，请关闭此项。",
+  "From {email} · address confirmed": "来自 {email} · 地址已验证",
+  "Encrypted in your browser before they leave it. Only {email} can open them.": "文件在离开你的浏览器之前就已加密。只有 {email} 能打开。",
 }
 
 export default messages

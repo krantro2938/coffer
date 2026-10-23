@@ -108,6 +108,12 @@ const messages: Messages = {
     "В бесплатном аккаунте одновременно открыто не больше {n} ссылок для запроса. Закройте одну или выберите тариф, чтобы их было сколько угодно.",
   "Your free account has {n} request links open at a time. Close one to open another.":
     "В бесплатном аккаунте одновременно открыто не больше {n} ссылок для запроса. Закройте одну, чтобы открыть новую.",
+  "Show my email on the upload page": "Показывать мою почту на странице загрузки",
+  "So they can see the request really comes from you. Turn it off for a link you post in public.":
+    "Так получатель увидит, что запрос действительно от вас. Выключите для ссылки, которую публикуете открыто.",
+  "From {email} · address confirmed": "От {email} · адрес подтверждён",
+  "Encrypted in your browser before they leave it. Only {email} can open them.":
+    "Шифруются в вашем браузере до отправки. Открыть их сможет только {email}.",
 }
 
 export default messages

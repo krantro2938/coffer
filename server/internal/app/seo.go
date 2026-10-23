@@ -50,6 +50,10 @@ var publicPages = map[string]pageMeta{
 		"Privacy policy — Coffer",
 		"What Coffer knows about you, what it cannot know, and who else is involved.",
 	},
+	"/dpa": {
+		"Data processing agreement — Coffer",
+		"The GDPR data processing agreement for businesses that collect personal data from their clients through Coffer. It applies automatically.",
+	},
 }
 
 // The home page's title and description, also the shell's default (web/src/routes/__root.tsx).
@@ -67,7 +71,7 @@ const structuredData = `<script type="application/ld+json">{"@context":"https://
 	`"license":"https://www.gnu.org/licenses/agpl-3.0.html","codeRepository":"https://github.com/krantro2938/coffer"}]}</script>`
 
 // sitemapOrder lists the public pages in the order a sitemap should give them.
-var sitemapOrder = []string{"/", "/security", "/receive", "/register", "/login", "/terms", "/privacy"}
+var sitemapOrder = []string{"/", "/security", "/receive", "/register", "/login", "/terms", "/privacy", "/dpa"}
 
 // noscriptHome is the home page in plain words, for readers that do not run
 // JavaScript: some crawlers, and every link-preview scraper.
@@ -79,9 +83,9 @@ const noscriptHome = `<noscript><main style="max-width:40rem;margin:3rem auto;pa
 <h2>Send files</h2>
 <p>Drop files or paste a note and get a link. Whoever opens it needs no account and installs nothing. Links can expire, burn after a number of views, carry a password, and be revoked.</p>
 <h2>Keep a drive</h2>
-<p>Encrypted folders and notes, and a list of every link you have shared. Start free with 300 MB; paid plans from 100 GB.</p>
+<p>Encrypted folders and notes, and a list of every link you have shared. Start free with 300 MB; paid plans from 100 GB. Servers in Germany, encrypted files stored in the EU.</p>
 <h2>Open source</h2>
-<p>Coffer is free software under the AGPL and runs as a single container. <a href="https://github.com/krantro2938/coffer">Source on GitHub</a>. Read the <a href="/security">security model</a>, the <a href="/terms">terms</a> and the <a href="/privacy">privacy policy</a>.</p>
+<p>Coffer is free software under the AGPL and runs as a single container. <a href="https://github.com/krantro2938/coffer">Source on GitHub</a>. Read the <a href="/security">security model</a>, the <a href="/terms">terms</a>, the <a href="/privacy">privacy policy</a> and the <a href="/dpa">data processing agreement</a>.</p>
 <p>Coffer needs JavaScript to encrypt and decrypt in your browser.</p>
 </main></noscript>`
 

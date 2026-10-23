@@ -32,6 +32,7 @@ function Home() {
       <SiteHeader />
       <main className="flex-1">
         <Hero />
+        <Problem />
         <HowItWorks />
         <UseCases />
         <SendAFile />
@@ -146,10 +147,25 @@ function Visual({ name, icon: Icon, className }: { name: string; icon: typeof Lo
   )
 }
 
+/** Why not just email: the habit Coffer replaces, said once. */
+function Problem() {
+  const { t } = useI18n()
+  return (
+    <section className="mx-auto max-w-3xl px-4 pt-20 text-center sm:px-6 sm:pt-28">
+      <h2 className="text-3xl leading-[1.1] font-semibold text-balance sm:text-5xl">{t("Email was never meant for passports.")}</h2>
+      <p className="mx-auto mt-5 max-w-2xl text-pretty text-muted-foreground sm:text-lg">
+        {t(
+          "A scan sent by email stays in your client's sent folder and in your inbox for years, readable by both email providers and by anyone who gets into either account. A Coffer link puts it in one place that only you can open, and you delete it when the job is done."
+        )}
+      </p>
+    </section>
+  )
+}
+
 function HowItWorks() {
   const { t } = useI18n()
   return (
-    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-20 pb-28 sm:px-6 sm:pt-28 sm:pb-44">
+    <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-24 pb-28 sm:px-6 sm:pt-36 sm:pb-44">
       <div className="text-center">
         <p className="eyebrow">{t("How it works")}</p>
         <h2 className="mt-3 text-4xl leading-[1.05] font-semibold text-balance sm:text-6xl">
@@ -175,7 +191,9 @@ function HowItWorks() {
           visual="share"
           icon={SendIcon}
           title={t("Send it to your client")}
-          body={t("They open it in any browser and drop their files in. The link can only upload. It can't read, list or delete anything.")}
+          body={t(
+            "They open it in any browser, see that it comes from you, and drop their files in. The link can only upload: it can't read, list or delete anything."
+          )}
           className="bg-forest text-forest-foreground lg:mt-12 [&_.step-body]:text-forest-foreground/70"
         >
           <div className="rounded-2xl bg-white/10 px-3.5 py-2.5 text-sm break-all">
@@ -187,7 +205,7 @@ function HowItWorks() {
           visual="inbox"
           icon={InboxIcon}
           title={t("Open them in your drive")}
-          body={t("The files show up in your drive the next time you open it. Only you can read them.")}
+          body={t("We email you when files arrive. They wait in your drive, and only you can open them.")}
           className="bg-secondary [&_.step-body]:text-foreground/70"
         >
           <div className="flex items-center gap-3 rounded-2xl bg-card px-3.5 py-2.5 text-sm shadow-soft">
@@ -411,6 +429,22 @@ function SecurityBand() {
               "Files and their names are encrypted in your browser before upload, so our server only stores what it can't open. The code is public, so anyone can check. What the server does see: how large a file is and when it arrived."
             )}
           </p>
+          <ul className="mt-6 grid gap-2.5 text-sm sm:text-base">
+            <li className="flex items-center gap-2.5">
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-lime text-hero">
+                <CheckIcon className="size-3" />
+              </span>
+              {t("Servers in Germany, encrypted files stored in the EU")}
+            </li>
+            <li className="flex items-center gap-2.5">
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-lime text-hero">
+                <CheckIcon className="size-3" />
+              </span>
+              <Link to="/dpa" className="underline-offset-4 hover:underline">
+                {t("A GDPR data processing agreement, included")}
+              </Link>
+            </li>
+          </ul>
           <div className="mt-8 flex flex-wrap gap-2">
             <Button size="lg" variant="secondary" asChild>
               <Link to="/security">{t("How it works in detail")}</Link>

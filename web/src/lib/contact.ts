@@ -15,4 +15,4 @@ export const X_URL = ""
 export const YOUTUBE_URL = ""
 
 /** When the terms and the privacy policy were last changed. */
-export const LEGAL_UPDATED = "18 October 2026"
+export const LEGAL_UPDATED = "23 October 2026"
