@@ -64,7 +64,7 @@ const (
 
 // ogImage is the link preview's address. X and other sites keep their own copy
 // of a preview under its address, so change the version whenever og.png changes.
-const ogImage = "/og.png?v=2"
+const ogImage = "/og.png?v=3"
 
 // structuredData tells search engines what Coffer is, for the home page.
 const structuredData = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[` +
