@@ -39,6 +39,7 @@ func (s *Store) Overview() (*Overview, error) {
 		{"openReports", `SELECT COUNT(*) FROM reports WHERE status = 'open'`, nil},
 		{"pendingInvites", `SELECT COUNT(*) FROM invites WHERE used_at IS NULL`, nil},
 		{"trialRequests", `SELECT COUNT(*) FROM trial_requests WHERE invited_at IS NULL`, nil},
+		{"waitlist", `SELECT COUNT(*) FROM waitlist`, nil},
 	} {
 		n, err := s.count(c.q, c.args...)
 		if err != nil {

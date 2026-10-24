@@ -91,6 +91,7 @@ func (a *App) adminRoutes() http.Handler {
 	h("GET /api/admin/reports", a.handleAdminReports)
 	h("POST /api/admin/reports/{id}", a.handleAdminResolveReport)
 	h("GET /api/admin/trials", a.handleAdminTrials)
+	h("GET /api/admin/waitlist", a.handleAdminWaitlist)
 	h("GET /api/admin/log", a.handleAdminLog)
 
 	mux.Handle("/api/", handler(func(w http.ResponseWriter, r *http.Request) error { return errNotFound }))
@@ -756,5 +757,44 @@ func (a *App) handleAdminTrials(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	writeJSON(w, 200, trials)
+	return nil
+}
+
+// ------------------------------------------------------------------ waitlist
+
+// handleWaitlist takes an email address from someone who wants to hear when
+// the paid plans open (public site). Like a trial request, it answers the same
+// whatever the address.
+func (a *App) handleWaitlist(w http.ResponseWriter, r *http.Request) error {
+	if !a.trialLimit.Allow(clientIP(r, a.cfg.TrustProxy)) {
+		return errf(http.StatusTooManyRequests, "too many attempts, try again later")
+	}
+	var req struct {
+		Email string `json:"email"`
+		Lang  string `json:"lang"`
+	}
+	if err := readJSON(w, r, &req); err != nil {
+		return err
+	}
+	email := normEmail(req.Email)
+	if len(email) > 254 || !emailRe.MatchString(email) {
+		return errf(http.StatusBadRequest, "please enter a valid email address")
+	}
+	if len(req.Lang) > 8 {
+		req.Lang = ""
+	}
+	if _, err := a.db.AddToWaitlist(email, req.Lang); err != nil {
+		return err
+	}
+	writeJSON(w, 201, map[string]bool{"ok": true})
+	return nil
+}
+
+func (a *App) handleAdminWaitlist(w http.ResponseWriter, r *http.Request) error {
+	list, err := a.db.Waitlist()
+	if err != nil {
+		return err
+	}
+	writeJSON(w, 200, list)
 	return nil
 }

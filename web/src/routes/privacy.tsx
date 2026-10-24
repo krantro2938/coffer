@@ -126,6 +126,13 @@ function Privacy() {
         </p>
       </Clause>
 
+      <Clause title="Waiting list for paid plans">
+        <p>
+          If you leave your email on the pricing section we keep it, with your language and when you left it, to send you one email when the
+          paid plans open. We use it for nothing else. Write to us to be removed sooner.
+        </p>
+      </Clause>
+
       <Clause title="Who else handles your data">
         <ul>
           <li>
@@ -155,6 +162,7 @@ function Privacy() {
             links and plan.
           </li>
           <li>A sign-up whose email is never confirmed: removed after one day.</li>
+          <li>The waiting list: deleted once the email saying the paid plans are open has gone out.</li>
           <li>
             A drive whose plan has ended: read-only for 30 days, with two warnings by email, then its files, folders and links are deleted.
             The account itself stays until you delete it.

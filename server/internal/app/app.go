@@ -220,6 +220,7 @@ func (a *App) routes() http.Handler {
 	h("POST /api/s/{id}/report", a.handleReport)
 	h("GET /api/invites/{token}", a.handleInvite)
 	h("POST /api/trial", a.handleTrialRequest)
+	h("POST /api/waitlist", a.handleWaitlist)
 
 	if a.billing != nil {
 		h("POST /api/billing/checkout", a.handleCheckout)

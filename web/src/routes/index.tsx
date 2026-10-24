@@ -12,6 +12,7 @@ import {
   LinkIcon,
   LockKeyholeIcon,
   SendIcon,
+  ServerIcon,
   ShieldCheckIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ import { track, trackOnce } from "@/lib/analytics"
 import { useSession } from "@/lib/session"
 import { SiteFooter, SiteHeader } from "@/components/site-header"
 import { formatBytes } from "@/lib/format"
+import { api } from "@/lib/api"
 import { useI18n } from "@/lib/i18n"
 import { GITHUB_URL, OPERATOR, SITE_HOST, SUPPORT_EMAIL } from "@/lib/contact"
 
@@ -421,7 +423,7 @@ function SecurityBand() {
   const { t } = useI18n()
   return (
     <section className="bg-forest text-forest-foreground">
-      <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.3fr_1fr]">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.3fr_1fr] lg:gap-20 xl:gap-28">
         <div>
           <h2 className="text-4xl leading-[1.05] font-semibold text-balance sm:text-5xl">{t("Don't take our word for it.")}</h2>
           <p className="mt-5 max-w-xl text-pretty text-forest-foreground/75 sm:text-lg">
@@ -462,11 +464,133 @@ function SecurityBand() {
             </a>
           </p>
         </div>
-        <div className="flex justify-center lg:justify-end">
-          <Visual name="lock" icon={LockKeyholeIcon} className="size-60 sm:size-72" />
-        </div>
+        <WhoCanOpen />
       </div>
     </section>
+  )
+}
+
+/** The encryption claim as something you can check at a glance: the same files, as our server holds them and as you see them. */
+function WhoCanOpen() {
+  const { t } = useI18n()
+  const files = [
+    {
+      name: t("payslip-march.pdf"),
+      locked: "kQ7xLm0eW3tZr9.bin",
+      size: formatBytes(1.2 * 1024 ** 2),
+      kind: "PDF",
+      tone: "bg-coral-soft text-coral",
+    },
+    {
+      name: t("passport-scan.jpg"),
+      locked: "Hc2Vn8pYa4sJd1.bin",
+      size: formatBytes(1.8 * 1024 ** 2),
+      kind: "JPG",
+      tone: "bg-lavender-soft text-accent-foreground",
+    },
+    {
+      name: t("lease-2026.docx"),
+      locked: "u6RbT0wMq5fGe8.bin",
+      size: formatBytes(340 * 1024),
+      kind: "DOC",
+      tone: "bg-secondary text-secondary-foreground",
+    },
+  ]
+  return (
+    <figure aria-label={t("Who can open what your clients send")} className="mx-auto w-full max-w-md lg:mr-0">
+      <div className="w-[88%] -rotate-2 rounded-[1.75rem] bg-white/7 p-3 ring-1 ring-white/10 sm:p-4">
+        <p className="flex items-center gap-2 px-2 pt-1 pb-3 text-sm text-forest-foreground/70">
+          <ServerIcon className="size-4" /> {t("On our server")}
+        </p>
+        <ul className="grid gap-1">
+          {files.map((f) => (
+            <li key={f.locked} className="flex items-center gap-3 rounded-2xl px-2 py-2">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/8">
+                <LockKeyholeIcon className="size-4 text-forest-foreground/60" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm text-forest-foreground/50">{f.locked}</span>
+              <span className="shrink-0 text-xs text-forest-foreground/50">{f.size}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="relative -mt-14 ml-auto w-[88%] rotate-1 rounded-[1.75rem] bg-card p-3 text-card-foreground shadow-[0_30px_60px_-20px_oklch(0.1_0.04_158/70%)] sm:p-4">
+        <div className="flex items-center justify-between gap-3 px-2 pt-1 pb-3">
+          <p className="text-sm font-medium">{t("In your browser")}</p>
+          <span className="flex items-center gap-1.5 rounded-full bg-hero px-2.5 py-1 text-xs font-medium text-lime">
+            <KeyRoundIcon className="size-3.5" /> {t("Only you have the key")}
+          </span>
+        </div>
+        <ul className="grid gap-1">
+          {files.map((f) => (
+            <li key={f.locked} className="flex items-center gap-3 rounded-2xl px-2 py-2">
+              <span className={`grid size-9 shrink-0 place-items-center rounded-xl text-[0.65rem] font-semibold ${f.tone}`}>{f.kind}</span>
+              <span className="min-w-0 flex-1 truncate text-sm">{f.name}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{f.size}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </figure>
+  )
+}
+
+/** While the plans are not on sale: an address to tell when they are. */
+function Waitlist() {
+  const { t, lang } = useI18n()
+  const [email, setEmail] = useState("")
+  const [state, setState] = useState<"idle" | "busy" | "done">("idle")
+  const [error, setError] = useState("")
+  return (
+    <div className="mx-auto mt-20 grid max-w-4xl items-center gap-8 overflow-hidden rounded-[2.5rem] bg-hero p-8 text-hero-foreground sm:mt-28 sm:p-12 lg:grid-cols-[1fr_1.1fr]">
+      <div>
+        <h3 className="text-3xl leading-[1.05] font-semibold text-balance sm:text-4xl">{t("Want more room later?")}</h3>
+        <p className="mt-3 max-w-sm text-pretty text-hero-foreground/75">
+          {t("Leave your email and we'll tell you once, when the paid plans open.")}
+        </p>
+      </div>
+      {state === "done" ? (
+        <p className="flex items-center gap-3 rounded-3xl bg-white/10 p-5 text-pretty">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-lime text-hero">
+            <CheckIcon className="size-4" />
+          </span>
+          {t("Thanks. We'll email you once, when the paid plans open.")}
+        </p>
+      ) : (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            setState("busy")
+            setError("")
+            try {
+              await api("/api/waitlist", { body: { email, lang } })
+              track("waitlist-joined")
+              setState("done")
+            } catch (err) {
+              setError((err as Error).message)
+              setState("idle")
+            }
+          }}
+        >
+          <div className="flex flex-col gap-2 rounded-[1.75rem] bg-white/10 p-2 sm:flex-row sm:rounded-full">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("you@example.com")}
+              aria-label={t("Email")}
+              className="h-12 min-w-0 flex-1 rounded-full bg-transparent px-5 text-base text-hero-foreground outline-none placeholder:text-hero-foreground/50"
+            />
+            <Button type="submit" size="lg" disabled={state === "busy"} className="h-12 bg-lime text-hero hover:bg-lime/90">
+              {t("Notify me")} <ArrowRightIcon data-icon="inline-end" />
+            </Button>
+          </div>
+          {error && <p className="mt-3 px-5 text-sm text-lime">{error}</p>}
+          <p className="mt-3 px-5 text-xs text-hero-foreground/60">{t("One email, then the address is deleted.")}</p>
+        </form>
+      )}
+    </div>
   )
 }
 
@@ -516,6 +640,7 @@ function Pricing() {
           }}
         />
         <PlanFinePrint className="mx-auto mt-6 max-w-xl text-center" />
+        {!open && <Waitlist />}
       </div>
     </section>
   )

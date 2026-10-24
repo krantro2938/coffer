@@ -69,6 +69,7 @@ type Day = {
 type Overview = Record<string, number> & { billing: boolean; byPlan: Record<string, number>; daily: Day[] }
 type Invite = Terms & { id: string; email: string; createdAt: number; expiresAt: number; usedAt?: number; note: string }
 type TrialRequest = { email: string; lang: string; createdAt: number; invitedAt: number | null }
+type Waiter = { email: string; lang: string; createdAt: number }
 type Report = {
   id: string
   shareId: string
@@ -250,11 +251,46 @@ function OverviewTab({ go }: { go: (tab: string) => void }) {
         ))}
       </dl>
       <DailyTable days={data.daily} />
+      {data.waitlist > 0 && <WaitlistSection />}
       <p className="max-w-2xl text-sm text-pretty text-muted-foreground">
         This console shows who has an account, what they pay and how much they store. It cannot show file names or contents: those are
         encrypted in the browser and the keys never reach this server.
       </p>
     </div>
+  )
+}
+
+/** Addresses left on the home page to hear when the paid plans open. */
+function WaitlistSection() {
+  const { copy } = useCopy()
+  const { data } = useQuery({ queryKey: ["admin", "waitlist"], queryFn: () => api<Waiter[]>("/api/admin/waitlist") })
+  if (!data) return null
+  return (
+    <section>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-medium">Waiting for paid plans</h2>
+          <p className="mt-1 max-w-2xl text-sm text-pretty text-muted-foreground">
+            {data.length} {data.length === 1 ? "address" : "addresses"} left on the pricing section. They were promised one email, when the
+            plans open.
+          </p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => copy(data.map((w) => w.email).join("\n"), "Addresses copied")}>
+          Copy all addresses
+        </Button>
+      </div>
+      <ul className="mt-4 grid max-h-80 gap-px overflow-y-auto rounded-2xl border bg-border">
+        {data.map((w) => (
+          <li key={w.email} className="flex min-w-0 items-center justify-between gap-3 bg-card px-4 py-2.5 text-sm">
+            <span className="truncate">{w.email}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {relativeTime(w.createdAt)}
+              {w.lang ? ` · ${w.lang}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

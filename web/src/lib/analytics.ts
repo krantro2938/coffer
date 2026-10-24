@@ -46,6 +46,7 @@ export const EVENTS = [
   "plan-clicked", // a plan's button; data.plan is the plan id
   "signup-header", // header: "Get a drive"
   "signup-drive", // drive section: "Create your drive"
+  "waitlist-joined", // pricing: left an address to hear when the paid plans open
   // The app
   "signup-completed", // an account was created
   "login-completed", // someone signed in

@@ -117,6 +117,18 @@ const messages: Messages = {
     "Ein per E-Mail gesendeter Scan liegt jahrelang im Gesendet-Ordner Ihres Kunden und in Ihrem Posteingang, lesbar für beide E-Mail-Anbieter und für jeden, der in eines der Konten gelangt. Ein Coffer-Link legt ihn an einen Ort, den nur Sie öffnen können, und Sie löschen ihn, wenn die Arbeit erledigt ist.",
   "Servers in Germany, encrypted files stored in the EU": "Server in Deutschland, verschlüsselte Dateien in der EU gespeichert",
   "A GDPR data processing agreement, included": "Ein Auftragsverarbeitungsvertrag nach DSGVO, inklusive",
+  "Want more room later?": "Später mehr Platz?",
+  "Leave your email and we'll tell you once, when the paid plans open.":
+    "Hinterlassen Sie Ihre E-Mail-Adresse, und wir schreiben Ihnen einmal, wenn die bezahlten Tarife starten.",
+  "you@example.com": "sie@example.com",
+  "Notify me": "Benachrichtigen",
+  "Thanks. We'll email you once, when the paid plans open.": "Danke. Wir schreiben Ihnen einmal, wenn die bezahlten Tarife starten.",
+  "Who can open what your clients send": "Wer öffnen kann, was Ihre Mandanten senden",
+  "On our server": "Auf unserem Server",
+  "In your browser": "In Ihrem Browser",
+  "Only you have the key": "Nur Sie haben den Schlüssel",
+  "lease-2026.docx": "mietvertrag-2026.docx",
+  "One email, then the address is deleted.": "Eine E-Mail, danach wird die Adresse gelöscht.",
 }
 
 export default messages

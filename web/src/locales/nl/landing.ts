@@ -116,6 +116,18 @@ const messages: Messages = {
     "Een scan die per e-mail is verstuurd, blijft jarenlang in de map Verzonden van je klant en in jouw inbox staan, leesbaar voor beide e-mailproviders en voor iedereen die in een van de accounts komt. Een Coffer-link zet hem op één plek die alleen jij kunt openen, en je verwijdert hem als het werk klaar is.",
   "Servers in Germany, encrypted files stored in the EU": "Servers in Duitsland, versleutelde bestanden opgeslagen in de EU",
   "A GDPR data processing agreement, included": "Een verwerkersovereenkomst volgens de AVG, inbegrepen",
+  "Want more room later?": "Later meer ruimte nodig?",
+  "Leave your email and we'll tell you once, when the paid plans open.":
+    "Laat je e-mailadres achter, dan mailen we je één keer zodra de betaalde abonnementen opengaan.",
+  "you@example.com": "jij@example.com",
+  "Notify me": "Laat het me weten",
+  "Thanks. We'll email you once, when the paid plans open.": "Bedankt. We mailen je één keer, zodra de betaalde abonnementen opengaan.",
+  "Who can open what your clients send": "Wie kan openen wat je klanten sturen",
+  "On our server": "Op onze server",
+  "In your browser": "In je browser",
+  "Only you have the key": "Alleen jij hebt de sleutel",
+  "lease-2026.docx": "huurcontract-2026.docx",
+  "One email, then the address is deleted.": "Eén e-mail, daarna wordt het adres verwijderd.",
 }
 
 export default messages

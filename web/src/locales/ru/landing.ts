@@ -117,6 +117,18 @@ const messages: Messages = {
     "Скан, отправленный по почте, годами лежит в «Отправленных» у клиента и у вас во входящих. Его могут прочитать оба почтовых сервиса и любой, кто попадёт в один из ящиков. Ссылка Coffer кладёт его в одно место, которое можете открыть только вы, и вы удаляете его, когда работа закончена.",
   "Servers in Germany, encrypted files stored in the EU": "Серверы в Германии, зашифрованные файлы хранятся в ЕС",
   "A GDPR data processing agreement, included": "Договор об обработке данных по GDPR — включён",
+  "Want more room later?": "Понадобится больше места?",
+  "Leave your email and we'll tell you once, when the paid plans open.":
+    "Оставьте почту, и мы напишем один раз, когда откроются платные тарифы.",
+  "you@example.com": "vy@example.com",
+  "Notify me": "Сообщить мне",
+  "Thanks. We'll email you once, when the paid plans open.": "Спасибо. Мы напишем один раз, когда откроются платные тарифы.",
+  "Who can open what your clients send": "Кто может открыть то, что присылают клиенты",
+  "On our server": "На нашем сервере",
+  "In your browser": "В вашем браузере",
+  "Only you have the key": "Ключ только у вас",
+  "lease-2026.docx": "договор-аренды-2026.docx",
+  "One email, then the address is deleted.": "Одно письмо, потом адрес удаляется.",
 }
 
 export default messages

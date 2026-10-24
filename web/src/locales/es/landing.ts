@@ -116,6 +116,18 @@ const messages: Messages = {
     "Un escaneo enviado por correo se queda años en la carpeta de enviados de tu cliente y en tu bandeja de entrada, legible para ambos proveedores de correo y para cualquiera que entre en una de las cuentas. Un enlace de Coffer lo deja en un solo lugar que solo tú puedes abrir, y lo borras cuando terminas el trabajo.",
   "Servers in Germany, encrypted files stored in the EU": "Servidores en Alemania, archivos cifrados guardados en la UE",
   "A GDPR data processing agreement, included": "Un acuerdo de tratamiento de datos según el RGPD, incluido",
+  "Want more room later?": "¿Necesitarás más espacio?",
+  "Leave your email and we'll tell you once, when the paid plans open.":
+    "Deja tu correo y te escribiremos una sola vez, cuando abran los planes de pago.",
+  "you@example.com": "tu@example.com",
+  "Notify me": "Avísame",
+  "Thanks. We'll email you once, when the paid plans open.": "Gracias. Te escribiremos una sola vez, cuando abran los planes de pago.",
+  "Who can open what your clients send": "Quién puede abrir lo que envían tus clientes",
+  "On our server": "En nuestro servidor",
+  "In your browser": "En tu navegador",
+  "Only you have the key": "Solo tú tienes la clave",
+  "lease-2026.docx": "contrato-alquiler-2026.docx",
+  "One email, then the address is deleted.": "Un solo correo y después se borra la dirección.",
 }
 
 export default messages

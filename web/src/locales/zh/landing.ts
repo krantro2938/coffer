@@ -114,6 +114,17 @@ const messages: Messages = {
     "通过邮件发送的扫描件会在客户的已发送文件夹和你的收件箱里躺上好几年，两家邮件服务商都能读取，任何进入其中一个账户的人也能看到。Coffer 链接把它放在只有你能打开的一个地方，事情办完就可以删除。",
   "Servers in Germany, encrypted files stored in the EU": "服务器位于德国，加密文件存储在欧盟",
   "A GDPR data processing agreement, included": "附带符合 GDPR 的数据处理协议",
+  "Want more room later?": "以后需要更多空间？",
+  "Leave your email and we'll tell you once, when the paid plans open.": "留下邮箱，付费方案开放时我们只通知你一次。",
+  "you@example.com": "you@example.com",
+  "Notify me": "通知我",
+  "Thanks. We'll email you once, when the paid plans open.": "谢谢。付费方案开放时，我们会给你发一封邮件。",
+  "Who can open what your clients send": "谁能打开客户发来的文件",
+  "On our server": "在我们的服务器上",
+  "In your browser": "在你的浏览器中",
+  "Only you have the key": "只有你有密钥",
+  "lease-2026.docx": "租约-2026.docx",
+  "One email, then the address is deleted.": "只发一封邮件，之后删除地址。",
 }
 
 export default messages
