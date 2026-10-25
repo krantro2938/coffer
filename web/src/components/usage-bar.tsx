@@ -29,7 +29,7 @@ export function SegmentedUsage({
   glow?: boolean
   /**
    * Builds the bar as it appears: the pills arrive one after another, left to
-   * right, each one lit; the used ones stay lit and the rest cool down to dark.
+   * right, already in their final colour.
    */
   charge?: boolean
   className?: string
@@ -57,12 +57,9 @@ export function SegmentedUsage({
         return (
           <span
             key={i}
-            className={cn("relative min-w-0 flex-1 rounded-full transition-colors", on ? lit : unlit, charge && "animate-pill-in")}
+            className={cn("min-w-0 flex-1 rounded-full transition-colors", on ? lit : unlit, charge && "animate-pill-in")}
             style={delay}
-          >
-            {/* An unused pill arrives glowing and cools down to dark as the wave moves on. */}
-            {charge && !on && <span className={cn("absolute inset-0 animate-pill-flash rounded-full opacity-0", lit)} style={delay} />}
-          </span>
+          />
         )
       })}
     </div>

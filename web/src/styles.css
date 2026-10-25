@@ -259,24 +259,9 @@
 @utility animate-pill-in {
   animation: pill-in 0.26s cubic-bezier(0.2, 0.9, 0.2, 1.25) both;
 }
-@keyframes pill-flash {
-  0% {
-    opacity: 1;
-  }
-  35% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@utility animate-pill-flash {
-  animation: pill-flash 0.45s ease-out both;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pill-in,
-  .animate-pill-flash,
   .animate-rise,
   .animate-settle,
   .animate-tab-in {
