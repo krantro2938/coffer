@@ -84,12 +84,6 @@ function Hero() {
                 {t("Just need to send a file?")}
               </a>
             </div>
-            <p className="mt-4 text-sm text-hero-foreground/70">
-              {t("Free to start. No card needed.")}{" "}
-              <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-hero-foreground">
-                {t("Read the code on GitHub")}
-              </a>
-            </p>
           </div>
 
           <RequestPageMock />
