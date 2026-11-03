@@ -62,13 +62,7 @@ function Hero() {
 
         <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-10 sm:py-14 lg:grid-cols-[1.2fr_1fr] lg:gap-10 lg:px-14">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 py-1 pr-3.5 pl-1 text-sm font-medium backdrop-blur">
-              <span className="grid size-6 place-items-center rounded-full bg-lime text-hero">
-                <InboxIcon className="size-3.5" />
-              </span>
-              {t("File requests, no account for your clients")}
-            </span>
-            <h1 className="mt-6 text-[2.25rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3rem] xl:text-[3.5rem]">
+            <h1 className="text-[2.25rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3rem] xl:text-[3.5rem]">
               {t("Collect documents from clients.")} <span className="text-lime">{t("Encrypted on their device, before upload.")}</span>
             </h1>
             <p className="mt-6 max-w-lg text-base text-pretty text-hero-foreground/80 sm:text-lg">
