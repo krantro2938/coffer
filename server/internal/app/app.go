@@ -192,6 +192,7 @@ func (a *App) routes() http.Handler {
 	h("PUT /api/items/{id}/chunks/{n}", a.handleUploadChunk)
 	h("POST /api/items/{id}/complete", a.handleCompleteItem)
 	h("PATCH /api/items/{id}", a.handleUpdateItem)
+	h("PUT /api/items/{id}/content", a.handleReplaceContent)
 	h("DELETE /api/items/{id}", a.handleDeleteItem)
 	h("GET /api/items/{id}/blob", a.handleItemBlob)
 	h("GET /api/items/{id}/status", a.handleItemStatus)

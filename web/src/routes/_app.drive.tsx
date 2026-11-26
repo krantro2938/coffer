@@ -69,6 +69,7 @@ type Upload = { key: string; name: string; progress: number; state: "queued" | "
 type Dialog =
   | { t: "newFolder" }
   | { t: "note" }
+  | { t: "editNote"; i: DItem }
   | { t: "renameFolder"; f: DFolder }
   | { t: "renameItem"; i: DItem }
   | { t: "moveFolder"; f: DFolder }
@@ -465,6 +466,11 @@ function DrivePage() {
                                   <EyeIcon /> {t("Preview")}
                                 </DropdownMenuItem>
                               )}
+                              {!i.broken && i.kind === "text" && (
+                                <DropdownMenuItem onClick={() => setDialog({ t: "editNote", i })}>
+                                  <PencilIcon /> {t("Edit")}
+                                </DropdownMenuItem>
+                              )}
                               {!i.broken && (
                                 <>
                                   <DropdownMenuItem onClick={() => downloadItem(i)}>
@@ -530,6 +536,15 @@ function DrivePage() {
         onSubmit={createFolder}
       />
       <NoteDialog open={dialog?.t === "note"} onOpenChange={closeDialog} folderId={folderId} />
+      {dialog?.t === "editNote" && (
+        <NoteDialog
+          open
+          onOpenChange={closeDialog}
+          folderId={dialog.i.folderId}
+          item={dialog.i}
+          shares={data?.sharesByItem.get(dialog.i.id) ?? []}
+        />
+      )}
       {dialog?.t === "renameFolder" && (
         <NameDialog
           open
@@ -578,7 +593,14 @@ function DrivePage() {
           if (dialog?.t === "deleteItem") return del(`/api/items/${dialog.i.id}`, dialog.i.name)
         }}
       />
-      <PreviewDialog item={preview} onOpenChange={(o) => !o && setPreview(null)} />
+      <PreviewDialog
+        item={preview}
+        onOpenChange={(o) => !o && setPreview(null)}
+        onEdit={(i) => {
+          setPreview(null)
+          setDialog({ t: "editNote", i })
+        }}
+      />
       <ShareDialog target={sharing} drive={data} onOpenChange={(o) => !o && setSharing(null)} />
     </div>
   )

@@ -44,6 +44,13 @@ const messages: Messages = {
   "Download ready": "Download klaar",
   "Download as .zip": "Downloaden als .zip",
   "Move to…": "Verplaatsen naar…",
+  "Note updated": "Notitie bijgewerkt",
+  "Edit note": "Notitie bewerken",
+  Edit: "Bewerken",
+  "Some of this note's share links can't be updated, so saving turns them off.":
+    "Sommige deellinks van deze notitie kunnen niet worden bijgewerkt, dus opslaan zet ze uit.",
+  "{n} share links could not be carried over and were turned off":
+    "{n} deellink kon niet worden behouden en is uitgezet|{n} deellinks konden niet worden behouden en zijn uitgezet",
   "Note encrypted and saved": "Notitie versleuteld en bewaard",
   "New private note": "Nieuwe privénotitie",
   Title: "Titel",

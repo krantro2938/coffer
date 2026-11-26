@@ -44,6 +44,13 @@ const messages: Messages = {
   "Download ready": "Файл готов",
   "Download as .zip": "Скачать архивом .zip",
   "Move to…": "Переместить в…",
+  "Note updated": "Заметка обновлена",
+  "Edit note": "Изменить заметку",
+  Edit: "Изменить",
+  "Some of this note's share links can't be updated, so saving turns them off.":
+    "Некоторые ссылки на эту заметку нельзя обновить, при сохранении они отключатся.",
+  "{n} share links could not be carried over and were turned off":
+    "{n} ссылку не удалось сохранить, она отключена|{n} ссылки не удалось сохранить, они отключены|{n} ссылок не удалось сохранить, они отключены",
   "Note encrypted and saved": "Заметка зашифрована и сохранена",
   "New private note": "Новая личная заметка",
   Title: "Заголовок",

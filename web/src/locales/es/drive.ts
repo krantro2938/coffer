@@ -44,6 +44,13 @@ const messages: Messages = {
   "Download ready": "Descarga lista",
   "Download as .zip": "Descargar como .zip",
   "Move to…": "Mover a…",
+  "Note updated": "Nota actualizada",
+  "Edit note": "Editar nota",
+  Edit: "Editar",
+  "Some of this note's share links can't be updated, so saving turns them off.":
+    "Algunos enlaces de esta nota no se pueden actualizar, así que al guardar se desactivan.",
+  "{n} share links could not be carried over and were turned off":
+    "{n} enlace no se pudo conservar y se desactivó|{n} enlaces no se pudieron conservar y se desactivaron",
   "Note encrypted and saved": "Nota cifrada y guardada",
   "New private note": "Nota privada nueva",
   Title: "Título",

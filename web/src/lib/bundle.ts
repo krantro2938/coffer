@@ -122,7 +122,7 @@ export async function shareFolder(
  * follow their folder keep it sealed for their owner; for an older link it can
  * be derived again from the link secret, unless a password went into it too.
  */
-async function linkWrapKey(share: DShare, masterKey: CryptoKey): Promise<CryptoKey | null> {
+export async function linkWrapKey(share: DShare, masterKey: CryptoKey): Promise<CryptoKey | null> {
   if (!share.secret) return null
   try {
     if (share.encWrap) return await openShareWrap(masterKey, fromB64(share.encWrap), share.secret)

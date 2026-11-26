@@ -184,6 +184,36 @@ func (s *Store) SetItemMeta(id string, encMeta []byte) error {
 	return s.exec(`UPDATE items SET enc_meta = ? WHERE id = ?`, encMeta, id)
 }
 
+// ReplaceContent swaps what a ready item in a drive holds for a single new
+// chunk sealed under a new key, and points the given links at that key. The
+// item keeps its id, folder and date.
+func (s *Store) ReplaceContent(userID, id string, encMeta, wrappedKey []byte, size int64, links map[string][]byte) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	res, err := tx.Exec(`UPDATE items SET enc_meta = ?, wrapped_key = ?, size = ?, chunk_count = 1, recv_chunks = 1, recv_bytes = ?
+		WHERE id = ? AND user_id = ? AND ready = 1 AND kind = 'text'`, encMeta, wrappedKey, size, size, id, userID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n != 1 {
+		return ErrNotFound
+	}
+	for share, key := range links {
+		if _, err := tx.Exec(`UPDATE shares SET wrapped_key = ? WHERE id = ? AND item_id = ? AND user_id = ?`, key, share, id, userID); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// ItemShareIDs lists the links that point straight at an item.
+func (s *Store) ItemShareIDs(itemID string) ([]string, error) {
+	return s.ids(`SELECT id FROM shares WHERE item_id = ?`, itemID)
+}
+
 // MoveItem puts an item in a folder; a nil folder moves it to the root.
 func (s *Store) MoveItem(id string, folderID *string) error {
 	return s.exec(`UPDATE items SET folder_id = ? WHERE id = ?`, folderID, id)

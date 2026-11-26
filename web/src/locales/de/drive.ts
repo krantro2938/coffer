@@ -44,6 +44,13 @@ const messages: Messages = {
   "Download ready": "Download bereit",
   "Download as .zip": "Als .zip herunterladen",
   "Move to…": "Verschieben nach…",
+  "Note updated": "Notiz aktualisiert",
+  "Edit note": "Notiz bearbeiten",
+  Edit: "Bearbeiten",
+  "Some of this note's share links can't be updated, so saving turns them off.":
+    "Einige Freigabelinks dieser Notiz lassen sich nicht aktualisieren, beim Speichern werden sie deaktiviert.",
+  "{n} share links could not be carried over and were turned off":
+    "{n} Freigabelink konnte nicht übernommen werden und wurde deaktiviert|{n} Freigabelinks konnten nicht übernommen werden und wurden deaktiviert",
   "Note encrypted and saved": "Notiz verschlüsselt und gespeichert",
   "New private note": "Neue private Notiz",
   Title: "Titel",

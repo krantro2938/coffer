@@ -11,6 +11,7 @@ import {
   HardDriveIcon,
   KeyRoundIcon,
   Loader2Icon,
+  PencilIcon,
   PlusIcon,
   Trash2Icon,
   UsersIcon,
@@ -40,6 +41,7 @@ import { formatBytes, relativeTime, noteStamp } from "@/lib/format"
 import { t as tr, useI18n } from "@/lib/i18n"
 import { useSession } from "@/lib/session"
 import { track } from "@/lib/analytics"
+import { canCarryOver, replaceNote } from "@/lib/notes"
 import { createShare, downloadToBlob, saveDecrypted, storeItem, type CreatedShare } from "@/lib/transfer"
 import { useCopy } from "@/hooks/use-copy"
 import { cn } from "@/lib/utils"
@@ -202,39 +204,81 @@ export function NoteDialog({
   open,
   onOpenChange,
   folderId,
+  item,
+  shares = [],
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
   folderId: string | null
+  /** An existing note to edit; without one the dialog starts a new note. */
+  item?: DItem | null
+  /** The note's share links; they carry over to the saved text where they can. */
+  shares?: DShare[]
 }) {
   const { masterKey } = useSession()
   const qc = useQueryClient()
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [busy, setBusy] = useState(false)
-  const { t } = useI18n()
+  const [loading, setLoading] = useState(false)
+  const { t, tn } = useI18n()
+  const editing = !!item
   useEffect(() => {
-    if (open) {
+    if (!open) return
+    if (!item) {
       setTitle("")
       setBody("")
+      return
     }
-  }, [open])
+    let cancelled = false
+    setTitle(item.name)
+    setBody("")
+    setLoading(true)
+    downloadToBlob({ ...itemBlobOpts(item) })
+      .then(async (blob) => {
+        if (!cancelled) setBody(await blob.text())
+      })
+      .catch((e) => {
+        if (cancelled) return
+        toast.error((e as Error).message)
+        onOpenChange(false)
+      })
+      .finally(() => !cancelled && setLoading(false))
+    return () => {
+      cancelled = true
+    }
+    // Reload only when another note is opened, not when the open one re-renders.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, item?.id])
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!body.trim() || !masterKey) return
+    if (!body.trim() || !masterKey || loading) return
     setBusy(true)
     try {
-      await storeItem({
-        kind: "text",
-        name: title.trim() || t("Note {date}", { date: noteStamp() }),
-        type: "text/plain",
-        blob: new Blob([body], { type: "text/plain;charset=utf-8" }),
-        masterKey,
-        folderId,
-      })
+      const name = title.trim() || item?.name || t("Note {date}", { date: noteStamp() })
+      if (item) {
+        const { revoked } = await replaceNote({ item, name, text: body, masterKey, shares })
+        if (revoked > 0)
+          toast.warning(
+            tn(
+              revoked,
+              "{n} share link could not be carried over and was turned off",
+              "{n} share links could not be carried over and were turned off"
+            )
+          )
+      } else {
+        await storeItem({
+          kind: "text",
+          name,
+          type: "text/plain",
+          blob: new Blob([body], { type: "text/plain;charset=utf-8" }),
+          masterKey,
+          folderId,
+        })
+      }
       await qc.invalidateQueries({ queryKey: ["drive"] })
-      toast.success(t("Note encrypted and saved"))
+      toast.success(editing ? t("Note updated") : t("Note encrypted and saved"))
       onOpenChange(false)
     } catch (err) {
       toast.error((err as Error).message)
@@ -244,21 +288,32 @@ export function NoteDialog({
   }
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title={t("New private note")} className="sm:max-w-lg">
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={editing ? t("Edit note") : t("New private note")}
+      className="sm:max-w-lg"
+    >
       <form onSubmit={save} className="grid gap-3">
         <Input placeholder={t("Title")} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
         <Textarea
-          placeholder={t("Anything you want to keep private…")}
+          placeholder={loading ? t("Decrypting…") : t("Anything you want to keep private…")}
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          disabled={loading}
           className="max-h-[45vh] min-h-48 font-mono text-sm"
           autoFocus
         />
+        {editing && shares.some((l) => !canCarryOver(l)) && (
+          <p className="rounded-xl bg-muted/50 px-3.5 py-2.5 text-xs text-muted-foreground">
+            {t("Some of this note's share links can't be updated, so saving turns them off.")}
+          </p>
+        )}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             {t("Cancel")}
           </Button>
-          <Button type="submit" disabled={busy || !body.trim()}>
+          <Button type="submit" disabled={busy || loading || !body.trim()}>
             {busy && <Loader2Icon className="animate-spin" />} {t("Encrypt & save")}
           </Button>
         </div>
@@ -273,7 +328,15 @@ const PREVIEWABLE = /^(image\/|video\/|audio\/|text\/|application\/json)/
 export const canPreview = (item: DItem) =>
   !item.broken && (item.kind === "text" || (PREVIEWABLE.test(item.type) && item.size < 50 * 1024 * 1024))
 
-export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOpenChange: (o: boolean) => void }) {
+export function PreviewDialog({
+  item,
+  onOpenChange,
+  onEdit,
+}: {
+  item: DItem | null
+  onOpenChange: (o: boolean) => void
+  onEdit?: (item: DItem) => void
+}) {
   const [state, setState] = useState<{ url?: string; text?: string; progress: number } | null>(null)
   const { copy, copied } = useCopy()
   const { t } = useI18n()
@@ -343,6 +406,11 @@ export function PreviewDialog({ item, onOpenChange }: { item: DItem | null; onOp
           <audio src={state.url} controls autoPlay className="w-full" />
         )}
         <div className="flex flex-wrap justify-end gap-2">
+          {item.kind === "text" && onEdit && state?.text !== undefined && (
+            <Button variant="outline" onClick={() => onEdit(item)}>
+              <PencilIcon /> {t("Edit")}
+            </Button>
+          )}
           {state?.text !== undefined && (
             <Button variant="outline" onClick={() => copy(state.text!, t("Copied"))}>
               {copied === state.text ? <CheckIcon /> : <CopyIcon />} {t("Copy")}

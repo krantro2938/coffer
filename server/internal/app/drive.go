@@ -529,6 +529,82 @@ func (a *App) handleUpdateItem(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// maxNoteSize is the most a note may hold once edited. It is one chunk, so an
+// edit swaps a single blob.
+const maxNoteSize = 1 << 20
+
+// handleReplaceContent edits a note in place. The browser seals the new text
+// under a fresh key (chunk nonces repeat per key, so a key is never reused for
+// different content) and re-wraps the key for the note's share links; the
+// item keeps its id, folder and date. Links it could not re-wrap are revoked.
+func (a *App) handleReplaceContent(w http.ResponseWriter, r *http.Request) error {
+	uid, err := a.requireUser(r)
+	if err != nil {
+		return err
+	}
+	id := r.PathValue("id")
+	var req struct {
+		EncMeta    []byte            `json:"encMeta"`
+		WrappedKey []byte            `json:"wrappedKey"`
+		Data       []byte            `json:"data"`
+		Links      map[string][]byte `json:"links"`
+	}
+	if err := readJSONLimit(w, r, &req, 2*maxNoteSize); err != nil {
+		return err
+	}
+	if len(req.EncMeta) < 29 || len(req.EncMeta) > maxMetaSize || len(req.WrappedKey) < 60 || len(req.WrappedKey) > 256 ||
+		len(req.Data) <= gcmOverhead || len(req.Data) > maxNoteSize+gcmOverhead {
+		return errf(http.StatusBadRequest, "invalid note")
+	}
+	defer a.locks.lock(id)()
+	it, _, err := a.authorizeItem(r, id)
+	if err != nil {
+		return err
+	}
+	if !it.UserID.Valid || !it.Ready || it.Kind != "text" {
+		return errf(http.StatusBadRequest, "only notes can be edited")
+	}
+	shares, err := a.db.ItemShareIDs(id)
+	if err != nil {
+		return err
+	}
+	size := int64(len(req.Data))
+	defer a.locks.lock("user:" + uid)()
+	quota, err := a.writeQuota(uid)
+	if err != nil {
+		return err
+	}
+	used, err := a.db.Usage(uid)
+	if err != nil {
+		return err
+	}
+	if used-it.Size+size > quota {
+		return errf(http.StatusInsufficientStorage, "not enough storage left in your drive")
+	}
+	keep := map[string][]byte{}
+	for _, sid := range shares {
+		if k, ok := req.Links[sid]; ok && len(k) >= 60 && len(k) <= 256 {
+			keep[sid] = k
+		}
+	}
+	// Written over the old chunk just before the row that describes it changes.
+	if err := a.blobs.Put(r.Context(), id, 0, 0, req.Data); err != nil {
+		return err
+	}
+	if err := a.db.ReplaceContent(uid, id, req.EncMeta, req.WrappedKey, size, keep); err != nil {
+		return err
+	}
+	for _, sid := range shares {
+		if _, ok := keep[sid]; !ok {
+			if err := a.db.DeleteShare(sid); err != nil {
+				return err
+			}
+		}
+	}
+	writeJSON(w, 200, map[string]any{"ok": true, "revoked": len(shares) - len(keep)})
+	return nil
+}
+
 func (a *App) handleDeleteItem(w http.ResponseWriter, r *http.Request) error {
 	it, _, err := a.authorizeItem(r, r.PathValue("id"))
 	if err != nil {
